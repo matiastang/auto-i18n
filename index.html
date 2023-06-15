@@ -1,0 +1,122 @@
+<!--
+ * @Author: tangdaoyong
+ * @Date: 2023-06-15 22:54:10
+ * @LastEditors: tangdaoyong
+ * @LastEditTime: 2023-06-15 22:54:16
+ * @Description: file content
+-->
+<!--
+ * @Author: your name
+ * @Date: 2021-10-15 15:43:39
+ * @LastEditTime: 2022-04-06 17:02:00
+ * @LastEditors: matiastang
+ * @Description: In User Settings Edit
+ * @FilePath: /datumwealth-front-scaffold/index.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0, user-scalable=no" />
+        <link rel="icon" href="./public/favicon.ico" />
+        <meta name="renderer" content="webkit" />
+        <meta https-equiv="X-Frame-Options" content="deny" />
+        <meta
+            name="keywords"
+            content="基金,金融数据库,智能投顾,财富管理,金融大数据,基金大数据,基金ai,公募基金,私募基金,养老金产品,银行理财,基金研究,资产配置"
+        />
+        <meta name="description" content="西筹金融科技 | DatumWealth" />
+        <title>西筹金融科技开放平台 | DatumWealth</title>
+        <style>
+            :root {
+                --font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, 'Nimbus Sans L', Arial,
+                    'Liberation Sans', 'Hiragino Sans GB', 'Source Han Sans CN Normal',
+                    'Microsoft YaHei', 'Wenquanyi Micro Hei', 'WenQuanYi Zen Hei', 'ST Heiti',
+                    SimHei, 'WenQuanYi Zen Hei Sharp', sans-serif;
+            }
+            * {
+                font-family: var(--font-family);
+            }
+            body {
+                margin: 0px;
+                background: #f2f2f2;
+            }
+            .icon {
+                width: 1em;
+                height: 1em;
+                vertical-align: -0.15em;
+                fill: currentColor;
+                overflow: hidden;
+            }
+        </style>
+        <style type="text/css">
+            #Loading {
+                top: 50%;
+                left: 50%;
+                position: absolute;
+                -webkit-transform: translateY(-50%) translateX(-50%);
+                transform: translateY(-50%) translateX(-50%);
+                z-index: 100;
+            }
+            @-webkit-keyframes ball-beat {
+                50% {
+                    opacity: 0.2;
+                    -webkit-transform: scale(0.75);
+                    transform: scale(0.75);
+                }
+
+                100% {
+                    opacity: 1;
+                    -webkit-transform: scale(1);
+                    transform: scale(1);
+                }
+            }
+
+            @keyframes ball-beat {
+                50% {
+                    opacity: 0.2;
+                    -webkit-transform: scale(0.75);
+                    transform: scale(0.75);
+                }
+
+                100% {
+                    opacity: 1;
+                    -webkit-transform: scale(1);
+                    transform: scale(1);
+                }
+            }
+
+            .ball-beat > div {
+                background-color: #d65928;
+                width: 10px;
+                height: 10px;
+                border-radius: 100% !important;
+                margin: 2px;
+                -webkit-animation-fill-mode: both;
+                animation-fill-mode: both;
+                display: inline-block;
+                -webkit-animation: ball-beat 0.7s 0s infinite linear;
+                animation: ball-beat 0.7s 0s infinite linear;
+            }
+            .ball-beat > div:nth-child(2n-1) {
+                -webkit-animation-delay: 0.35s !important;
+                animation-delay: 0.35s !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <div id="Loading">
+                <div class="loader-inner ball-beat">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <!-- iconfont symbol document: https://www.iconfont.cn/help/detail?spm=a313x.7781069.1998910419.d8cf4382a&helptype=code -->
+        <!-- <script src="//datumwealth.oss-cn-chengdu.aliyuncs.com/dw/icon/font.js"></script> -->
+        <script type="module" src="./src/main.ts"></script>
+    </body>
+</html>

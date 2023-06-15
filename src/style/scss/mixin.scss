@@ -1,0 +1,95 @@
+// cursor
+@mixin cursorP {
+    cursor: pointer;
+}
+.cursorP {
+    @include cursorP;
+}
+// box-sizing
+@mixin borderBox {
+    box-sizing: border-box;
+}
+.borderBox {
+    @include borderBox;
+}
+// flex布局
+@mixin flexRowCenter {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+.flexRowCenter {
+    @include flexRowCenter;
+}
+@mixin flexColumnCenter {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.flexColumnCenter {
+    @include flexColumnCenter;
+}
+// 默认边框
+@mixin defaultBorder {
+    border: 1px solid $borderColor;
+}
+.defaultBorder {
+    @include defaultBorder;
+}
+@mixin defaultBorderL {
+    border-left: 1px solid $borderColor;
+}
+.defaultBorderL {
+    @include defaultBorderL;
+}
+@mixin defaultBorderR {
+    border-right: 1px solid $borderColor;
+}
+.defaultBorderR {
+    @include defaultBorderR;
+}
+@mixin defaultBorderT {
+    border-top: 1px solid $borderColor;
+}
+.defaultBorderT {
+    @include defaultBorderT;
+}
+@mixin defaultBorderB {
+    border-bottom: 1px solid $borderColor;
+}
+.defaultBorderB {
+    @include defaultBorderB;
+}
+// 主题边框
+@mixin themeBorder {
+    border: 1px solid $themeColor;
+}
+.themeBorder {
+    @include themeBorder;
+}
+@mixin themeBorderL {
+    border-left: 1px solid $themeColor;
+}
+.themeBorderL {
+    @include themeBorderL;
+}
+@mixin themeBorderR {
+    border-right: 1px solid $themeColor;
+}
+.themeBorderR {
+    @include themeBorderR;
+}
+@mixin themeBorderT {
+    border-top: 1px solid $themeColor;
+}
+.themeBorderT {
+    @include themeBorderT;
+}
+@mixin themeBorderB {
+    border-bottom: 1px solid $themeColor;
+}
+.themeBorderB {
+    @include themeBorderB;
+}

@@ -1,0 +1,47 @@
+// scss方法
+// font-size
+@function fontSize($size) {
+    // @if $size > 10 {
+    //     @return 1px;
+    // }
+    @return $size - 1;
+}
+// line-height
+@function lineHeight($size) {
+    @return $size * 1.5;
+}
+// 线性渐变背景
+@function backgroundLinearGradient($topColor, $bottomColor) {
+    @return linear-gradient($topColor, $bottomColor);
+}
+
+// $xs-width: 480px;
+// $sm-width: 750px;
+// $md-width: 992px;
+// $lg-width: 1200px;
+
+// $screen-width: ($xs-width, $sm-width, $md-width, $lg-width);
+
+// $xs: 'screen and (min-width:#{$xs-width})'; //手机屏幕
+// $sm: 'screen and (min-width:#{$sm-width})'; //pad屏幕
+// $md: 'screen and (min-width:#{$md-width})'; //中等屏幕
+// $lg: 'screen and (min-width:#{$lg-width})'; //大屏幕
+
+// $screen: ($xs, $sm, $md, $lg); //屏幕的宽度,是一个集合
+
+// $baseFontSize: 10px;
+
+@media screen and (max-width: 1920px) {
+}
+
+@media screen and (max-width: 1680px) {
+}
+
+@media screen and (max-width: 1600px) {
+}
+
+@media screen and (max-width: 1440px) {
+}
+
+@media screen and (max-width: 1366px) {
+}

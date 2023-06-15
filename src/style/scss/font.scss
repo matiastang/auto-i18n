@@ -1,0 +1,97 @@
+// 字体样式
+$_family: 'PingFangSC-Regular', 'PingFang SC', 'Helvetica Neue', Helvetica, 'Nimbus Sans L', Arial,
+    'Liberation Sans', 'Hiragino Sans GB', 'Source Han Sans CN Normal', 'Microsoft YaHei',
+    'Wenquanyi Micro Hei', 'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
+    sans-serif;
+$_medium_family: 'PingFangSC-Medium', 'PingFang SC', 'Helvetica Neue', Helvetica, 'Nimbus Sans L',
+    Arial, 'Liberation Sans', 'Hiragino Sans GB', 'Source Han Sans CN Normal', 'Microsoft YaHei',
+    'Wenquanyi Micro Hei', 'WenQuanYi Zen Hei', 'ST Heiti', SimHei, 'WenQuanYi Zen Hei Sharp',
+    sans-serif;
+$_weight: 400;
+$_medium_weight: 500;
+$_spacing: 1px;
+
+@mixin fontFamily {
+    font-family: $_family;
+}
+@mixin mediumFamily {
+    font-family: $_medium_family;
+}
+@mixin fontWeightNormal {
+    font-weight: normal !important;
+}
+@mixin fontWeightBold {
+    font-weight: bold !important;
+}
+@mixin fontWeight {
+    // font-weight: $_weight;
+    @include fontWeightNormal;
+}
+@mixin fontWeight500 {
+    // font-weight: $_medium_weight;
+    @include fontWeightNormal;
+}
+@mixin letterSpacing {
+    letter-spacing: $_spacing;
+}
+@mixin defaultFont {
+    @include fontFamily;
+    @include fontWeight;
+    @include letterSpacing;
+    text-align: center;
+}
+
+@mixin defaultFontMedium {
+    @include mediumFamily;
+    @include fontWeight500;
+    @include letterSpacing;
+}
+
+.defaultFont {
+    @include defaultFont;
+}
+.mediumFont {
+    @include defaultFontMedium;
+}
+
+/* 文本溢出 */
+
+// 显示不全省略
+@mixin textEllipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+.textEllipsis {
+    @include textEllipsis;
+}
+// 显示1行
+@mixin textLine1 {
+    @include textEllipsis;
+    -webkit-line-clamp: 1;
+    // white-space: nowrap;
+}
+
+.textLine1 {
+    @include textLine1;
+}
+// 显示2行
+@mixin textLine2 {
+    @include textEllipsis;
+    -webkit-line-clamp: 2;
+}
+
+.textLine2 {
+    @include textLine2;
+}
+// 显示3行
+@mixin textLine3 {
+    @include textEllipsis;
+    -webkit-line-clamp: 3;
+}
+
+.textLine3 {
+    @include textLine3;
+}
