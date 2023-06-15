@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-15 23:25:38
+ * @LastEditTime: 2023-06-16 00:02:11
  * @Description: main.ts
  */
 import { createApp } from 'vue'
@@ -11,6 +11,9 @@ import router from '@/router'
 import { createPinia } from 'pinia'
 import { piniaPersistedState } from 'matias-pinia-persisted-state'
 import _package from '../package.json'
+
+// 默认主题（如果是其他预编译样式可以配置vite默认导入）
+import '@/style/themes/default.css'
 
 const app = createApp(App)
 

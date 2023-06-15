@@ -1,3 +1,6 @@
 :root {
-    --themeColor: yellow;
+    /* --themeColor: yellow; */
+    --theme-color: #42b883;
+    --bg-color: #1a1a1a;
+    --container-bg-color: #242424;
 }

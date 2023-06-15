@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-15 23:24:55
+ * @LastEditTime: 2023-06-15 23:52:42
  * @FilePath: /datumwealth-front-scaffold/src/router/index.ts
  * @Description: 路由
  */
@@ -10,7 +10,7 @@ import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } 
 // layout
 // import Layout from '@/components/layout/Layout.vue'
 // web
-// import Home from '@/views/home/Home.vue'
+import Home from '@/views/home/Home.vue'
 import HelloWebGPU from '@/views/WebGPU/WebGPU.vue'
 import TriangleWebGPU from '@/views/WebGPU/Triangle.vue'
 import colorTriangleWebGPU from '@/views/WebGPU/ColorTriangle.vue'
@@ -37,7 +37,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
         name: 'home',
-        redirect: '/helloWebGPU',
+        component: Home,
     },
     {
         path: '/helloWebGPU',
