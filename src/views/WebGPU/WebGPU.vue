@@ -2,14 +2,13 @@
  * @Author: tangdaoyong
  * @Date: 2023-05-14 16:48:44
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-14 00:10:42
+ * @LastEditTime: 2023-06-18 17:29:45
  * @Description: HelloWebGPU
 -->
 <template>
     <div class="page" v-html="text"></div>
 </template>
 <script setup lang="ts">
-// import { GPUSupportedLimits } from '@webgpu/types/dist'
 import { ref, onMounted } from 'vue'
 
 const text = ref('')
