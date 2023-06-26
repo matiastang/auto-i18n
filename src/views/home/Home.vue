@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-29 10:52:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-16 00:05:28
+ * @LastEditTime: 2023-06-18 18:27:17
  * @FilePath: /datumwealth-front-scaffold/src/views/home/Home.vue
  * @Description: 
 -->
@@ -25,16 +25,20 @@ interface RouterItem {
 const routerList = reactive<RouterItem[]>([
     {
         path: '/helloWebGPU',
-        name: 'helloWebGPU',
+        name: 'Hello WebGPU',
     },
     {
         path: '/triangleWebGPU',
-        name: 'triangleWebGPU',
+        name: '三角形',
     },
     {
         path: '/colorTriangleWebGPU',
-        name: 'colorTriangleWebGPU',
+        name: '动态三角形',
     },
+    {
+        path: '/rotatingCube',
+        name: '旋转立方体',
+    }
 ])
 
 const itemAction = (item: RouterItem) => {

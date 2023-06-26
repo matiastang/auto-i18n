@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-15 23:52:42
+ * @LastEditTime: 2023-06-18 18:31:09
  * @FilePath: /datumwealth-front-scaffold/src/router/index.ts
  * @Description: 路由
  */
@@ -12,8 +12,9 @@ import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } 
 // web
 import Home from '@/views/home/Home.vue'
 import HelloWebGPU from '@/views/WebGPU/WebGPU.vue'
-import TriangleWebGPU from '@/views/WebGPU/Triangle.vue'
-import colorTriangleWebGPU from '@/views/WebGPU/ColorTriangle.vue'
+import Triangle from '@/views/WebGPU/Triangle.vue'
+import colorTriangle from '@/views/WebGPU/ColorTriangle.vue'
+import RotatingCube from '@/views/WebGPU/RotatingCube/RotatingCube.vue'
 // NotFound
 import NotFound from '@/views/NotFound.vue'
 
@@ -45,14 +46,19 @@ const routes: Array<RouteRecordRaw> = [
         component: HelloWebGPU,
     },
     {
-        path: '/triangleWebGPU',
-        name: 'triangleWebGPU',
-        component: TriangleWebGPU,
+        path: '/triangle',
+        name: 'triangle',
+        component: Triangle,
     },
     {
-        path: '/colorTriangleWebGPU',
-        name: 'colorTriangleWebGPU',
-        component: colorTriangleWebGPU,
+        path: '/colorTriangle',
+        name: 'colorTriangle',
+        component: colorTriangle,
+    },
+    {
+        path: '/rotatingCube',
+        name: 'rotatingCube',
+        component: RotatingCube,
     },
     {
         path: '/:pathMatch(.*)*', // 将匹配所有内容并将其放在 `$route.params.pathMatch` 下
