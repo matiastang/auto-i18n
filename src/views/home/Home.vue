@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-29 10:52:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-18 18:27:17
+ * @LastEditTime: 2023-06-29 22:52:16
  * @FilePath: /datumwealth-front-scaffold/src/views/home/Home.vue
  * @Description: 
 -->
@@ -38,6 +38,10 @@ const routerList = reactive<RouterItem[]>([
     {
         path: '/rotatingCube',
         name: '旋转立方体',
+    },
+    {
+        path: '/cubes',
+        name: '多个旋转立方体',
     }
 ])
 
