@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-29 23:34:01
+ * @LastEditTime: 2023-06-30 00:01:55
  * @FilePath: /datumwealth-front-scaffold/src/router/index.ts
  * @Description: 路由
  */
@@ -18,6 +18,7 @@ import RotatingCube from '@/views/WebGPU/RotatingCube/RotatingCube.vue'
 import Cubes from '@/views/WebGPU/Cubes/Cubes.vue'
 import CubeOffsets from '@/views/WebGPU/CubeOffsets/CubeOffsets.vue'
 import CubeDynamicOffsets from '@/views/WebGPU/CubeDynamicOffsets/CubeDynamicOffsets.vue'
+import CubeInstance from '@/views/WebGPU/CubeInstance/CubeInstance.vue'
 // NotFound
 import NotFound from '@/views/NotFound.vue'
 
@@ -77,6 +78,11 @@ const routes: Array<RouteRecordRaw> = [
         path: '/cubeDynamicOffsets',
         name: 'cubeDynamicOffsets',
         component: CubeDynamicOffsets,
+    },
+    {
+        path: '/cubeInstance',
+        name: 'cubeInstance',
+        component: CubeInstance,
     },
     {
         path: '/:pathMatch(.*)*', // 将匹配所有内容并将其放在 `$route.params.pathMatch` 下

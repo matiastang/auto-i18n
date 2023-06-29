@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-29 10:52:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-29 23:34:58
+ * @LastEditTime: 2023-06-30 00:02:52
  * @FilePath: /datumwealth-front-scaffold/src/views/home/Home.vue
  * @Description: 
 -->
@@ -50,6 +50,10 @@ const routerList = reactive<RouterItem[]>([
     {
         path: '/cubeDynamicOffsets',
         name: 'Dynamic Offsets 设置多个旋转立方体',
+    },
+    {
+        path: '/cubeInstance',
+        name: 'Instance 绘制多个旋转立方体',
     }
 ])
 
