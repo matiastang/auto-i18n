@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-29 10:52:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-29 22:52:16
+ * @LastEditTime: 2023-06-29 23:28:55
  * @FilePath: /datumwealth-front-scaffold/src/views/home/Home.vue
  * @Description: 
 -->
@@ -42,6 +42,10 @@ const routerList = reactive<RouterItem[]>([
     {
         path: '/cubes',
         name: '多个旋转立方体',
+    },
+    {
+        path: '/cubeOffsets',
+        name: 'Offsets设置多个旋转立方体',
     }
 ])
 
@@ -64,6 +68,7 @@ const itemAction = (item: RouterItem) => {
         margin: 8px 0px;
         background: var(--container-bg-color);
         color: white;
+        text-align: center;
         cursor: pointer;
     }
     
