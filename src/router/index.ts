@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-30 00:01:55
+ * @LastEditTime: 2023-07-10 23:46:13
  * @FilePath: /datumwealth-front-scaffold/src/router/index.ts
  * @Description: 路由
  */
@@ -19,6 +19,10 @@ import Cubes from '@/views/WebGPU/Cubes/Cubes.vue'
 import CubeOffsets from '@/views/WebGPU/CubeOffsets/CubeOffsets.vue'
 import CubeDynamicOffsets from '@/views/WebGPU/CubeDynamicOffsets/CubeDynamicOffsets.vue'
 import CubeInstance from '@/views/WebGPU/CubeInstance/CubeInstance.vue'
+import CubeRenderBundle from '@/views/WebGPU/CubeRenderBundle/CubeRenderBundle.vue'
+import ImageTexture from '@/views/WebGPU/ImageTexture/ImageTexture.vue'
+import SpritesTexture from '@/views/WebGPU/SpritesTexture/SpritesTexture.vue'
+import VideoTexture from '@/views/WebGPU/VideoTexture/VideoTexture.vue'
 // NotFound
 import NotFound from '@/views/NotFound.vue'
 
@@ -83,6 +87,26 @@ const routes: Array<RouteRecordRaw> = [
         path: '/cubeInstance',
         name: 'cubeInstance',
         component: CubeInstance,
+    },
+    {
+        path: '/cubeRenderBundle',
+        name: 'cubeRenderBundle',
+        component: CubeRenderBundle,
+    },
+    {
+        path: '/imageTexture',
+        name: 'imageTexture',
+        component: ImageTexture,
+    },
+    {
+        path: '/spritesTexture',
+        name: 'spritesTexture',
+        component: SpritesTexture,
+    },
+    {
+        path: '/videoTexture',
+        name: 'videoTexture',
+        component: VideoTexture,
     },
     {
         path: '/:pathMatch(.*)*', // 将匹配所有内容并将其放在 `$route.params.pathMatch` 下

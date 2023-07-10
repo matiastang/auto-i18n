@@ -2,18 +2,19 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-18 18:21:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-07-10 22:54:41
- * @Description: offsets设置多个旋转立方体
+ * @LastEditTime: 2023-07-10 23:49:42
+ * @Description: 4. 旋转立方体
 -->
 <template>
     <canvas id="canvas"></canvas>
 </template>
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import triangleVert from './cubes.vert.wgsl?raw'
-import triangleFrag from './cubes.frag.wgsl?raw'
-import cubeVertex from './cubes'
+import triangleVert from './rotatingCube.vert.wgsl?raw'
+import triangleFrag from './rotatingCube.frag.wgsl?raw'
+import cubeVertex from './cube'
 import { getMvpMatrix } from './math'
+import videoUrl from '@/static/video.mp4?url'
 
 /**
  * 获取canvas
@@ -69,16 +70,23 @@ const initPipeline = async (
             entryPoint: 'main',
             buffers: [
                 {
-                    arrayStride: 3 * 4, // 3 float32,
+                    arrayStride: 5 * 4, // 3 position 2 uv,
                     attributes: [
                         {
-                            // position xyz
+                            // position
                             shaderLocation: 0,
                             offset: 0,
-                            format: 'float32x3',
+                            format: 'float32x3'
                         },
-                    ],
+                        {
+                            // uv
+                            shaderLocation: 1,
+                            offset: 3 * 4,
+                            format: 'float32x2'
+                        }
+                    ]
                 },
+                
             ],
         },
         fragment: {
@@ -99,7 +107,7 @@ const initPipeline = async (
         // Enable depth testing since we have z-level positions
         // Fragment closest to the camera is rendered in front
         depthStencil: {
-            depthWriteEnabled: false,
+            depthWriteEnabled: true,
             depthCompare: 'less',
             format: 'depth24plus',
         }
@@ -124,9 +132,7 @@ const creatBuffer = (device: GPUDevice, pipeline: GPURenderPipeline, size: {widt
     // create a mvp matrix buffer
     const mvpBuffer = device.createBuffer({
         label: 'GPUBuffer store 4x4 matrix',
-        // size: 4 * 4 * 4, // 4 x 4 x float32
-        size: 256 * 2, // 2 matrix with 256-byte aligned, or 256 + 64
-        // min Uniform Buffer Offset Alignment决定的
+        size: 4 * 4 * 4, // 4 x 4 x float32
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
     // create a uniform group for Matrix
@@ -137,29 +143,12 @@ const creatBuffer = (device: GPUDevice, pipeline: GPURenderPipeline, size: {widt
             {
                 binding: 0,
                 resource: {
-                    buffer: mvpBuffer,
-                    offset: 0,
-                    size: 4 * 16
+                    buffer: mvpBuffer
                 }
             }
         ]
     })
-    // create a uniform group for Matrix
-    const uniformGroup1 = device.createBindGroup({
-        label: 'Uniform Group with Matrix',
-        layout: pipeline.getBindGroupLayout(0),
-        entries: [
-            {
-                binding: 0,
-                resource: {
-                    buffer: mvpBuffer,
-                    offset: 256,// must be 256-byte aligned
-                    size: 4 * 16
-                }
-            }
-        ]
-    })
-    return { vertexBuffer, depthView, mvpBuffer, uniformGroup, uniformGroup1, depthTexture }
+    return { vertexBuffer, uniformGroup, depthView, mvpBuffer, depthTexture }
 }
 
 // create & submit device commands
@@ -170,9 +159,9 @@ const draw = (
     bufferObj: {
         vertexBuffer: GPUBuffer
         uniformGroup: GPUBindGroup
-        uniformGroup1: GPUBindGroup
         depthView: GPUTextureView
-    }
+    },
+    videoGroup: GPUBindGroup
 ) => {
     const commandEncoder = device.createCommandEncoder()
     const view = context.getCurrentTexture().createView()
@@ -196,18 +185,26 @@ const draw = (
     passEncoder.setPipeline(pipeline)
     // set vertex
     passEncoder.setVertexBuffer(0, bufferObj.vertexBuffer)
+    // set videoGroup
+    passEncoder.setBindGroup(1, videoGroup)
     // set uniformGroup
     passEncoder.setBindGroup(0, bufferObj.uniformGroup)
     // 3 vertex form a triangle
-    passEncoder.draw(cubeVertex.length / 3)
-    passEncoder.setBindGroup(0, bufferObj.uniformGroup1)
-    passEncoder.draw(cubeVertex.length / 3)
+    passEncoder.draw(cubeVertex.length / 5)
     passEncoder.end()
     // webgpu run in a separate process, all the commands will be executed after submit
     device.queue.submit([commandEncoder.finish()])
 }
 
 const init = async () => {
+    // set Video element and play in advanced
+    const video = document.createElement('video');
+    video.loop = true
+    video.autoplay = true
+    video.muted = true
+    video.src = videoUrl
+    await video.play()
+
     const { canvas, context } = initCanvas()
     const devicePixelRatio = window.devicePixelRatio || 1
     canvas.width = canvas.clientWidth * devicePixelRatio
@@ -227,15 +224,52 @@ const init = async () => {
     const bufferObj = creatBuffer(device, pipeline, canvasSize)
 
     let aspect = canvasSize.width / canvasSize.height
-    const position = {x:-2, y:0, z: -6}
+    const position = {x:0, y:0, z: -5}
     const rotation = {x: 0, y: 0, z:0}
     const scale = {x:1, y:1, z:1}
-    const position1 = {x:2, y:0, z: -6}
-    const rotation1 = {x: 0, y: 0, z:0}
-    const scale1 = {x:1, y:1, z:1}
+
+    // Create a sampler with linear filtering for smooth interpolation.
+    const sampler = device.createSampler({
+        // addressModeU: 'repeat',
+        // addressModeV: 'repeat',
+        magFilter: 'linear',
+        minFilter: 'linear'
+    })
     
     // start loop
     function frame() {
+        // video frame rate may not different with page render rate
+        // we can use VideoFrame to force video decoding current frame
+        const videoFrame = new VideoFrame(video)
+        // it can be imported to webgpu as texture source with the `webgpu-developer-features` flag enabled
+        // const texture = device.importExternalTexture({
+        //     source: videoFrame // need `webgpu-developer-features`
+        // })
+        // but in this demo, we don't acctully use it, just close it
+        videoFrame.close()
+
+        // external texture will be automatically destroyed as soon as JS returns
+        // cannot be interrupt by any async functions before renderring
+        // e.g. event callbacks, or await functions
+        // so need to re-load external video every frame
+        const texture = device.importExternalTexture({
+            source: video
+        })
+
+        // also need to re-create a bindGroup for external texture
+        const videoGroup = device.createBindGroup({
+            layout: pipeline.getBindGroupLayout(1),
+            entries: [
+                {
+                    binding: 0,
+                    resource: sampler
+                },
+                {
+                    binding: 1,
+                    resource: texture
+                }
+            ]
+        })
         // rotate by time, and update transform matrix
         const now = Date.now() / 1000
         rotation.x = Math.sin(now)
@@ -246,18 +280,8 @@ const init = async () => {
             0,
             mvpMatrix.buffer
         )
-        rotation1.x = Math.sin(now)
-        rotation1.y = Math.cos(now)
-        const mvpMatrix1 = getMvpMatrix(aspect, position1, rotation1, scale1)
-        device.queue.writeBuffer(
-            bufferObj.mvpBuffer,
-            256,
-            mvpMatrix1.buffer
-        )
         // then draw
-        // console.time('draw')
-        draw(device, context, pipeline, bufferObj)
-        // console.timeEnd('draw')
+        draw(device, context, pipeline, bufferObj, videoGroup)
         requestAnimationFrame(frame)
     }
     frame()

@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-29 10:52:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-30 00:02:52
+ * @LastEditTime: 2023-07-10 23:44:43
  * @FilePath: /datumwealth-front-scaffold/src/views/home/Home.vue
  * @Description: 
 -->
@@ -54,7 +54,23 @@ const routerList = reactive<RouterItem[]>([
     {
         path: '/cubeInstance',
         name: 'Instance 绘制多个旋转立方体',
-    }
+    },
+    {
+        path: '/cubeRenderBundle',
+        name: 'Render Bundle 绘制多个旋转立方体',
+    },
+    {
+        path: '/imageTexture',
+        name: 'Image Texture 立方体',
+    },
+    {
+        path: '/spritesTexture',
+        name: 'Sprites Texture 立方体',
+    },
+    {
+        path: '/videoTexture',
+        name: 'Video Texture 立方体',
+    },
 ])
 
 const itemAction = (item: RouterItem) => {

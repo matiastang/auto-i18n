@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-18 18:21:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-30 00:47:47
+ * @LastEditTime: 2023-07-10 22:54:09
  * @Description: instance设置多个旋转立方体
 -->
 <template>
@@ -219,13 +219,13 @@ const init = async () => {
     const mvpBuffer = new Float32Array(CubeNum * 4 * 4)
     // start loop
     function frame() {
-        console.time('draw')
+        // console.time('draw')
         // rotate by time, and update transform matrix
         for (let i = 0; i < cubeArr.length; i++) {
             const {position, rotation, scale} = cubeArr[i]
             const now = Date.now() / 1000
-            rotation.x = Math.sin(now)
-            rotation.y = Math.cos(now)
+            rotation.x = Math.sin(now + i)
+            rotation.y = Math.cos(now + i)
             const mvpMatrix = getMvpMatrix(aspect, position, rotation, scale)
             // device.queue.writeBuffer(
             //     bufferObj.mvpBuffer,
@@ -241,7 +241,7 @@ const init = async () => {
         )
         // then draw
         draw(device, context, pipeline, bufferObj)
-        console.timeEnd('draw')
+        // console.timeEnd('draw')
         requestAnimationFrame(frame)
     }
     frame()
