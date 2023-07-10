@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-07-10 23:46:13
+ * @LastEditTime: 2023-07-10 23:55:06
  * @FilePath: /datumwealth-front-scaffold/src/router/index.ts
  * @Description: 路由
  */
@@ -23,6 +23,7 @@ import CubeRenderBundle from '@/views/WebGPU/CubeRenderBundle/CubeRenderBundle.v
 import ImageTexture from '@/views/WebGPU/ImageTexture/ImageTexture.vue'
 import SpritesTexture from '@/views/WebGPU/SpritesTexture/SpritesTexture.vue'
 import VideoTexture from '@/views/WebGPU/VideoTexture/VideoTexture.vue'
+import CanvasTexture from '@/views/WebGPU/CanvasTexture/CanvasTexture.vue'
 // NotFound
 import NotFound from '@/views/NotFound.vue'
 
@@ -107,6 +108,11 @@ const routes: Array<RouteRecordRaw> = [
         path: '/videoTexture',
         name: 'videoTexture',
         component: VideoTexture,
+    },
+    {
+        path: '/canvasTexture',
+        name: 'canvasTexture',
+        component: CanvasTexture,
     },
     {
         path: '/:pathMatch(.*)*', // 将匹配所有内容并将其放在 `$route.params.pathMatch` 下

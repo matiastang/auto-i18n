@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-29 10:52:57
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-07-10 23:44:43
+ * @LastEditTime: 2023-07-11 00:01:56
  * @FilePath: /datumwealth-front-scaffold/src/views/home/Home.vue
  * @Description: 
 -->
@@ -70,6 +70,10 @@ const routerList = reactive<RouterItem[]>([
     {
         path: '/videoTexture',
         name: 'Video Texture 立方体',
+    },
+    {
+        path: '/canvasTexture',
+        name: 'Canvas Texture 立方体',
     },
 ])
 
