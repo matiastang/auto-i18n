@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-07-12 22:47:41
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-07-12 23:28:23
+ * @LastEditTime: 2023-07-12 23:57:57
  * @Description: GPU Compute
 -->
 <template>
@@ -19,7 +19,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import {mat4} from 'gl-matrix'
+// import {mat4} from 'gl-matrix'
+import {mat4} from 'wgpu-matrix'
 import computeTransform from './compute.transform.wgsl?raw'
 
 const options = [
