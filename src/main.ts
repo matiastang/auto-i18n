@@ -1,8 +1,8 @@
 /*
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
- * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-16 00:02:11
+ * @LastEditors: matiastang
+ * @LastEditTime: 2023-07-13 19:33:15
  * @Description: main.ts
  */
 import { createApp } from 'vue'
@@ -11,6 +11,8 @@ import router from '@/router'
 import { createPinia } from 'pinia'
 import { piniaPersistedState } from 'matias-pinia-persisted-state'
 import _package from '../package.json'
+import autoi18 from './autoi18'
+import {createI18n} from 'vue-i18n'  
 
 // 默认主题（如果是其他预编译样式可以配置vite默认导入）
 import '@/style/themes/default.css'
@@ -26,6 +28,36 @@ app.use(pinia)
 
 // 路由
 app.use(router)
+
+const messages = {
+    zh: {
+        hello: '你好，世界'
+    },
+    en: {
+        hello: 'hello world'
+    },
+    ja: {
+        hello: 'こんにちは、世界'
+    }
+}
+
+app.use(autoi18, {
+    locale: 'zh',
+    messages,
+})
+
+app.use(createI18n({  
+  locale: 'en', // 默认语言为英语  
+  fallbackLocale: 'en', // 如果当前语言没有相应的翻译，则使用fallbackLocale  
+  messages: {  
+    en: {  
+      hello: 'Hello!'  
+    },  
+    zh: {  
+      hello: '你好！'  
+    }  
+  }  
+}))
 
 // 挂载
 app.mount('#app')

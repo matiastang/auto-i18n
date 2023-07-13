@@ -1,9 +1,9 @@
 /*
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
- * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-07-12 23:24:08
- * @FilePath: /datumwealth-front-scaffold/src/router/index.ts
+ * @LastEditors: matiastang
+ * @LastEditTime: 2023-07-13 17:46:38
+ * @FilePath: /auto-i18/src/router/index.ts
  * @Description: 路由
  */
 import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } from 'vue-router'
@@ -11,6 +11,7 @@ import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } 
 // import Layout from '@/components/layout/Layout.vue'
 // web
 import Home from '@/views/home/Home.vue'
+import I18Home from '@/views/home/i18Home.vue'
 import HelloWebGPU from '@/views/WebGPU/WebGPU.vue'
 import Triangle from '@/views/WebGPU/Triangle.vue'
 import colorTriangle from '@/views/WebGPU/ColorTriangle.vue'
@@ -48,7 +49,8 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
         name: 'home',
-        component: Home,
+        // component: Home,
+        component: I18Home,
     },
     {
         path: '/helloWebGPU',

@@ -68,7 +68,7 @@
         // 加载的声明文件包
         "types": ["vite/client", "@webgpu/types", "@types/dom-webcodecs"]
     },
-    "files": ["global.d.ts"],
+    "files": ["global.d.ts", "vueGlobal.d.ts"],
     "include": [
         "src/**/*.d.ts",
         "src/**/*.ts",
