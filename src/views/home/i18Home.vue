@@ -2,8 +2,8 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-13 19:59:20
- * @FilePath: /auto-i18/src/views/home/i18Home.vue
+ * @LastEditTime: 2023-07-14 17:16:05
+ * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
 <template>
@@ -17,25 +17,34 @@
 </template>
 <script setup lang="ts">
 import { getCurrentInstance, inject } from 'vue'
-import { useRouter } from 'vue-router'
+import '../../vueAutoi18n'
 
-const i18Locale = inject('i18Locale')
-const app = getCurrentInstance()
-const proxy = app.proxy
-console.log(app, proxy)
-// const changeLocale = app.config.globalProperties.$changeLocale
+const appProxy = getCurrentInstance().proxy
+
+const autoi18n = inject<any>('$autoi18n')
 
 const changeClick = () => {
-    const old = app.proxy.$autoi18.locale
-    app.proxy.$changeLocale(old === 'zh' ? 'en' : 'zh')
+    const nowLocale = appProxy.$autoi18n.locale
+    console.log(nowLocale, autoi18n.locale)
+    if (nowLocale === 'zh') {
+        appProxy.$autoi18n.locale = 'en'
+    } else if (nowLocale === 'en') {
+        appProxy.$autoi18n.locale = 'ja'
+    } else {
+        appProxy.$autoi18n.locale = 'zh'
+    }
 }
 
 const switchLanguage = () => {
-    const old = app.proxy.$i18n.locale
-    console.log(old)
-    app.proxy.$i18n.locale = old === 'zh' ? 'en' : 'zh'
+    const nowLocale = appProxy.$i18n.locale
+    if (nowLocale === 'zh') {
+        appProxy.$i18n.locale = 'en'
+    } else if (nowLocale === 'en') {
+        appProxy.$i18n.locale = 'ja'
+    } else {
+        appProxy.$i18n.locale = 'zh'
+    }
 }
-
 </script>
 
 <style lang="less" scoped>

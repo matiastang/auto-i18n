@@ -13,6 +13,7 @@
     "@types/dom-webcodecs": "^0.1.7",
     "@types/node": "^20.3.1",
     "@vitejs/plugin-vue": "^4.2.3",
+    "@vue/runtime-core": "^3.3.4",
     "@webgpu/types": "^0.1.33",
     "css-vars-ponyfill": "^2.4.8",
     "gl-matrix": "^3.4.3",
