@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-14 17:16:05
+ * @LastEditTime: 2023-07-14 19:34:12
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
@@ -17,7 +17,6 @@
 </template>
 <script setup lang="ts">
 import { getCurrentInstance, inject } from 'vue'
-import '../../vueAutoi18n'
 
 const appProxy = getCurrentInstance().proxy
 
