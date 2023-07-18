@@ -1,8 +1,8 @@
 /*
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
- * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-15 23:32:59
+ * @LastEditors: matiastang
+ * @LastEditTime: 2023-07-17 10:23:17
  * @Description: vite配置文件
  */
 // node路径
@@ -18,10 +18,13 @@ import vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
+import htmlPlugin from './src/vitePlugin/htmlPlugin'
+
 export default defineConfig(({ mode }) => {
     return {
         // 共享配置
         plugins: [
+            htmlPlugin(),
             vue(),
             Inspect(),
         ],

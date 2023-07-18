@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:54:19
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-14 17:16:12
+ * @LastEditTime: 2023-07-17 16:01:38
  * @FilePath: /auto-i18n/src/autoi18n/index.ts
  * @Description: autoi18n
  */
@@ -19,9 +19,14 @@ const autoi18 = {
         app.provide('$autoi18n', autoi18n)
         app.config.globalProperties.$autoi18n = autoi18n
         app.config.globalProperties.$translate = (key: string) => {
-            return key.split('.').reduce((o, i) => {
-              if (o) return o[i]
-            }, autoi18n.messages[autoi18n.locale])
+            // return key.split('.').reduce((o, i) => {
+            //   if (o) return o[i]
+            // }, autoi18n.messages[autoi18n.locale])
+            const value = autoi18n.messages[autoi18n.locale][key]
+            if (value) {
+                return value
+            }
+            return key
         }
     }
 }
