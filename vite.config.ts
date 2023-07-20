@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-17 10:23:17
+ * @LastEditTime: 2023-07-20 17:40:00
  * @Description: vite配置文件
  */
 // node路径
@@ -19,12 +19,15 @@ import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
 import htmlPlugin from './src/vitePlugin/htmlPlugin'
+import translate from './src/vitePlugin/baiduTranslate'
 
 export default defineConfig(({ mode }) => {
     return {
         // 共享配置
         plugins: [
-            htmlPlugin(),
+            htmlPlugin({
+                translate, 
+            }),
             vue(),
             Inspect(),
         ],

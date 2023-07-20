@@ -2,20 +2,11 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-18 13:43:12
+ * @LastEditTime: 2023-07-20 18:03:24
  * @FilePath: /auto-i18n/src/vitePlugin/htmlPlugin.ts
  * @Description: htmlPlugin
  */
-// import {PluginOption} from 'vite'
-import { defineConfig } from 'vite'; 
-import CryptoJS from 'crypto-js'
-// import fetch from 'node-fetch'
-import axios from 'axios'
-
-let questions = []
-const answer = {
-    
-}
+let questions = new Set<string>()
 
 const getQuestions = (code: string) => {
     const RE = /\$translate\((.*)\)/g
@@ -31,72 +22,22 @@ const getQuestions = (code: string) => {
     return questions
 }
 
-const baiduTranslate = (q: string) => {
-    // src: "工作台&基金圈：机构圈01&投研模板&况客推荐"
-    // dst: "Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Customer Recommendation"
-    // const q = '工作台&基金圈：机构圈01&投研模板&况客推荐'
-    const to = 'en'
-    const appid = ''
-    const salt = (new Date()).getTime()
-    const sign = CryptoJS.MD5(appid + q + salt + '').toString()
-    /*
-    * 文档地址：https://fanyi-api.baidu.com/doc/21
-    */
-    const data = {
-        q,
-        from: 'auto',
-        to,
-        appid,
-        salt,
-        sign,
-    }
-    const url = `https://fanyi-api.baidu.com/api/trans/vip/translate`
-    // return axios.post(url, data, {
-    //     headers: {
-    //         'Content-Type': 'application/x-www-form-urlencoded'
-    //     }
-    // })
-    return new Promise<any>((resolve, reject) => {
-        setTimeout(() => {
-            resolve({
-                data: {
-                    from: 'zh',
-                    to: 'en',
-                    trans_result: [
-                      {
-                        src: '工作台&基金圈：机构圈01&投研模板&况客推荐&切换&你好',
-                        dst: 'Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Situation Customer Recommendation&Switching&Hello'
-                      }
-                    ]
-                }
-            })
-        }, 500)
-    })
-    // return new Promise<any>((resolve, reject) => {
-    //     fetch(url, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/x-www-form-urlencoded'
-    //         },
-    //         body: new URLSearchParams(params),
-    //     })
-    //     .then((res) => {
-    //         console.log(res)
-    //         resolve(res)
-    //     })
-    //     .catch((err) => {
-    //         console.log(err)
-    //         reject(err)
-    //     })
-    //     .finally(() => {
-    //         console.log('finally')
-    //     })
-    // })
+const setMessages = (code: string) => {
+    return code.replace(/let autoi18nMessages = {};/g, `
+        let autoi18nMessages = {
+            '工作台': 'Workbench',
+            '基金圈：机构圈01': 'Fund Circle: Institutional Circle 01',
+            '投研模板': 'Investment Research Template',
+            '况客推荐': 'Situation Customer Recommendation',
+            '切换': 'Switching',
+            '你好': 'Hello'
+        }
+    `)
+
 }
 
 const htmlPlugin = (options?: {
-    appid?: string
-    appKey?: string
+    translate?: (questions: string[]) => void
 }) => {
     return {
         name: 'html-transform',
@@ -112,10 +53,13 @@ const htmlPlugin = (options?: {
             // id.endsWith('main.ts') || 
             if (id.endsWith('i18Home.vue'))  {
                 // console.log(code)
-                questions = getQuestions(code)
-                console.log(questions)
-                const { data } = await baiduTranslate(questions.join('&'))
-                console.log(data)
+                getQuestions(code).forEach((question) => {
+                    questions.add(question)
+                })
+            }
+            if (id.endsWith('message.ts')) {
+                console.log(code)
+                return setMessages(code)
             }
             return null
             
@@ -126,6 +70,10 @@ const htmlPlugin = (options?: {
         },
         async buildEnd() {
             console.log('buildEnd', questions)
+            const translate = options?.translate
+            if (translate) {
+                translate(Array.from(questions))
+            }
         },
         // async generateBundle(output: NormalizedOutputOptions, bundle: OutputBundle) {
         async generateBundle(output: any, bundle: any) {

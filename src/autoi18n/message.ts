@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-17 18:40:36
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-17 18:41:09
+ * @LastEditTime: 2023-07-20 17:50:54
  * @FilePath: /auto-i18n/src/autoi18n/message.ts
  * @Description: messages
  */
@@ -22,3 +22,14 @@ const messages = {
 }
 
 export default messages
+
+let autoi18nMessages: {[key: string]: string} = {}
+
+const translateMessages = (messages: {[key: string]: string}) => {
+    autoi18nMessages = messages
+}
+
+export {
+    autoi18nMessages,
+    translateMessages,
+}
