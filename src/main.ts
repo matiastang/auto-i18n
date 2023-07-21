@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-17 18:41:47
+ * @LastEditTime: 2023-07-21 16:10:56
  * @Description: main.ts
  */
 import { createApp } from 'vue'
@@ -11,9 +11,9 @@ import router from '@/router'
 import { createPinia } from 'pinia'
 import { piniaPersistedState } from 'matias-pinia-persisted-state'
 import _package from '../package.json'
-import autoi18n from './autoi18n'
-import {createI18n} from 'vue-i18n'
-import messages from './autoi18n/message'
+import { autoi18n } from './autoi18n'
+// import {createI18n} from 'vue-i18n'
+// import messages from './autoi18n/message'
 
 // 默认主题（如果是其他预编译样式可以配置vite默认导入）
 import '@/style/themes/default.css'
@@ -30,16 +30,31 @@ app.use(pinia)
 // 路由
 app.use(router)
 
+// const messages = {
+//     zh: {
+//         hello: '你好，世界',
+//         switch: '切换',
+//     },
+//     en: {
+//         hello: 'hello world',
+//         switch: 'switch',
+//     },
+//     ja: {
+//         hello: 'こんにちは、世界',
+//         switch: 'swit换',
+//     }
+// }
+
 app.use(autoi18n, {
     locale: 'zh',
-    messages,
+    locales: ['zh', 'en', 'ja'],
 })
 
-app.use(createI18n({  
-  locale: 'en', // 默认语言为英语  
-  fallbackLocale: 'en', // 如果当前语言没有相应的翻译，则使用fallbackLocale  
-  messages,  
-}))
+// app.use(createI18n({  
+//   locale: 'en', // 默认语言为英语  
+//   fallbackLocale: 'en', // 如果当前语言没有相应的翻译，则使用fallbackLocale  
+//   messages,  
+// }))
 
 // 挂载
 app.mount('#app')

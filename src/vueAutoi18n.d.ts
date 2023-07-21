@@ -2,16 +2,15 @@
  * @Author: matiastang
  * @Date: 2023-07-13 18:43:06
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-14 17:15:56
+ * @LastEditTime: 2023-07-21 14:54:34
  * @FilePath: /auto-i18n/src/vueAutoi18n.d.ts
  * @Description: Vue类型声明
  */
 // import { ComponentCustomProperties } from '@vue/runtime-core'
-import { Autoi18n, Autoi18nTranslate } from './src/autoi18n/type'
+import { Autoi18n, Autoi18nTranslate } from './autoi18n/type'
 
 declare module 'vue' {
   interface ComponentCustomProperties {
-    // tdy: string
     $autoi18n: Autoi18n
     $translate: Autoi18nTranslate
   }

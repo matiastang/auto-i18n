@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-20 17:40:00
+ * @LastEditTime: 2023-07-21 17:39:25
  * @Description: vite配置文件
  */
 // node路径
@@ -18,14 +18,14 @@ import vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
-import htmlPlugin from './src/vitePlugin/htmlPlugin'
-import translate from './src/vitePlugin/baiduTranslate'
+import { autoi18nPlugin } from './src/autoi18n'
+import translate from './src/autoi18n/baiduTranslate'
 
 export default defineConfig(({ mode }) => {
     return {
         // 共享配置
         plugins: [
-            htmlPlugin({
+            autoi18nPlugin({
                 translate, 
             }),
             vue(),
@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
                 { find: '@static', replacement: path.resolve(__dirname, './src/static') },
                 { find: '@store', replacement: path.resolve(__dirname, './src/store') },
                 { find: '@utils', replacement: path.resolve(__dirname, './src/utils') },
+                { find: '@autoi18n', replacement: path.resolve(__dirname, './src/autoi18n') },
             ],
         },
         css: {
