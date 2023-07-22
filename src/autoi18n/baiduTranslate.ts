@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-20 17:35:04
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-21 18:02:16
+ * @LastEditTime: 2023-07-22 10:28:47
  * @FilePath: /auto-i18n/src/autoi18n/baiduTranslate.ts
  * @Description: 百度翻译
  */
@@ -11,40 +11,40 @@ import axios from 'axios'
 import { LocaleType, Autoi18nMessages, Autoi18nMessageItem } from './type'
 // import { translateMessages } from './message'
 
-// interface BaiduTranslateParams {
-//     q: string
-//     from: string
-//     to: string
-//     appid: string
-//     salt: string
-//     sign: string
-//     action?: 0 | 1
-// }
+interface BaiduTranslateParams {
+    q: string
+    from: string
+    to: string
+    appid: string
+    salt: string | number
+    sign: string
+    action?: 0 | 1
+}
 
-// interface BaiduTranslateRes {
-//     from: string
-//     to: string
-//     trans_result: {
-//         src: string
-//         dst: string
-//     }[]
-//     error_code?: number
-// }
+interface BaiduTranslateRes {
+    from: string
+    to: string
+    trans_result: {
+        src: string
+        dst: string
+    }[]
+    error_code?: number
+}
 
-const baiduTranslate = (q: string) => {
+const baiduTranslate = (q: string, to: LocaleType, from: LocaleType | 'auto' = 'auto') => {
     // src: "工作台&基金圈：机构圈01&投研模板&况客推荐"
     // dst: "Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Customer Recommendation"
     // const q = '工作台&基金圈：机构圈01&投研模板&况客推荐'
-    const to = 'en'
     const appid = ''
+    const appkey = ''
     const salt = (new Date()).getTime()
-    const sign = CryptoJS.MD5(appid + q + salt + '').toString()
+    const sign: string = CryptoJS.MD5(appid + q + salt + appkey).toString()
     /*
     * 文档地址：https://fanyi-api.baidu.com/doc/21
     */
-    const data = {
+    const data: BaiduTranslateParams = {
         q,
-        from: 'auto',
+        from,
         to,
         appid,
         salt,
@@ -56,19 +56,17 @@ const baiduTranslate = (q: string) => {
     //         'Content-Type': 'application/x-www-form-urlencoded'
     //     }
     // })
-    return new Promise<any>((resolve, reject) => {
+    return new Promise<BaiduTranslateRes>((resolve, reject) => {
         setTimeout(() => {
             resolve({
-                data: {
-                    from: 'zh',
-                    to: 'en',
-                    trans_result: [
-                      {
-                        src: '工作台&基金圈：机构圈01&投研模板&况客推荐&切换&你好',
-                        dst: 'Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Situation Customer Recommendation&Switching&Hello'
-                      }
-                    ]
-                }
+                from: 'zh',
+                to,
+                trans_result: [
+                  {
+                    src: '工作台&基金圈：机构圈01&投研模板&况客推荐&切换&你好',
+                    dst: 'Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Situation Customer Recommendation&Switching&Hello'
+                  }
+                ]
             })
         }, 500)
     })
@@ -94,105 +92,61 @@ const baiduTranslate = (q: string) => {
     // })
 }
 
-const translateMessage = (trans_result: { src: string, dst: string }[], separator: string = '&') => {
-    return trans_result.reduce((left, item) => {
-        const { src, dst } = item
-        if (typeof src !== 'string' || typeof dst !== 'string') {
-            return left
-        }
-        const questions = src.split(separator)
-        const answers = dst.split(separator)
-        if (questions.length !== answers.length) {
-            return left
-        }
-        const obj = {}
-        for (let i = 0; i < questions.length; i++) {
-            const question = questions[i]
-            const answer = answers[i]
-            obj[question] = answer
-        }
-        return {
-            ...left,
-            ...obj
-        }
-    }, {})
-}
-
-const translate = async (questions: string[], to: LocaleType, from: LocaleType): Promise<Autoi18nMessages> => {
-    const { data } = await baiduTranslate(questions.join('&'))
-    const messages = translateMessage(data.trans_result)
-    return Object.entries<string>(messages).reduce((left, item) => {
-        const [key, value] = item
-        return {
-            ...left,
-            [`'${key}'`]: {
-                'zh': key,
-                'en': value
+const baiduTranslateMessage = (data: BaiduTranslateRes[], separator: string = '&') => {
+    const messages = data.reduce((msg, item) => {
+        const { to, from, trans_result } = item
+        for (let i = 0; i < trans_result.length; i++) {
+            const { src, dst } = trans_result[i]
+            if (typeof src !== 'string' || typeof dst !== 'string') {
+                continue
+            }
+            const questions = src.split(separator)
+            const answers = dst.split(separator)
+            if (questions.length !== answers.length) {
+                continue
+            }
+            for (let i = 0; i < questions.length; i++) {
+                const question = questions[i]
+                const key = `${question}`
+                const answer = answers[i]
+                const qMsg = msg[key]
+                if (!qMsg) {
+                    msg[key] = {
+                        [from]: key,
+                        [to]: answer
+                    }
+                    continue
+                }
+                msg[key][to] = answer
             }
         }
+        return msg
     }, {} as Autoi18nMessages)
-    // translateMessages(messages as any)
+    return messages
+    // return Object.entries<string>(messages).reduce((left, item) => {
+    //     const [key, value] = item
+    //     return {
+    //         ...left,
+    //         [`'${key}'`]: {
+    //             'zh': key,
+    //             'en': value
+    //         }
+    //     }
+    // }, {} as Autoi18nMessages)
 }
 
-// const getBaiduTranslateSign = (signStr: string): string => {
-//     const str = signStr + ''
-//     const md5Hash = CryptoJS.MD5(str)
-//     return md5Hash.toString()
-// }
+const autoi18nTranslate = async (questions: string[], tos: LocaleType[], from: LocaleType): Promise<Autoi18nMessages> => {
+    console.log('需要翻译：', questions)
+    const separator = '&'
+    const promises: Promise<BaiduTranslateRes>[] = []
+    for (let i = 0; i < tos.length; i++) {
+        const to = tos[i]
+        promises.push(baiduTranslate(questions.join(separator), to))
+    }
+    const allPromise = Promise.all(promises)
+    const res = await allPromise
+    const messages = baiduTranslateMessage(res, separator)
+    return messages
+}
 
-// const baiduTranslate = () => {
-//     // console.log(import.meta.env.BAIDU_APP_ID, import.meta.env.BAIDU_APP_KEY)
-//     // const q = '确定，参数'
-//     const q = '工作台&基金圈：机构圈01&投研模板&况客推荐'
-//     // src: "工作台&基金圈：机构圈01&投研模板&况客推荐"
-//     // dst: "Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Customer Recommendation"
-//     const to = 'en'
-//     const appid = ''
-//     const salt = (new Date()).getTime()
-//     const sign = getBaiduTranslateSign(appid + q + salt)
-//     // console.log(sign, sign.length)
-//     // const url = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${q}&from=auto&to=${to}&appid=${appid}&salt=${salt}&sign=${sign}`
-//     // fetch(url, {
-//     //     method: 'get'
-//     // })
-//     // .then((res) => {
-//     //     console.log(res)
-//     // })
-//     // .catch((err) => {
-//     //     console.log(err)
-//     // })
-//     // .finally(() => {
-//     //     console.log('finally')
-//     // })
-//     /*
-//     * 文档地址：https://fanyi-api.baidu.com/doc/21
-//     */
-//     const params = {
-//         q,
-//         from: 'auto',
-//         to,
-//         appid,
-//         salt: '' + salt,
-//         sign,
-//     }
-//     const url = `https://fanyi-api.baidu.com/api/trans/vip/translate`
-//     fetch(url, {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/x-www-form-urlencoded'
-//         },
-//         body: new URLSearchParams(params),
-//     })
-//     // .then(response => response.json()) // 如果响应是JSON格式，则解析响应数据
-//     .then((res) => {
-//         console.log(res)
-//     })
-//     .catch((err) => {
-//         console.log(err)
-//     })
-//     .finally(() => {
-//         console.log('finally')
-//     })
-// }
-
-export default translate
+export default autoi18nTranslate
