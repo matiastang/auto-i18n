@@ -2,14 +2,14 @@
  * @Author: matiastang
  * @Date: 2023-07-20 17:35:04
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 11:22:03
+ * @LastEditTime: 2023-07-24 17:06:25
  * @FilePath: /auto-i18n/src/autoi18n/baiduTranslate.ts
  * @Description: 百度翻译
  */
 import CryptoJS from 'crypto-js'
 import axios from 'axios'
-import { LocaleType, Autoi18nMessages, Autoi18nMessageItem } from './type'
-// import { translateMessages } from './message'
+import { translateHashKey } from './utils'
+import { LocaleType, Autoi18nMessages } from './type'
 
 interface BaiduTranslateParams {
     q: string
@@ -52,41 +52,40 @@ const baiduTranslate = (q: string, to: LocaleType, from: LocaleType | 'auto' = '
         sign,
     }
     const url = `https://fanyi-api.baidu.com/api/trans/vip/translate`
-    return new Promise<BaiduTranslateRes>((resolve, reject) => {
-        axios.post<BaiduTranslateRes>(url, data, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        }).then((res) => {
-            const resData = res?.data
-            const { error_code, error_msg } = resData
-            if (!error_code) {
-                console.log(`------ baidu translate ------`)
-                console.log(data.q, resData)
-                resolve(resData)
-            } else {
-                console.log(`------ baidu translate error_code=${error_code} error_msg=${error_msg} ------`)
-                reject(resData)
-            }
-        }).catch((error) => {
-            reject(error)
-        })
-    })
-    return 
     // return new Promise<BaiduTranslateRes>((resolve, reject) => {
-    //     setTimeout(() => {
-    //         resolve({
-    //             from: 'zh',
-    //             to,
-    //             trans_result: [
-    //               {
-    //                 src: '工作台&基金圈：机构圈01&投研模板&况客推荐&切换&你好',
-    //                 dst: 'Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Situation Customer Recommendation&Switching&Hello'
-    //               }
-    //             ]
-    //         })
-    //     }, 500)
-    // })
+    //     axios.post<BaiduTranslateRes>(url, data, {
+    //         headers: {
+    //             'Content-Type': 'application/x-www-form-urlencoded'
+    //         }
+    //     }).then((res) => {
+    //         const resData = res?.data
+    //         const { error_code, error_msg } = resData
+    //         if (!error_code) {
+    //             console.log(`------ baidu translate ------`)
+    //             console.log(data.q, resData)
+    //             resolve(resData)
+    //         } else {
+    //             console.log(`------ baidu translate error_code=${error_code} error_msg=${error_msg} ------`)
+    //             reject(resData)
+    //         }
+    //     }).catch((error) => {
+    //         reject(error)
+    //     })
+    // }) 
+    return new Promise<BaiduTranslateRes>((resolve, reject) => {
+        setTimeout(() => {
+            resolve({
+                from: 'zh',
+                to,
+                trans_result: [
+                    {
+                        src: '工作台&基金圈：{name}&投研模板&况客推荐&切换&你好',
+                        dst: 'Workbench&Fund Circle: {name}&Investment Research Template&Situation Customer Recommendation&Switching&Hello'
+                    }
+                ]
+            })
+        }, 500)
+    })
     // return new Promise<any>((resolve, reject) => {
     //     fetch(url, {
     //         method: 'POST',
@@ -124,12 +123,12 @@ const baiduTranslateMessage = (data: BaiduTranslateRes[], separator: string = '&
             }
             for (let i = 0; i < questions.length; i++) {
                 const question = questions[i]
-                const key = `${question}`
+                const key = translateHashKey(question)
                 const answer = answers[i]
                 const qMsg = msg[key]
                 if (!qMsg) {
                     msg[`'${key}'`] = {
-                        [from]: key,
+                        [from]: question,
                         [to]: answer
                     }
                     continue
@@ -140,16 +139,6 @@ const baiduTranslateMessage = (data: BaiduTranslateRes[], separator: string = '&
         return msg
     }, {} as Autoi18nMessages)
     return messages
-    // return Object.entries<string>(messages).reduce((left, item) => {
-    //     const [key, value] = item
-    //     return {
-    //         ...left,
-    //         [`'${key}'`]: {
-    //             'zh': key,
-    //             'en': value
-    //         }
-    //     }
-    // }, {} as Autoi18nMessages)
 }
 
 const autoi18nTranslate = async (questions: string[], tos: LocaleType[], from: LocaleType): Promise<Autoi18nMessages> => {
@@ -160,7 +149,6 @@ const autoi18nTranslate = async (questions: string[], tos: LocaleType[], from: L
         const to = tos[i]
         promises.push(baiduTranslate(questions.join(separator), to, from))
     }
-    // const allPromise = Promise.race
     const allPromise = Promise.all(promises)
     const res = await allPromise
     console.log(res)

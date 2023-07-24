@@ -2,15 +2,17 @@
  * @Author: matiastang
  * @Date: 2023-07-21 15:14:42
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 11:31:11
+ * @LastEditTime: 2023-07-24 17:35:58
  * @FilePath: /auto-i18n/src/views/Components/Header/Header.vue
  * @Description: Header
 -->
 <template>
     <div class="header">
         <div class="title">
-            <div class="item">{{ $translate('工作台') }}</div>
-            <div class="item">{{ $translate('基金圈：机构圈01') }}</div>
+            <div class="item">{{ $translate(`工作台`) }}</div>
+            <div class="item">{{ $translate(`基金圈：{name}`, {
+                name: orgName
+            }) }}</div>
             <div class="item">{{ $translate('投研模板') }}</div>
             <div class="item">{{ $translate('况客推荐') }}</div>
             <div class="item">{{ localeName }}</div>
@@ -19,41 +21,53 @@
     </div>
 </template>
 <script setup lang="ts">
-import { getCurrentInstance, inject, computed, watch } from 'vue'
-import { Autoi18nMessages, Autoi18n } from '@autoi18n/type'
+import { getCurrentInstance, inject, ref, computed, watch } from 'vue'
+// import { translateHashKey } from '@autoi18n/utils'
+import { Autoi18n, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
 
-const _autoi18n = inject<Autoi18n>('$autoi18n')
+const autoi18n = inject<Autoi18n>('$autoi18n')
+
+// const _autoi18n = inject<Autoi18n>('$autoi18n')
+
+// const _localeMessages: Autoi18nMessages = {}
+
+// const _localeTranslate = (key: string, options?: {[key: string]: string | number}) => {
+//     const locale = _autoi18n.locale
+//     const localeKey = translateHashKey(key)
+//     const item = _localeMessages[localeKey] as Autoi18nMessageItem
+//     if (!item) {
+//         return key
+//     }
+//     const value = item[locale] as Autoi18nMessageValue
+//     if (!value) {
+//         return key
+//     }
+//     if (options) {
+//         return Object.entries(options).reduce((left, item) => {
+//             const [_key, _val] = item
+//             return String(left).replaceAll('{' + _key + '}', _val)
+//         }, value)
+//     }
+//     return value
+// }
+
+const orgName = ref('机构圈01')
 
 const localeName = computed(() => {
-    const nowLocale = _autoi18n.locale
+    const nowLocale = autoi18n.locale
     if (nowLocale === 'zh') {
         return $translate('中文')
     }
     return $translate('英文')
 })
 
-// const localeMessages: Autoi18nMessages = {}
-
-// const localeTranslate = (key: string) => {
-//     const locale = autoi18n.locale
-//     const values = localeMessages[key]
-//     if (!values) {
-//         return key
-//     }
-//     const value = values[locale]
-//     if (!value) {
-//         return key
-//     }
-//     return value
-// }
-
 const changeClick = () => {
-    const nowLocale = _autoi18n.locale
+    const nowLocale = autoi18n.locale
     console.log(nowLocale)
     if (nowLocale === 'zh') {
-        _autoi18n.locale = 'en'
+        autoi18n.locale = 'en'
     } else {
-        _autoi18n.locale = 'zh'
+        autoi18n.locale = 'zh'
     }
 }
 

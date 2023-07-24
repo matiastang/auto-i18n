@@ -2,70 +2,14 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 11:20:07
+ * @LastEditTime: 2023-07-24 17:09:40
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
 import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
-import { LocaleType, Autoi18nMessages, Autoi18nMessageItem } from './type'
+import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod } from './utils'
+import { LocaleType, Autoi18nMessages } from './type'
 let questions = new Set<string>()
-
-/**
- * 检查key
- * @param code 
- * @returns 
- */
-const checkQuestions = (code: string) => {
-    const RE = /\$translate\((.*)\)/g
-    const translates = code.match(RE)
-    if (!Array.isArray(translates) || translates.length <= 0) {
-        return []
-    }
-    const questions = translates.map((item) => {
-        const textRE = /\$translate\([',"]{1,}(.*)[',"]{1,}\)/g
-        const textRes = textRE.exec(item)
-        if (textRes.length > 1) {
-            return textRes[1]
-        }
-        return null
-    }).filter((item) => item)
-    return questions
-}
-
-/**
- * 转换映射内容
- * @param msg 
- */
-const devTransformMessages = (msg: Autoi18nMessages) => {
-    const localTransform = (info: Autoi18nMessageItem) => {
-        return Object.entries(info).reduce((left, item) => {
-            const [key, value] = item
-            return left + `    ${key}: '${value}',\n`
-        }, '{\n') + '  },\n'
-    }
-    return Object.entries(msg).reduce((left, item) => {
-        const [key, value] = item
-        return left + `  ${key}: ${localTransform(value)}`
-    }, '{\n') + '}\n'
-}
-
-/**
- * 注入
- * @param code 
- * @param msg 
- */
-const devInjectMessages = (code: string, msg: string) => {
-    return code.replace(/(\<script.*\>)/, `$1\n${msg}\n`)
-}
-
-/**
- * 转换方法替换
- * @param code 
- * @returns 
- */
-const devTransformMethod = (code: string) => {
-    return code.replace(/\$translate\([',"]{1,}(.*)[',"]{1,}\)/g, `localeTranslate('$1')`)
-}
 
 /**
  * dev 开发转换
@@ -73,52 +17,50 @@ const devTransformMethod = (code: string) => {
  * @param id 
  */
 const devTransformModule = async (code: string, id: string, locales: LocaleType[], translate?: (questions: string[], tos: LocaleType[], from: LocaleType) => Promise<Autoi18nMessages>) => {
-    let mQuestions = new Set<string>()
-    checkQuestions(code).forEach((question) => {
-        mQuestions.add(question)
-    })
+    const texts = checkQuestions(code)
+    console.log(texts)
+    let mQuestions = new Set(texts)
+    console.log(mQuestions)
     const list = Array.from(mQuestions)
+    console.log(list)
     if (list.length <= 0) {
         return code
     }
-    // const messages = {
-    //     '你好': {
-    //         zh: '你好，世界',
-    //         en: 'hello world',
-    //         ja: 'こんにちは、世界',
-    //     }
-    // } as Autoi18nMessages
     const messages = await translate(list, ['en'], 'zh')
+    console.log(messages)
     const msgText = devTransformMessages(messages)
     const autoi18nInject = `
-        import { inject } from 'vue'
-        import { Autoi18nMessages, Autoi18n } from '@autoi18n/type'
-        
-        const autoi18n = inject<Autoi18n>('$autoi18n')
+    import { inject } from 'vue'
+    import { translateHashKey } from '@autoi18n/utils'
+    import { Autoi18n, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
 
-        const localeMessages = ${msgText}
+    const _autoi18n = inject<Autoi18n>('$autoi18n')
 
-        const localeTranslate = (key: string) => {
-            const locale = autoi18n.locale
-            const values = localeMessages[key]
-            console.log(locale, values)
-            if (!values) {
-                return key
-            }
-            const value = values[locale]
-            if (!value) {
-                return key
-            }
-            return value
+    const _localeMessages: Autoi18nMessages = ${msgText}
+
+    const _localeTranslate = (key: string, options?: {[key: string]: string | number}) => {
+        const locale = _autoi18n.locale
+        const localeKey = translateHashKey(key)
+        const item = _localeMessages[localeKey] as Autoi18nMessageItem
+        if (!item) {
+            return key
         }
+        const value = item[locale] as Autoi18nMessageValue
+        if (!value) {
+            return key
+        }
+        console.log(_localeMessages, value, options)
+        if (options) {
+            return Object.entries(options).reduce((left, item) => {
+                const [_key, _val] = item
+                return String(left).replaceAll('{' + _key + '}', _val)
+            }, value)
+        }
+        return value
+    }
     `
     const injectMsgCode = devInjectMessages(code, autoi18nInject)
     const replaceMethodCode = devTransformMethod(injectMsgCode)
-    // console.log(replaceMethodCode)
-    // const translate = options?.translate
-            // if (translate) {
-            //     translate(Array.from(questions))
-            // }
     return replaceMethodCode
 }
 
@@ -265,7 +207,7 @@ const autoi18nPlugin = (options: {
             if (id.endsWith('i18Home.vue') || id.endsWith('Header.vue'))  {
                 console.log('transform：', id)
                 const res = await devTransformModule(code, id, options.locales, options.translate)
-                console.log(res)
+                // console.log(res)
                 return res
                 // console.log(code)
                 // getQuestions(code).forEach((question) => {
