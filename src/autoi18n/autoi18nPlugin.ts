@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-21 18:05:51
+ * @LastEditTime: 2023-07-24 11:20:07
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
@@ -18,6 +18,9 @@ let questions = new Set<string>()
 const checkQuestions = (code: string) => {
     const RE = /\$translate\((.*)\)/g
     const translates = code.match(RE)
+    if (!Array.isArray(translates) || translates.length <= 0) {
+        return []
+    }
     const questions = translates.map((item) => {
         const textRE = /\$translate\([',"]{1,}(.*)[',"]{1,}\)/g
         const textRes = textRE.exec(item)
@@ -26,7 +29,6 @@ const checkQuestions = (code: string) => {
         }
         return null
     }).filter((item) => item)
-    console.log(questions)
     return questions
 }
 
@@ -70,7 +72,7 @@ const devTransformMethod = (code: string) => {
  * @param code 
  * @param id 
  */
-const devTransformModule = async (code: string, id: string, locales: LocaleType[], translate?: (questions: string[], to: LocaleType, from: LocaleType) => Promise<Autoi18nMessages>) => {
+const devTransformModule = async (code: string, id: string, locales: LocaleType[], translate?: (questions: string[], tos: LocaleType[], from: LocaleType) => Promise<Autoi18nMessages>) => {
     let mQuestions = new Set<string>()
     checkQuestions(code).forEach((question) => {
         mQuestions.add(question)
@@ -86,8 +88,7 @@ const devTransformModule = async (code: string, id: string, locales: LocaleType[
     //         ja: 'こんにちは、世界',
     //     }
     // } as Autoi18nMessages
-    const messages = await translate(list, 'en', 'zh')
-    console.log(messages)
+    const messages = await translate(list, ['en'], 'zh')
     const msgText = devTransformMessages(messages)
     const autoi18nInject = `
         import { inject } from 'vue'
@@ -100,6 +101,7 @@ const devTransformModule = async (code: string, id: string, locales: LocaleType[
         const localeTranslate = (key: string) => {
             const locale = autoi18n.locale
             const values = localeMessages[key]
+            console.log(locale, values)
             if (!values) {
                 return key
             }
@@ -122,7 +124,7 @@ const devTransformModule = async (code: string, id: string, locales: LocaleType[
 
 const autoi18nPlugin = (options: {
     locales?: LocaleType[],
-    translate?: (questions: string[], to: LocaleType, from: LocaleType) => Promise<Autoi18nMessages>
+    translate?: (questions: string[], tos: LocaleType[], from: LocaleType) => Promise<Autoi18nMessages>
 } = {
     locales: ['zh', 'en']
 }) => {

@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-21 17:39:25
+ * @LastEditTime: 2023-07-24 10:41:37
  * @Description: vite配置文件
  */
 // node路径
@@ -19,14 +19,14 @@ import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
 import { autoi18nPlugin } from './src/autoi18n'
-import translate from './src/autoi18n/baiduTranslate'
+import autoi18nTranslate from './src/autoi18n/baiduTranslate'
 
 export default defineConfig(({ mode }) => {
     return {
         // 共享配置
         plugins: [
             autoi18nPlugin({
-                translate, 
+                translate: autoi18nTranslate, 
             }),
             vue(),
             Inspect(),

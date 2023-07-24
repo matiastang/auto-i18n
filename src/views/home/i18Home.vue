@@ -2,15 +2,13 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-21 17:34:45
+ * @LastEditTime: 2023-07-24 11:15:36
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
 <template>
     <div class="page">
         <Header></Header>
-        <div>{{ $translate('你好') }}</div>
-        <!-- <div>{{ localeTranslate('你好') }}</div> -->
     </div>
 </template>
 <script setup lang="ts">
