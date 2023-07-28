@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-17 10:45:58
+ * @LastEditTime: 2023-07-27 17:47:29
  * @FilePath: /auto-i18n/src/router/index.ts
  * @Description: 路由
  */
@@ -11,6 +11,7 @@ import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } 
 // import Layout from '@/components/layout/Layout.vue'
 // web
 import Home from '@/views/home/Home.vue'
+import TestHome from '@/views/home/TestHome.vue'
 import I18Home from '@/views/home/i18Home.vue'
 import HelloWebGPU from '@/views/WebGPU/WebGPU.vue'
 import Triangle from '@/views/WebGPU/Triangle.vue'
@@ -51,6 +52,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'home',
         // component: Home,
         component: I18Home,
+    },
+    {
+        path: '/test',
+        name: 'test',
+        component: TestHome,
     },
     // {
     //     path: '/helloWebGPU',

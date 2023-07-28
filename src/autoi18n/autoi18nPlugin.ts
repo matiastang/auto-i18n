@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 17:09:40
+ * @LastEditTime: 2023-07-28 10:40:00
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */

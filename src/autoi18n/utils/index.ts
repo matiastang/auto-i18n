@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-24 15:04:08
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 17:43:03
+ * @LastEditTime: 2023-07-28 10:46:54
  * @FilePath: /auto-i18n/src/autoi18n/utils/index.ts
  * @Description: utils
  */
@@ -37,14 +37,13 @@ export const detectionTranslateMsg = (code: string): string[] => {
  * @returns 
  */
 export const detectionTranslateText = (msg: string): string | null => {
-    const textRE = /\$translate\([\`'"](.*)[\`'"].*\)/g
+    const textRE = /\$translate\([\`'"](.*)[\`'"].*/g
     const textRes = textRE.exec(msg)
     if (!Array.isArray(textRes) || textRes.length <= 1) {
-        console.log('--------', msg)
+        console.log(`${msg} not extract text`)
         return null
     }
-    console.log('--------', msg)
-    console.log(textRes[1])
+    console.log(`${msg} extract: ${textRes[1]}`)
     return textRes[1]
 }
 
@@ -123,4 +122,6 @@ const test = () => {
     const optionReTranslates = code.match(optionRE)
     console.log(optionReTranslates)
 }
-test()
+// test()
+
+// console.log(detectionTranslateText('$translate(`基金圈：{name}`'))

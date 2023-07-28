@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-20 17:35:04
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 17:06:25
+ * @LastEditTime: 2023-07-28 10:43:45
  * @FilePath: /auto-i18n/src/autoi18n/baiduTranslate.ts
  * @Description: 百度翻译
  */
@@ -71,7 +71,7 @@ const baiduTranslate = (q: string, to: LocaleType, from: LocaleType | 'auto' = '
     //     }).catch((error) => {
     //         reject(error)
     //     })
-    // }) 
+    // })
     return new Promise<BaiduTranslateRes>((resolve, reject) => {
         setTimeout(() => {
             resolve({

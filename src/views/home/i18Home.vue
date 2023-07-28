@@ -2,18 +2,30 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 11:15:36
+ * @LastEditTime: 2023-07-28 10:33:22
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
 <template>
     <div class="page">
         <Header></Header>
+        <!-- <TestHome v-bind:info="info"></TestHome> -->
     </div>
 </template>
 <script setup lang="ts">
 // import { inject } from 'vue'
+import { onBeforeUnmount, onMounted, reactive } from 'vue'
 import Header from '../Components/Header/Header.vue'
+// import TestHome from './TestHome.vue'
+
+// const info = reactive({
+//     code: '60081'
+// })
+
+// onMounted(() => {
+//     info.code = '60082'
+// })
+
 // import { Autoi18nMessages, Autoi18n } from '../../autoi18n/type'
 
 // const autoi18n = inject<Autoi18n>('$autoi18n')
