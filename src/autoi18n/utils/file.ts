@@ -2,22 +2,52 @@
  * @Author: matiastang
  * @Date: 2023-07-28 13:56:17
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 15:04:58
+ * @LastEditTime: 2023-07-28 17:04:11
  * @FilePath: /auto-i18n/src/autoi18n/utils/file.ts
  * @Description: autoi18n file
  */
 import fs from 'fs'
 import { Autoi18nMessages } from '../type'
 
-export const readTranslateFile = async (url: string) => {
-    return new Promise<string>((resolve, reject) => {
-        fs.readFile(url, 'utf-8', (err: NodeJS.ErrnoException, data: string) => {
-            if (err) {
-                reject(err)
+export const readJsonFile = (url: string) => {
+    return new Promise<Autoi18nMessages>((resolve, reject) => {
+        let rawFile = new XMLHttpRequest()
+        rawFile.overrideMimeType("application/json")
+        rawFile.open("GET", url, true)
+        rawFile.onreadystatechange = function() {
+            if (rawFile.readyState !== 4 || rawFile.status !== 200) {
                 return
             }
-            resolve(data)
-        })
+            const content = rawFile.responseText
+            console.log('content', typeof content, content)
+            if (typeof content !== 'string' || !content) {
+                reject('json is empty')
+                return
+            }
+            try {
+                const jsonData: Autoi18nMessages = JSON.parse(content)
+                resolve(jsonData)
+            } catch (err) {
+                reject(err)
+            }
+        }
+        rawFile.send()
+    })
+}
+
+export const readTranslateFile = async (url: string) => {
+    return new Promise<string>((resolve, reject) => {
+        try {
+            fs.readFile(url, 'utf-8', (err: NodeJS.ErrnoException, data: string) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+                resolve(data)
+            })
+        } catch (error) {
+            reject(error)
+        }
     })
 }
 

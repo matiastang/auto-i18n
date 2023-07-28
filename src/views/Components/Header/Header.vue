@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 15:14:42
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-24 17:35:58
+ * @LastEditTime: 2023-07-28 18:02:35
  * @FilePath: /auto-i18n/src/views/Components/Header/Header.vue
  * @Description: Header
 -->
@@ -23,9 +23,10 @@
 <script setup lang="ts">
 import { getCurrentInstance, inject, ref, computed, watch } from 'vue'
 // import { translateHashKey } from '@autoi18n/utils'
-import { Autoi18n, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
+import { Autoi18n, Autoi18nTranslate, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
 
 const autoi18n = inject<Autoi18n>('$autoi18n')
+const translate = inject<Autoi18nTranslate>('$translate')
 
 // const _autoi18n = inject<Autoi18n>('$autoi18n')
 
@@ -55,10 +56,13 @@ const orgName = ref('机构圈01')
 
 const localeName = computed(() => {
     const nowLocale = autoi18n.locale
+    console.log(autoi18n)
     if (nowLocale === 'zh') {
-        return $translate('中文')
+        // return translate('中文')
+        return '中文'
     }
-    return $translate('英文')
+    // return translate('英文')
+    return '英文'
 })
 
 const changeClick = () => {

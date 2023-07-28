@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-14 10:13:05
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 15:07:56
+ * @LastEditTime: 2023-07-28 16:53:38
  * @FilePath: /auto-i18n/src/autoi18n/type.d.ts
  * @Description: autoi18n
  */
@@ -19,6 +19,7 @@ export interface Autoi18nMessages {
 }
 
 export interface Autoi18nOptions {
+    filePath?: string
     locale: LocaleType
     locales: LocaleType[]
 }
@@ -27,8 +28,9 @@ export interface Autoi18n extends Autoi18nOptions {
     messages: Autoi18nMessages
 }
 
-export type Autoi18nTranslate = (key: string) => Autoi18nMessageValue
+export type Autoi18nTranslate = (key: string, options?: {[key: string]: string | number}) => Autoi18nMessageValue
 
 export interface Autoi18nData extends Autoi18n {
     isTranslate?: Boolean
+    isDev?: Boolean
 }

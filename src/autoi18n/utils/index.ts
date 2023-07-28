@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-24 15:04:08
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 15:42:30
+ * @LastEditTime: 2023-07-28 17:09:11
  * @FilePath: /auto-i18n/src/autoi18n/utils/index.ts
  * @Description: utils
  */
@@ -55,10 +55,10 @@ export const detectionTranslateText = (msg: string): string | null => {
  */
 export const translateHashKey = (tText: string, isJson: Boolean = false): string => {
     const hash = CryptoJS.MD5(tText).toString()
-    if (isJson) {
-        return `'${hash}'`
-    }
-    return hash
+    // if (isJson) {
+    //     return `'${hash}'`
+    // }
+    return `autoi18n${hash}`
 }
 
 

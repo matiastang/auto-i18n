@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 15:37:07
+ * @LastEditTime: 2023-07-28 17:07:54
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
@@ -45,6 +45,9 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     } else {
         messages = cacheMessages
     }
+    if (!autoi18nData.isDev) {
+        return code
+    }
     const msgText = devTransformMessages(messages)
     const autoi18nInject = `
     import { inject } from 'vue'
@@ -82,6 +85,8 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
 }
 
 const autoi18nPlugin = (autoi18nOptions: {
+    filePath?: string,
+    isDev?: Boolean,
     locale?: LocaleType,
     locales?: LocaleType[],
     translate?: (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>
@@ -119,8 +124,9 @@ const autoi18nPlugin = (autoi18nOptions: {
             if (!isTranslate) {
                 return
             }
-            const url = path.resolve(__dirname, './translate.json')
-            const success = await writeTranslateJson(url, autoi18nData.messages)
+            const filePath = autoi18nOptions.filePath || path.resolve(__dirname, './translate.json')
+            // const url = path.resolve(__dirname, './translate.json')
+            const success = await writeTranslateJson(filePath, autoi18nData.messages)
             console.log(`写入${success}`)
         },
         /**
@@ -128,9 +134,10 @@ const autoi18nPlugin = (autoi18nOptions: {
          */
         async buildStart(options: InputOptions) {
             console.log('buildStart', options)
-            const url = path.resolve(__dirname, './translate.json')
-            const fileContent = await readTranslateJson(url)
-            console.log(url, fileContent)
+            const filePath = autoi18nOptions.filePath || path.resolve(__dirname, './translate.json')
+            // const url = path.resolve(__dirname, './translate.json')
+            const fileContent = await readTranslateJson(filePath)
+            console.log(filePath, fileContent)
             const configLocal = autoi18nOptions.locale
             if (configLocal) {
                 autoi18nData.locale = configLocal
@@ -139,6 +146,7 @@ const autoi18nPlugin = (autoi18nOptions: {
             if (configLocals) {
                 autoi18nData.locales = configLocals
             }
+            autoi18nData.isDev = autoi18nOptions.isDev
             autoi18nData.messages = fileContent
         },
         /**

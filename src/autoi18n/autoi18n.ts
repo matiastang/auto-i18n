@@ -2,35 +2,89 @@
  * @Author: matiastang
  * @Date: 2023-07-21 16:05:35
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-21 16:07:09
+ * @LastEditTime: 2023-07-28 16:56:29
  * @FilePath: /auto-i18n/src/autoi18n/autoi18n.ts
  * @Description: autoi18n
  */
 import { App, reactive } from 'vue'
-import { LocaleType, Autoi18nOptions, Autoi18n } from './type'
+import { LocaleType, Autoi18nOptions, Autoi18n, Autoi18nMessageItem, Autoi18nMessageValue } from './type'
+import { translateHashKey, readTranslateJson, readJsonFile } from './utils'
 
-export let autoi18nLocals: LocaleType[] = []
+export const autoi18nInfo = reactive<Autoi18n>({
+    locale: 'zh',
+    locales: ['zh', 'en'],
+    messages: {}
+})
+
+export const translate = (key: string, options?: {[key: string]: string | number}) => {
+    const locale = autoi18nInfo.locale
+    const localeKey = translateHashKey(key, true)
+    const item = autoi18nInfo.messages[localeKey] as Autoi18nMessageItem
+    console.log(localeKey, item)
+    if (!item) {
+        return key
+    }
+    const value = item[locale] as Autoi18nMessageValue
+    if (!value) {
+        return key
+    }
+    if (options) {
+        return Object.entries(options).reduce((left, item) => {
+            const [_key, _val] = item
+            return String(left).replaceAll('{' + _key + '}', `${_val}`)
+        }, value)
+    }
+    return value
+}
 
 const autoi18n = {
-    install(app: App, options: Autoi18nOptions) {
-        autoi18nLocals = options.locales
-        const autoi18nInfo = reactive<Autoi18n>({
-            ...options,
-            messages: {}
+    async install(app: App, options: Autoi18nOptions) {
+        const optionLocal = options.locale
+        if (optionLocal) {
+            autoi18nInfo.locale = optionLocal
+        }
+        const optionLocals = options.locales
+        if (optionLocals) {
+            autoi18nInfo.locales = optionLocals
+        }
+        const filePath = options.filePath
+        // '../../translate.json'
+        readJsonFile(filePath).then((res) => {
+            console.log('translate.json', res)
+            autoi18nInfo.messages = res
+        }).catch((err) => {
+            console.warn(err)
         })
+        // const url = './translate.json'
+        // readTranslateJson(url).then((res) => {
+        //     console.log(res)
+        //     autoi18nInfo.messages = res
+        // }).catch((err) => {
+        //     console.warn(err)
+        // })
         app.provide('$autoi18n', autoi18nInfo)
         app.config.globalProperties.$autoi18n = autoi18nInfo
-        app.config.globalProperties.$translate = (key: string) => {
-            const values = autoi18nInfo.messages[autoi18nInfo.locale]
-            if (!values) {
-                return key
-            }
-            const value = values[key]
-            if (value) {
-                return value
-            }
-            return key
-        }
+        app.provide('$translate', translate)
+        app.config.globalProperties.$translate = translate
+        // app.config.globalProperties.$translate = (key: string, options?: {[key: string]: string | number}) => {
+        //     const locale = autoi18nInfo.locale
+        //     const localeKey = translateHashKey(key)
+        //     const item = autoi18nInfo.messages[localeKey] as Autoi18nMessageItem
+        //     if (!item) {
+        //         return key
+        //     }
+        //     const value = item[locale] as Autoi18nMessageValue
+        //     if (!value) {
+        //         return key
+        //     }
+        //     if (options) {
+        //         return Object.entries(options).reduce((left, item) => {
+        //             const [_key, _val] = item
+        //             return String(left).replaceAll('{' + _key + '}', `${_val}`)
+        //         }, value)
+        //     }
+        //     return value
+        // }
     }
 }
 
