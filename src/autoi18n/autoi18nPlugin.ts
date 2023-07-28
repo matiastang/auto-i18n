@@ -2,21 +2,28 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 10:40:00
+ * @LastEditTime: 2023-07-28 15:37:07
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
 import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
-import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod } from './utils'
-import { LocaleType, Autoi18nMessages } from './type'
-let questions = new Set<string>()
+import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod, readTranslateJson, writeTranslateJson } from './utils'
+import { LocaleType, Autoi18nData, Autoi18nMessages } from './type'
+import { merge } from 'lodash'
+import path from 'path'
+
+const autoi18nData: Autoi18nData = {
+    locale: 'zh',
+    locales: ['zh', 'en'],
+    messages: {}
+}
 
 /**
  * dev 开发转换
  * @param code 
  * @param id 
  */
-const devTransformModule = async (code: string, id: string, locales: LocaleType[], translate?: (questions: string[], tos: LocaleType[], from: LocaleType) => Promise<Autoi18nMessages>) => {
+const devTransformModule = async (code: string, id: string, translate?: (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>) => {
     const texts = checkQuestions(code)
     console.log(texts)
     let mQuestions = new Set(texts)
@@ -26,8 +33,18 @@ const devTransformModule = async (code: string, id: string, locales: LocaleType[
     if (list.length <= 0) {
         return code
     }
-    const messages = await translate(list, ['en'], 'zh')
+    const local = autoi18nData.locale
+    const locals = autoi18nData.locales
+    const cacheMessages = autoi18nData.messages
+    const tos = locals.filter(item => item !== local)
+    let messages = await translate(list, tos, local, cacheMessages)
     console.log(messages)
+    if (messages) {
+        autoi18nData.isTranslate = true
+        merge(cacheMessages, messages)
+    } else {
+        messages = cacheMessages
+    }
     const msgText = devTransformMessages(messages)
     const autoi18nInject = `
     import { inject } from 'vue'
@@ -64,9 +81,10 @@ const devTransformModule = async (code: string, id: string, locales: LocaleType[
     return replaceMethodCode
 }
 
-const autoi18nPlugin = (options: {
+const autoi18nPlugin = (autoi18nOptions: {
+    locale?: LocaleType,
     locales?: LocaleType[],
-    translate?: (questions: string[], tos: LocaleType[], from: LocaleType) => Promise<Autoi18nMessages>
+    translate?: (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>
 } = {
     locales: ['zh', 'en']
 }) => {
@@ -92,17 +110,36 @@ const autoi18nPlugin = (options: {
          * 构建完成，构建阶段的最后一个钩子
          */
         async buildEnd(error?: Error) {
-            console.log('buildEnd', questions)
+            console.log('buildEnd', autoi18nData.messages)
             // const translate = options?.translate
             // if (translate) {
             //     translate(Array.from(questions))
             // }
+            const isTranslate = autoi18nData.isTranslate
+            if (!isTranslate) {
+                return
+            }
+            const url = path.resolve(__dirname, './translate.json')
+            const success = await writeTranslateJson(url, autoi18nData.messages)
+            console.log(`写入${success}`)
         },
         /**
          * 构建开始
          */
         async buildStart(options: InputOptions) {
-            console.log('buildStart')
+            console.log('buildStart', options)
+            const url = path.resolve(__dirname, './translate.json')
+            const fileContent = await readTranslateJson(url)
+            console.log(url, fileContent)
+            const configLocal = autoi18nOptions.locale
+            if (configLocal) {
+                autoi18nData.locale = configLocal
+            }
+            const configLocals = autoi18nOptions.locales
+            if (configLocals) {
+                autoi18nData.locales = configLocals
+            }
+            autoi18nData.messages = fileContent
         },
         /**
          * 观察器进程即将关闭时通知插件
@@ -206,7 +243,7 @@ const autoi18nPlugin = (options: {
             // id.endsWith('main.ts') || 
             if (id.endsWith('i18Home.vue') || id.endsWith('Header.vue'))  {
                 console.log('transform：', id)
-                const res = await devTransformModule(code, id, options.locales, options.translate)
+                const res = await devTransformModule(code, id, autoi18nOptions.translate)
                 // console.log(res)
                 return res
                 // console.log(code)

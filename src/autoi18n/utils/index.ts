@@ -2,12 +2,13 @@
  * @Author: matiastang
  * @Date: 2023-07-24 15:04:08
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 10:46:54
+ * @LastEditTime: 2023-07-28 15:42:30
  * @FilePath: /auto-i18n/src/autoi18n/utils/index.ts
  * @Description: utils
  */
 import CryptoJS from 'crypto-js'
 import { Autoi18nMessages, Autoi18nMessageItem } from '../type'
+export * from './file'
 
 /**
  * 提取翻译转换
@@ -52,8 +53,12 @@ export const detectionTranslateText = (msg: string): string | null => {
  * @param tText 
  * @returns 
  */
-export const translateHashKey = (tText: string): string => {
-    return CryptoJS.MD5(tText).toString()
+export const translateHashKey = (tText: string, isJson: Boolean = false): string => {
+    const hash = CryptoJS.MD5(tText).toString()
+    if (isJson) {
+        return `'${hash}'`
+    }
+    return hash
 }
 
 
@@ -114,14 +119,14 @@ export const devTransformMethod = (code: string) => {
     return code.replace(/\$translate/g, '_localeTranslate')
 }
 
-const test = () => {
-    const code = `$translate(\`基金圈：{name}\`, {
-        name: orgName
-    })`
-    const optionRE = /\$translate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?,/g
-    const optionReTranslates = code.match(optionRE)
-    console.log(optionReTranslates)
-}
+// const test = () => {
+//     const code = `$translate(\`基金圈：{name}\`, {
+//         name: orgName
+//     })`
+//     const optionRE = /\$translate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?,/g
+//     const optionReTranslates = code.match(optionRE)
+//     console.log(optionReTranslates)
+// }
 // test()
 
 // console.log(detectionTranslateText('$translate(`基金圈：{name}`'))
