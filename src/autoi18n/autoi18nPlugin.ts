@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 17:07:54
+ * @LastEditTime: 2023-07-31 19:31:19
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
@@ -14,7 +14,7 @@ import path from 'path'
 
 const autoi18nData: Autoi18nData = {
     locale: 'zh',
-    locales: ['zh', 'en'],
+    locales: ['zh', 'en', 'jp'],
     messages: {}
 }
 
@@ -25,11 +25,8 @@ const autoi18nData: Autoi18nData = {
  */
 const devTransformModule = async (code: string, id: string, translate?: (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>) => {
     const texts = checkQuestions(code)
-    console.log(texts)
     let mQuestions = new Set(texts)
-    console.log(mQuestions)
     const list = Array.from(mQuestions)
-    console.log(list)
     if (list.length <= 0) {
         return code
     }
@@ -38,7 +35,6 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     const cacheMessages = autoi18nData.messages
     const tos = locals.filter(item => item !== local)
     let messages = await translate(list, tos, local, cacheMessages)
-    console.log(messages)
     if (messages) {
         autoi18nData.isTranslate = true
         merge(cacheMessages, messages)
@@ -69,7 +65,6 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
         if (!value) {
             return key
         }
-        console.log(_localeMessages, value, options)
         if (options) {
             return Object.entries(options).reduce((left, item) => {
                 const [_key, _val] = item
@@ -91,7 +86,7 @@ const autoi18nPlugin = (autoi18nOptions: {
     locales?: LocaleType[],
     translate?: (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>
 } = {
-    locales: ['zh', 'en']
+    locales: ['zh', 'en', 'jp']
 }) => {
     return {
         name: 'html-transform',
@@ -221,7 +216,6 @@ const autoi18nPlugin = (autoi18nOptions: {
             }
         ) {
             console.log('resolveId')
-            // console.log(source, importer, options)
             if (source === 'virtual-module') {
                 // 这表示 rollup 不应询问其他插件或
                 // 从文件系统检查以找到此 ID
@@ -247,20 +241,16 @@ const autoi18nPlugin = (autoi18nOptions: {
          * @returns 
          */
         async transform(code: string, id: string) {
-            // console.log('transform：', id)
+            console.log('transform：', id)
             // id.endsWith('main.ts') || 
             if (id.endsWith('i18Home.vue') || id.endsWith('Header.vue'))  {
-                console.log('transform：', id)
                 const res = await devTransformModule(code, id, autoi18nOptions.translate)
-                // console.log(res)
                 return res
-                // console.log(code)
                 // getQuestions(code).forEach((question) => {
                 //     questions.add(question)
                 // })
             }
             // if (id.endsWith('message.ts')) {
-            //     // console.log(code)
             //     return setMessages(code)
             // }
             return null
@@ -309,10 +299,5 @@ const autoi18nPlugin = (autoi18nOptions: {
         }
     }
 }
-
-// export default defineConfig({
-//     plugins: [
-//     ]
-// })
 
 export default autoi18nPlugin

@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 17:00:51
+ * @LastEditTime: 2023-07-31 19:13:21
  * @Description: main.ts
  */
 import { createApp } from 'vue'
@@ -48,7 +48,7 @@ app.use(router)
 app.use(autoi18n, {
     filePath: '/translate.json',
     locale: 'zh',
-    locales: ['zh', 'en'],
+    locales: ['zh', 'en', 'jp'],
 })
 
 // app.use(createI18n({  

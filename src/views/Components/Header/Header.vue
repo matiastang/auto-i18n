@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 15:14:42
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 18:02:35
+ * @LastEditTime: 2023-07-31 19:37:56
  * @FilePath: /auto-i18n/src/views/Components/Header/Header.vue
  * @Description: Header
 -->
@@ -24,9 +24,10 @@
 import { getCurrentInstance, inject, ref, computed, watch } from 'vue'
 // import { translateHashKey } from '@autoi18n/utils'
 import { Autoi18n, Autoi18nTranslate, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
+import { autoTranslate } from '../../../autoi18n'
 
 const autoi18n = inject<Autoi18n>('$autoi18n')
-const translate = inject<Autoi18nTranslate>('$translate')
+// const translate = inject<Autoi18nTranslate>('$translate')
 
 // const _autoi18n = inject<Autoi18n>('$autoi18n')
 
@@ -52,34 +53,29 @@ const translate = inject<Autoi18nTranslate>('$translate')
 //     return value
 // }
 
-const orgName = ref('机构圈01')
+const orgName = ref(autoTranslate('机构圈01'))
 
 const localeName = computed(() => {
     const nowLocale = autoi18n.locale
-    console.log(autoi18n)
     if (nowLocale === 'zh') {
-        // return translate('中文')
-        return '中文'
+        return autoTranslate('中文')
     }
-    // return translate('英文')
-    return '英文'
+    if (nowLocale === 'jp') {
+        return autoTranslate('日文')
+    }
+    return autoTranslate('英文')
 })
 
 const changeClick = () => {
     const nowLocale = autoi18n.locale
-    console.log(nowLocale)
     if (nowLocale === 'zh') {
         autoi18n.locale = 'en'
+    } else if (nowLocale === 'en') {
+        autoi18n.locale = 'jp'
     } else {
         autoi18n.locale = 'zh'
     }
 }
-
-// const appProxy = getCurrentInstance()?.proxy
-
-// watch(appProxy?.$autoi18n.locale, (oldValue, newValue) => {
-//     console.log(oldValue, newValue)
-// })
 
 </script>
 

@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-24 15:04:08
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 17:09:11
+ * @LastEditTime: 2023-07-31 19:56:31
  * @FilePath: /auto-i18n/src/autoi18n/utils/index.ts
  * @Description: utils
  */
@@ -28,6 +28,14 @@ export const detectionTranslateMsg = (code: string): string[] => {
     if (Array.isArray(optionReTranslates) && optionReTranslates.length > 0) {
         msgs.push(...optionReTranslates.map((item) => item))
     }
+    const autoReTranslates = code.match(/autoTranslate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?\)/g)
+    if (Array.isArray(autoReTranslates) && autoReTranslates.length > 0) {
+        msgs.push(...autoReTranslates.map((item) => item)) 
+    }
+    const autoOptionReTranslates = code.match(/autoTranslate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?,/g)
+    if (Array.isArray(autoOptionReTranslates) && autoOptionReTranslates.length > 0) {
+        msgs.push(...autoOptionReTranslates.map((item) => item))
+    }
     console.log(reTranslates, optionReTranslates, msgs)
     return msgs
 }
@@ -42,7 +50,13 @@ export const detectionTranslateText = (msg: string): string | null => {
     const textRes = textRE.exec(msg)
     if (!Array.isArray(textRes) || textRes.length <= 1) {
         console.log(`${msg} not extract text`)
-        return null
+        const autoTextRE = /autoTranslate\([\`'"](.*)[\`'"].*/g
+        const autoTextRes = autoTextRE.exec(msg)
+        if (!Array.isArray(autoTextRes) || autoTextRes.length <= 1) {
+            console.log(`${msg} not extract text`)
+            return null
+        }
+        return autoTextRes[1]
     }
     console.log(`${msg} extract: ${textRes[1]}`)
     return textRes[1]
@@ -116,7 +130,7 @@ export const devInjectMessages = (code: string, msg: string) => {
  * @returns 
  */
 export const devTransformMethod = (code: string) => {
-    return code.replace(/\$translate/g, '_localeTranslate')
+    return code.replace(/\$translate/g, '_localeTranslate').replace(/autoTranslate\(/g, '_localeTranslate(')
 }
 
 // const test = () => {
