@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-31 19:31:19
+ * @LastEditTime: 2023-08-07 15:44:42
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
@@ -48,9 +48,9 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     const autoi18nInject = `
     import { inject } from 'vue'
     import { translateHashKey } from '@autoi18n/utils'
-    import { Autoi18n, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
+    import { Autoi18nType, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
 
-    const _autoi18n = inject<Autoi18n>('$autoi18n')
+    const _autoi18n = inject<Autoi18nType>('$autoi18n')
 
     const _localeMessages: Autoi18nMessages = ${msgText}
 

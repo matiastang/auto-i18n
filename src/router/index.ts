@@ -2,132 +2,35 @@
  * @Author: matiastang
  * @Date: 2021-12-28 19:31:46
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-27 17:47:29
+ * @LastEditTime: 2023-08-07 15:38:37
  * @FilePath: /auto-i18n/src/router/index.ts
  * @Description: 路由
  */
 import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } from 'vue-router'
 // layout
-// import Layout from '@/components/layout/Layout.vue'
+import HeaderLayout from '@/Components/HeaderLayout/HeaderLayout.vue'
 // web
-import Home from '@/views/home/Home.vue'
-import TestHome from '@/views/home/TestHome.vue'
 import I18Home from '@/views/home/i18Home.vue'
-import HelloWebGPU from '@/views/WebGPU/WebGPU.vue'
-import Triangle from '@/views/WebGPU/Triangle.vue'
-import colorTriangle from '@/views/WebGPU/ColorTriangle.vue'
-import RotatingCube from '@/views/WebGPU/RotatingCube/RotatingCube.vue'
-import Cubes from '@/views/WebGPU/Cubes/Cubes.vue'
-import CubeOffsets from '@/views/WebGPU/CubeOffsets/CubeOffsets.vue'
-import CubeDynamicOffsets from '@/views/WebGPU/CubeDynamicOffsets/CubeDynamicOffsets.vue'
-import CubeInstance from '@/views/WebGPU/CubeInstance/CubeInstance.vue'
-import CubeRenderBundle from '@/views/WebGPU/CubeRenderBundle/CubeRenderBundle.vue'
-import ImageTexture from '@/views/WebGPU/ImageTexture/ImageTexture.vue'
-import SpritesTexture from '@/views/WebGPU/SpritesTexture/SpritesTexture.vue'
-import VideoTexture from '@/views/WebGPU/VideoTexture/VideoTexture.vue'
-import CanvasTexture from '@/views/WebGPU/CanvasTexture/CanvasTexture.vue'
-import GPUCompute from '@/views/WebGPU/GPUCompute/GPUCompute.vue'
 // NotFound
 import NotFound from '@/views/NotFound.vue'
 
 const routes: Array<RouteRecordRaw> = [
-    // {
-    //     path: '/',
-    //     name: 'layout',
-    //     component: Layout,
-    //     children: [
-    //         {
-    //             path: '',
-    //             name: 'home',
-    //             component: Home,
-    //         },
-    //     ],
-    //     beforeEnter: (to, from) => {
-    //         console.log(`web路由卫士：即将从${from.path}跳转到${to.path}`)
-    //         return true
-    //     },
-    // },
     {
         path: '/',
-        name: 'home',
-        // component: Home,
-        component: I18Home,
+        name: 'layout',
+        component: HeaderLayout,
+        children: [
+            {
+                path: '',
+                name: 'home',
+                component: I18Home,
+            },
+        ],
+        beforeEnter: (to, from) => {
+            console.log(`web路由卫士：即将从${from.path}跳转到${to.path}`)
+            return true
+        },
     },
-    {
-        path: '/test',
-        name: 'test',
-        component: TestHome,
-    },
-    // {
-    //     path: '/helloWebGPU',
-    //     name: 'helloWebGPU',
-    //     component: HelloWebGPU,
-    // },
-    // {
-    //     path: '/triangle',
-    //     name: 'triangle',
-    //     component: Triangle,
-    // },
-    // {
-    //     path: '/colorTriangle',
-    //     name: 'colorTriangle',
-    //     component: colorTriangle,
-    // },
-    // {
-    //     path: '/rotatingCube',
-    //     name: 'rotatingCube',
-    //     component: RotatingCube,
-    // },
-    // {
-    //     path: '/cubes',
-    //     name: 'cubes',
-    //     component: Cubes,
-    // },
-    // {
-    //     path: '/cubeOffsets',
-    //     name: 'cubeOffsets',
-    //     component: CubeOffsets,
-    // },
-    // {
-    //     path: '/cubeDynamicOffsets',
-    //     name: 'cubeDynamicOffsets',
-    //     component: CubeDynamicOffsets,
-    // },
-    // {
-    //     path: '/cubeInstance',
-    //     name: 'cubeInstance',
-    //     component: CubeInstance,
-    // },
-    // {
-    //     path: '/cubeRenderBundle',
-    //     name: 'cubeRenderBundle',
-    //     component: CubeRenderBundle,
-    // },
-    // {
-    //     path: '/imageTexture',
-    //     name: 'imageTexture',
-    //     component: ImageTexture,
-    // },
-    // {
-    //     path: '/spritesTexture',
-    //     name: 'spritesTexture',
-    //     component: SpritesTexture,
-    // },
-    // {
-    //     path: '/videoTexture',
-    //     name: 'videoTexture',
-    //     component: VideoTexture,
-    // },
-    // {
-    //     path: '/canvasTexture',
-    //     name: 'canvasTexture',
-    //     component: CanvasTexture,
-    // },
-    // {
-    //     path: '/gpuCompute',
-    //     name: 'gpuCompute',
-    //     component: GPUCompute,
-    // },
     {
         path: '/:pathMatch(.*)*', // 将匹配所有内容并将其放在 `$route.params.pathMatch` 下
         name: 'NotFound',

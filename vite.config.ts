@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-31 19:27:31
+ * @LastEditTime: 2023-08-07 15:55:52
  * @Description: vite配置文件
  */
 // node路径
@@ -11,8 +11,6 @@ import path from 'path'
 import { defineConfig } from 'vite'
 // 解析.vue文件
 import vue from '@vitejs/plugin-vue'
-
-
 // import config from './loadenv'
 
 import Inspect from 'vite-plugin-inspect'
@@ -26,7 +24,7 @@ export default defineConfig(({ mode }) => {
         // 共享配置
         plugins: [
             autoi18nPlugin({
-                isDev: true,
+                isDev: mode !== 'production',
                 filePath: path.resolve(__dirname, './public/translate.json'),
                 translate: autoi18nTranslate, 
             }),

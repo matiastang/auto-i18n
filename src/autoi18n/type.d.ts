@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-14 10:13:05
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 16:53:38
+ * @LastEditTime: 2023-08-07 15:44:27
  * @FilePath: /auto-i18n/src/autoi18n/type.d.ts
  * @Description: autoi18n
  */
@@ -27,6 +27,8 @@ export interface Autoi18nOptions {
 export interface Autoi18n extends Autoi18nOptions {
     messages: Autoi18nMessages
 }
+
+export type Autoi18nType = Autoi18n
 
 export type Autoi18nTranslate = (key: string, options?: {[key: string]: string | number}) => Autoi18nMessageValue
 

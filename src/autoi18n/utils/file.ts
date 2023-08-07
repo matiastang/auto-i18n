@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-28 13:56:17
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 17:04:11
+ * @LastEditTime: 2023-08-07 15:53:11
  * @FilePath: /auto-i18n/src/autoi18n/utils/file.ts
  * @Description: autoi18n file
  */
@@ -19,7 +19,6 @@ export const readJsonFile = (url: string) => {
                 return
             }
             const content = rawFile.responseText
-            console.log('content', typeof content, content)
             if (typeof content !== 'string' || !content) {
                 reject('json is empty')
                 return

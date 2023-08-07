@@ -1,9 +1,9 @@
 <!--
  * @Author: matiastang
  * @Date: 2021-12-13 10:12:56
- * @LastEditors: tangdaoyong
- * @LastEditTime: 2023-06-15 23:29:22
- * @FilePath: /datumwealth-front-scaffold/src/views/NotFound.vue
+ * @LastEditors: matiastang
+ * @LastEditTime: 2023-08-07 15:37:15
+ * @FilePath: /auto-i18n/src/views/NotFound.vue
  * @Description: 404页面
 -->
 <template>
@@ -15,11 +15,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import style from '@/style/cssModules/index.module.css'
-import { toggleTheme } from '@/style/utils/themes/index'
 import cssVars from 'css-vars-ponyfill'
 
 const text = ref('404')
-console.log(style.red)
 
 const changeTheme = () => {
     // toggleTheme('darkly')

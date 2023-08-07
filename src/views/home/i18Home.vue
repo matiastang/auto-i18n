@@ -2,22 +2,29 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-28 10:33:22
+ * @LastEditTime: 2023-08-07 16:43:39
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
 <template>
     <div class="page">
-        <Header></Header>
-        <!-- <TestHome v-bind:info="info"></TestHome> -->
+        <div class="title">
+            <div class="item">{{ $translate(`工作台`) }}</div>
+            <div class="item">{{ $translate(`基金圈：{name}`, {
+                name: orgName
+            }) }}</div>
+            <div class="item">{{ $translate('投研模板') }}</div>
+            <div class="item">{{ $translate('况客推荐') }}</div>
+        </div>
     </div>
 </template>
 <script setup lang="ts">
-// import { inject } from 'vue'
-import { onBeforeUnmount, onMounted, reactive } from 'vue'
-import Header from '../Components/Header/Header.vue'
-// import TestHome from './TestHome.vue'
+import { computed } from 'vue'
+import { autoTranslate } from '@autoi18n/autoi18n'
 
+const orgName = computed(() => {
+    return autoTranslate('机构圈01')
+})
 // const info = reactive({
 //     code: '60081'
 // })
@@ -57,7 +64,7 @@ import Header from '../Components/Header/Header.vue'
 .page {
     box-sizing: border-box;
     width: 100vw;
-    height: calc(100vh - 60px);
+    height: 100%;
     padding: 32px;
     background: white;
 

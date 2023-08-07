@@ -49,7 +49,7 @@ const autoi18n = {
         }
         const filePath = options.filePath
         readJsonFile(filePath).then((res) => {
-            console.log('translate.json', res)
+            // console.log('translate.json', res)
             autoi18nInfo.messages = res
         }).catch((err) => {
             console.warn(err)
