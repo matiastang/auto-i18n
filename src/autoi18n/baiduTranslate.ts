@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-20 17:35:04
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-31 19:52:19
+ * @LastEditTime: 2023-08-08 11:29:38
  * @FilePath: /auto-i18n/src/autoi18n/baiduTranslate.ts
  * @Description: 百度翻译
  */
@@ -66,6 +66,7 @@ const baiduTranslate = (q: string, to: LocaleType, from: LocaleType | 'auto' = '
                 resolve(resData)
             } else {
                 console.log(`------ baidu translate error_code=${error_code} error_msg=${error_msg} ------`)
+                console.log(data)
                 reject(resData)
             }
         }).catch((error) => {
@@ -157,7 +158,7 @@ const checkTranslateQuestions = (cache: Autoi18nMessages, list: {
 
 const autoi18nTranslate = async (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages): Promise<Autoi18nMessages | null> => {
     console.log('需要翻译：', questions)
-    const separator = '&'
+    const separator = '-'
     const hasQuestions = questions.map((value) => {
         return {
             key: translateHashKey(value, true),
@@ -186,12 +187,12 @@ const autoi18nTranslate = async (questions: string[], tos: LocaleType[], from: L
         const res = await allPromise
         console.log(res)
         if (!Array.isArray(res)) {
-            return {}
+            return null
         }
         const messages = baiduTranslateMessage(res, separator)
         return messages
     } catch (error) {
-        return {}
+        return null
     }
 }
 

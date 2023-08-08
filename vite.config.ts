@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-07 15:55:52
+ * @LastEditTime: 2023-08-08 11:08:18
  * @Description: vite配置文件
  */
 // node路径
@@ -26,6 +26,9 @@ export default defineConfig(({ mode }) => {
             autoi18nPlugin({
                 isDev: mode !== 'production',
                 filePath: path.resolve(__dirname, './public/translate.json'),
+                locale: 'zh',
+                // locales: ['zh', 'en', 'jp'],
+                locales: ['zh', 'en', 'jp', 'ara', 'fra'],
                 translate: autoi18nTranslate, 
             }),
             vue(),

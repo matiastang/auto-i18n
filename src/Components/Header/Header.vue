@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 15:14:42
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-07 16:43:29
+ * @LastEditTime: 2023-08-08 11:08:08
  * @FilePath: /auto-i18n/src/Components/Header/Header.vue
  * @Description: Header
 -->
@@ -18,34 +18,47 @@
     </div>
 </template>
 <script setup lang="ts">
-import { getCurrentInstance, inject, computed } from 'vue'
+import { inject, computed } from 'vue'
 import { Autoi18n } from '@autoi18n/type'
 import { autoTranslate } from '@autoi18n/autoi18n'
 
 const autoi18n = inject<Autoi18n>('$autoi18n')
 
-const a = getCurrentInstance()?.proxy
-console.log(a?.$autoi18n)
+// const a = getCurrentInstance()?.proxy
+// console.log(a?.$autoi18n)
 
 const localeName = computed(() => {
     const nowLocale = autoi18n.locale
+    console.log(`locale=${nowLocale}`)
     if (nowLocale === 'zh') {
         return autoTranslate('中文')
     }
     if (nowLocale === 'jp') {
         return autoTranslate('日文')
     }
+    if (nowLocale === 'ara') {
+        return autoTranslate('阿拉伯语')
+    }
+    if (nowLocale === 'fra') {
+        return autoTranslate('法语')
+    }
     return autoTranslate('英文')
 })
 
 const i18nChangeClick = () => {
-    const nowLocale = autoi18n.locale
-    if (nowLocale === 'zh') {
-        autoi18n.locale = 'en'
-    } else if (nowLocale === 'en') {
-        autoi18n.locale = 'jp'
+    const autoLocale = autoi18n.locale
+    const autoLocales = autoi18n.locales
+    if (autoLocales.length <= 0) {
+        console.warn('autoi18n locales is emty')
+        return
+    }
+    const index = autoLocales.findIndex((item) => {
+        return item === autoLocale
+    })
+    if (index >= autoLocales.length - 1) {
+        autoi18n.locale = autoLocales[0]
     } else {
-        autoi18n.locale = 'zh'
+        autoi18n.locale = autoLocales[index + 1]
     }
 }
 // import { translateHashKey } from '@autoi18n/utils'

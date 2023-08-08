@@ -2,13 +2,19 @@
  * @Author: matiastang
  * @Date: 2023-07-14 10:13:05
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-07 15:44:27
+ * @LastEditTime: 2023-08-08 11:08:14
  * @FilePath: /auto-i18n/src/autoi18n/type.d.ts
  * @Description: autoi18n
  */
 export type Autoi18nMessageValue = string | number
 
-export type LocaleType = 'zh' | 'en' | 'jp'
+export type LocaleType = 'zh' | 'en' | 'jp' | 'ara' | 'fra'
+
+// export interface localeItem {
+//     type: LocaleType
+//     name: string
+//     separator: string
+// }
 
 export interface Autoi18nMessageItem {
     [key: LocaleType]: Autoi18nMessageValue
