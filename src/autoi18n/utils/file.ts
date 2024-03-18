@@ -6,7 +6,7 @@
  * @FilePath: /auto-i18n/src/autoi18n/utils/file.ts
  * @Description: autoi18n file
  */
-import fs from 'fs'
+import * as fs from 'fs'
 import { Autoi18nMessages } from '../type'
 
 export const readJsonFile = (url: string) => {

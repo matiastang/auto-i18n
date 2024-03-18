@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-14 10:13:05
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-08 11:08:14
+ * @LastEditTime: 2024-03-18 17:06:49
  * @FilePath: /auto-i18n/src/autoi18n/type.d.ts
  * @Description: autoi18n
  */
@@ -16,8 +16,13 @@ export type LocaleType = 'zh' | 'en' | 'jp' | 'ara' | 'fra'
 //     separator: string
 // }
 
-export interface Autoi18nMessageItem {
-    [key: LocaleType]: Autoi18nMessageValue
+// export interface Autoi18nMessageItem {
+//     // TS1337: An index signature parameter type cannot be a literal type or generic type. Consider using a mapped object type instead.
+//     [key: LocaleType]: Autoi18nMessageValue
+// }
+
+export type Autoi18nMessageItem = {
+    [key in LocaleType]: Autoi18nMessageValue
 }
 
 export interface Autoi18nMessages {

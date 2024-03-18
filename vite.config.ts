@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-18 16:19:06
+ * @LastEditTime: 2024-03-18 16:54:07
  * @Description: vite配置文件
  */
 // node路径
@@ -96,7 +96,8 @@ export default defineConfig(({ mode }) => {
         },
         // 构建配置
         build: {
-            outDir: mode === 'production' ? `dist_${_package.version}` : 'dist',
+            // outDir: mode === 'production' ? `dist_${_package.version}` : 'dist',
+            outDir: 'dist',
         },
     }
 })
