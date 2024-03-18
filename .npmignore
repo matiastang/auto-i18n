@@ -1,0 +1,39 @@
+# 忽略目录
+.idea
+.vscode
+build/
+docs/
+src/
+packages/
+public/
+node_modules/
+typings/
+gulpfile.ts/
+nginx/
+static/
+rollup
+
+ 
+# 忽略指定文件
+babel.config.js
+tsconfig.json
+tslint.json
+vue.config.js
+.gitignore
+.browserslistrc
+*.map
+.editorconfig
+.env
+.env.production
+.eslintignore
+.eslintrc.js
+.prettierrc
+*.sh
+Dockerfile
+env.d.ts
+index.html
+loadenv.ts
+vite.config.ts
+vite.build.config.ts
+
+# 忽略dist中的部分文件
