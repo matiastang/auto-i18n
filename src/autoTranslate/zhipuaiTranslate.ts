@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { translateHashKey } from './utils'
-import { LocaleType, Autoi18nMessages } from './type'
+import { translateHashKey } from '../autoi18n/utils'
+import { LocaleType, Autoi18nMessages } from '../autoi18n/type'
 
 /**
  * 翻译返回内容格式

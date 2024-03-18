@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-18 15:22:03
+ * @LastEditTime: 2024-03-18 16:19:06
  * @Description: vite配置文件
  */
 // node路径
@@ -17,8 +17,8 @@ import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
 import { autoi18nPlugin } from './src/autoi18n'
-// import autoi18nTranslate from './src/autoi18n/baiduTranslate'
-import autoi18nTranslate from './src/autoi18n/zhipuaiTranslate'
+// import autoi18nTranslate from './src/autoTranslate/baiduTranslate'
+import autoi18nTranslate from './src/autoTranslate/zhipuaiTranslate'
 
 export default defineConfig(({ mode }) => {
     return {
@@ -26,8 +26,8 @@ export default defineConfig(({ mode }) => {
         plugins: [
             autoi18nPlugin({
                 isDev: mode !== 'production',
-                // filePath: path.resolve(__dirname, './public/translate.json'),
-                filePath: path.resolve(__dirname, './public/translate_zhipuai.json'),
+                filePath: path.resolve(__dirname, './public/translate.json'),
+                // filePath: path.resolve(__dirname, './public/translate_zhipuai.json'),
                 locale: 'zh',
                 locales: ['zh', 'en', 'jp', 'ara'],
                 // locales: ['zh', 'en', 'jp'],
