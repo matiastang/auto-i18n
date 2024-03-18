@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-24 15:04:08
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-31 19:56:31
+ * @LastEditTime: 2024-03-18 14:52:17
  * @FilePath: /auto-i18n/src/autoi18n/utils/index.ts
  * @Description: utils
  */
@@ -72,7 +72,7 @@ export const translateHashKey = (tText: string, isJson: Boolean = false): string
     // if (isJson) {
     //     return `'${hash}'`
     // }
-    return `autoi18n${hash}`
+    return `autoi18n_${hash}`
 }
 
 

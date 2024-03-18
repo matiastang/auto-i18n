@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-08 11:30:47
+ * @LastEditTime: 2024-03-18 15:21:56
  * @Description: main.ts
  */
 import { createApp } from 'vue'
@@ -46,9 +46,11 @@ app.use(router)
 // }
 
 app.use(autoi18n, {
-    filePath: '/translate.json',
+    // filePath: '/translate.json',
+    filePath: '/translate_zhipuai.json',
     locale: 'zh',
-    locales: ['zh', 'en', 'jp', 'ara', 'fra'],
+    locales: ['zh', 'en', 'jp', 'ara'],
+    // locales: ['zh', 'en', 'jp', 'ara', 'fra'],
     // locales: ['zh', 'en', 'jp'],
 })
 

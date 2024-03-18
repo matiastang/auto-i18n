@@ -1,39 +1,59 @@
-import CryptoJS from 'crypto-js'
 import axios from 'axios'
 import { translateHashKey } from './utils'
 import { LocaleType, Autoi18nMessages } from './type'
 
-interface BaiduTranslateRes {
+/**
+ * 翻译返回内容格式
+ */
+interface ZhipuaiTranslateData {
     from: string
     to: string
     trans_result: {
         src: string
         dst: string
     }[]
-    error_code?: string
-    error_msg?: string
 }
 
-const baiduTranslate = (texts: string[], to: LocaleType, from: LocaleType | 'auto' = 'auto') => {
+/**
+ * 翻译接口返回格式
+ */
+interface ZhipuaiTranslateRes {
+    code: number,
+    msg: string,
+    data?: ZhipuaiTranslateData[],
+    additional: {
+        time: string,
+        timestamp: number
+    }
+}
+
+/**
+ * 调用翻译
+ * @param texts 
+ * @param to 
+ * @param from 
+ * @returns 
+ */
+const zhipuaiTranslate = (texts: string[], tos: LocaleType[], from: LocaleType = 'zh') => {
     const url = `http://127.0.0.1:8000/zhipu/translate/text`
-    return new Promise<BaiduTranslateRes>((resolve, reject) => {
-        axios.post<BaiduTranslateRes>(url, {
+    return new Promise<ZhipuaiTranslateData[]>((resolve, reject) => {
+        axios.post<ZhipuaiTranslateRes>(url, {
             texts,
-            tos: [to],
+            tos,
+            froms: from,
         },{
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             }
         }).then((res) => {
+            console.log(res)
             const resData = res?.data
-            const { error_code, error_msg } = resData
-            if (!error_code) {
-                console.log(`------ baidu translate ------`)
-                // console.log(data.q, resData)
-                resolve(resData)
+            const { code, msg, data } = resData
+            if (code === 200) {
+                console.log(`------ zhipuai translate ------`)
+                resolve(data)
             } else {
-                console.log(`------ baidu translate error_code=${error_code} error_msg=${error_msg} ------`)
-                // console.log(data)
+                console.log(`------ zhipuai translate error_code=${code} error_msg=${msg} ------`)
                 reject(resData)
             }
         }).catch((error) => {
@@ -42,7 +62,15 @@ const baiduTranslate = (texts: string[], to: LocaleType, from: LocaleType | 'aut
     })
 }
 
-const baiduTranslateMessage = (data: BaiduTranslateRes[], separator: string = '&') => {
+/**
+ * 组合数据
+ * @param data 
+ * @param cache 
+ * @returns 
+ */
+const zhipuaiTranslateMessage = (data: ZhipuaiTranslateData[], cache?: Autoi18nMessages) => {
+    console.log(`------ zhipuai translate message ------`)
+    console.log(data)
     const messages = data.reduce((msg, item) => {
         const { to, from, trans_result } = item
         for (let i = 0; i < trans_result.length; i++) {
@@ -50,79 +78,61 @@ const baiduTranslateMessage = (data: BaiduTranslateRes[], separator: string = '&
             if (typeof src !== 'string' || typeof dst !== 'string') {
                 continue
             }
-            const questions = src.split(separator)
-            const answers = dst.split(separator)
-            if (questions.length !== answers.length) {
+            const key = translateHashKey(src, true)
+            const qMsg = msg[key]
+            if (!qMsg) {
+                msg[key] = {
+                    [from]: src,
+                    [to]: dst
+                }
                 continue
             }
-            for (let i = 0; i < questions.length; i++) {
-                const question = questions[i]
-                const key = translateHashKey(question, true)
-                const answer = answers[i]
-                const qMsg = msg[key]
-                if (!qMsg) {
-                    msg[key] = {
-                        [from]: question,
-                        [to]: answer
-                    }
-                    continue
-                }
-                msg[key][to] = answer
-            }
+            msg[key][to] = dst
         }
         return msg
-    }, {} as Autoi18nMessages)
+    }, cache || {} as Autoi18nMessages)
     return messages
 }
 
-const checkTranslateQuestions = (cache: Autoi18nMessages, list: {
-    key: string;
-    value: string;
-}[], to: LocaleType) => {
-    return list.filter((item) => {
-        const info = cache[item.key]
+/**
+ * 查找需要翻译的内容
+ * @param cache 
+ * @param questions 
+ * @param tos
+ * @returns 
+ */
+const checkTranslateQuestions = (cache: Autoi18nMessages, questions: string[], tos: LocaleType[]) => {
+    return questions.filter((item) => {
+        const key = translateHashKey(item, true)
+        const info = cache[key]
         if (!info) {
             return true
         }
-        console.log(to, info[to])
-        return info[to] === undefined
-    }).map(item => item.value)
+        return tos.findIndex((to) => !info[to]) != -1
+    })
 }
 
+/**
+ * 翻译，过滤掉已经在缓存中的内容
+ * @param questions 
+ * @param tos 
+ * @param from 
+ * @param cache 
+ * @returns 
+ */
 const autoi18nTranslate = async (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages): Promise<Autoi18nMessages | null> => {
     console.log('需要翻译：', questions)
-    const separator = '-'
-    const hasQuestions = questions.map((value) => {
-        return {
-            key: translateHashKey(value, true),
-            value,
-        }
-    })
-    const promises: Promise<BaiduTranslateRes>[] = []
-    console.log('tos=', tos)
-    for (let i = 0; i < tos.length; i++) {
-        const to = tos[i]
-        if (cache) {
-            const nQuestions = checkTranslateQuestions(cache, hasQuestions, to)
-            console.log('过滤需要翻译：', nQuestions)
-            if (nQuestions.length > 0) {
-                promises.push(baiduTranslate(nQuestions, to, from))
-            }
-        } else {
-            promises.push(baiduTranslate(questions, to, from))
-        }
-    }
-    if (promises.length <= 0) {
-        return null
-    }
+    const nCacheQuestions = checkTranslateQuestions(cache, questions, tos)
+    console.log('没有缓存，需要翻译：', nCacheQuestions)
+    const translateTos = tos.filter((item) => item !== from)
+    console.log('需要翻译为：', translateTos)
     try {
-        const allPromise = Promise.all(promises)
-        const res = await allPromise
-        console.log(res)
+        const res = await zhipuaiTranslate(nCacheQuestions, translateTos, from)
+        console.log('翻译结果：', res)
         if (!Array.isArray(res)) {
             return null
         }
-        const messages = baiduTranslateMessage(res, separator)
+        const messages = zhipuaiTranslateMessage(res)
         return messages
     } catch (error) {
         return null

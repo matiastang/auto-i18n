@@ -2,29 +2,45 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-07 16:43:39
+ * @LastEditTime: 2024-03-18 15:52:39
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
 <template>
     <div class="page">
         <div class="title">
+            <div class="item">{{ $translate(`你好，{name}`, {
+                name: orgName
+            }) }}</div>
             <div class="item">{{ $translate(`工作台`) }}</div>
             <div class="item">{{ $translate(`基金圈：{name}`, {
                 name: orgName
             }) }}</div>
             <div class="item">{{ $translate('投研模板') }}</div>
             <div class="item">{{ $translate('况客推荐') }}</div>
+            <div class="item">{{ $translate(`用户名：{name}`, {
+                name: useName
+            }) }}</div>
+            <div class="item" @click="changeUser">{{ $translate('切换用户') }}</div>
         </div>
     </div>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { autoTranslate } from '@autoi18n/autoi18n'
+import { Autoi18nMessageValue } from '@autoi18n/type'
 
 const orgName = computed(() => {
     return autoTranslate('机构圈01')
 })
+
+const useName = ref('MT01')
+
+const changeUser = () => {
+    const id = Math.floor(Math.random() * 10)
+    useName.value = `MT${id}`
+}
+
 // const info = reactive({
 //     code: '60081'
 // })
