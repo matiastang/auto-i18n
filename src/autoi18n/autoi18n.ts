@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 16:05:35
  * @LastEditors: matiastang
- * @LastEditTime: 2023-07-31 19:38:29
+ * @LastEditTime: 2024-03-19 16:11:33
  * @FilePath: /auto-i18n/src/autoi18n/autoi18n.ts
  * @Description: autoi18n
  */
@@ -49,7 +49,6 @@ const autoi18n = {
         }
         const filePath = options.filePath
         readJsonFile(filePath).then((res) => {
-            // console.log('translate.json', res)
             autoi18nInfo.messages = res
         }).catch((err) => {
             console.warn(err)
