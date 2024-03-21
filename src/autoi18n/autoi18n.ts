@@ -2,17 +2,18 @@
  * @Author: matiastang
  * @Date: 2023-07-21 16:05:35
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-19 16:11:33
+ * @LastEditTime: 2024-03-21 14:43:02
  * @FilePath: /auto-i18n/src/autoi18n/autoi18n.ts
  * @Description: autoi18n
  */
 import { App, reactive } from 'vue'
 import { Autoi18nOptions, Autoi18n, Autoi18nMessageItem, Autoi18nMessageValue } from './type'
+import { TranslateTarget } from './enum'
 import { translateHashKey, readJsonFile } from './utils'
 
 export const autoi18nInfo = reactive<Autoi18n>({
-    locale: 'zh',
-    locales: ['zh', 'en'],
+    locale: TranslateTarget.ZH,
+    locales: [TranslateTarget.ZH, TranslateTarget.EN],
     messages: {}
 })
 

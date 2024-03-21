@@ -1,9 +1,5 @@
 {
     "compilerOptions": {
-        // 目标语言的版本
-        // "target": "ESNext",
-        // 生成代码的模板标准
-        // "module": "ESNext",
         "noEmit": false,
         "declaration": true,
         "declarationDir": "buildTypes",
@@ -17,10 +13,3 @@
     "include": ["./index.ts"],
     "exclude": ["buildJs","buildTypes"]
 }
-/*
-noEmit , 若要导出d.ts文件，必须为false。否则会忽略declaration相关参数
-declaration,是否导出d.ts文件，当为true时且noEmit为true时才会进行导出操作.
-declarationDir，d.ts文件存放的目录路径。当不设置改参数时，将使用outDir的值
-outDir，将typescript 转换成js文件、以及d.ts文件的存放目录
-`tsconfig.json`当前目录执行`tsc`或`tsc --outDir js`指定目录
-*/

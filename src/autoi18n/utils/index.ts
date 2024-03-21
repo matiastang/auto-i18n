@@ -2,13 +2,36 @@
  * @Author: matiastang
  * @Date: 2023-07-24 15:04:08
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-18 14:52:17
+ * @LastEditTime: 2024-03-21 14:42:53
  * @FilePath: /auto-i18n/src/autoi18n/utils/index.ts
  * @Description: utils
  */
 import CryptoJS from 'crypto-js'
 import { Autoi18nMessages, Autoi18nMessageItem } from '../type'
+import { TranslateTarget } from '../enum'
 export * from './file'
+
+/**
+ * 目标语言描述
+ * @param to 
+ * @returns 
+ */
+export const translateTargetText = (to: TranslateTarget): string | null => {
+    switch (to) {
+        case TranslateTarget.ZH:
+            return '中文'
+        case TranslateTarget.EN:
+            return '英语'
+        case TranslateTarget.JP:
+            return '日语'
+        case TranslateTarget.ARA:
+            return '阿拉伯语'
+        case TranslateTarget.FRA:
+            return '法语'
+        default:
+            return null
+    }
+}
 
 /**
  * 提取翻译转换

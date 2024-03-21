@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-18 16:18:57
+ * @LastEditTime: 2024-03-21 14:53:24
  * @Description: main.ts
  */
 import { createApp } from 'vue'
@@ -12,6 +12,7 @@ import { createPinia } from 'pinia'
 import { piniaPersistedState } from 'matias-pinia-persisted-state'
 import _package from '../package.json'
 import { autoi18n } from './autoi18n'
+import { TranslateTarget } from './autoi18n/enum'
 // import {createI18n} from 'vue-i18n'
 // import messages from './autoi18n/message'
 
@@ -47,11 +48,8 @@ app.use(router)
 
 app.use(autoi18n, {
     filePath: '/translate.json',
-    // filePath: '/translate_zhipuai.json',
-    locale: 'zh',
-    locales: ['zh', 'en', 'jp', 'ara'],
-    // locales: ['zh', 'en', 'jp', 'ara', 'fra'],
-    // locales: ['zh', 'en', 'jp'],
+    locale: TranslateTarget.ZH,
+    locales: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
 })
 
 // app.use(createI18n({  

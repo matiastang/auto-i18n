@@ -1,6 +1,6 @@
 {
     "name": "autoi18n",
-    "version": "0.1.0",
+    "version": "0.0.1",
     "description": "自动国际化",
     "main": "./dist/index.umd.js",
     "files": [
@@ -45,6 +45,7 @@
         "@vue/runtime-core": "^3.3.4",
         "@webgpu/types": "^0.1.33",
         "axios": "^1.4.0",
+        "buffer": "^6.0.3",
         "crypto-js": "^4.1.1",
         "css-vars-ponyfill": "^2.4.8",
         "del": "^7.1.0",
@@ -75,5 +76,8 @@
         "vue-i18n": "^9.2.2",
         "vue-router": "^4.2.2",
         "wgpu-matrix": "^2.4.2"
+    },
+    "dependencies": {
+        "jsonwebtoken": "^9.0.2"
     }
 }

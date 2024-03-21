@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-18 16:54:07
+ * @LastEditTime: 2024-03-21 15:13:28
  * @Description: vite配置文件
  */
 // node路径
@@ -16,7 +16,8 @@ import vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
-import { autoi18nPlugin } from './src/autoi18n'
+import { autoi18nPlugin, TranslateTarget } from './src/autoi18n'
+import { TranslateType } from './src/autoi18n/autoi18nPlugin'
 // import autoi18nTranslate from './src/autoTranslate/baiduTranslate'
 import autoi18nTranslate from './src/autoTranslate/zhipuaiTranslate'
 
@@ -27,11 +28,12 @@ export default defineConfig(({ mode }) => {
             autoi18nPlugin({
                 isDev: mode !== 'production',
                 filePath: path.resolve(__dirname, './public/translate.json'),
-                // filePath: path.resolve(__dirname, './public/translate_zhipuai.json'),
-                locale: 'zh',
-                locales: ['zh', 'en', 'jp', 'ara'],
-                // locales: ['zh', 'en', 'jp'],
-                // locales: ['zh', 'en', 'jp', 'ara', 'fra'],
+                locale: TranslateTarget.ZH,
+                locales: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
+                // translateType: TranslateType.ZHIPU_AI,
+                // zhipuaiConfig: {
+                //     api_key: ''
+                // }
                 translate: autoi18nTranslate, 
             }),
             vue(),
@@ -40,6 +42,7 @@ export default defineConfig(({ mode }) => {
         resolve: {
             // 别名
             alias: [
+                { find: 'buffer/', replacement: path.resolve(__dirname, 'node_modules/buffer/') },
                 { find: 'root', replacement: path.resolve(__dirname, './') },
                 { find: '@', replacement: path.resolve(__dirname, './src') },
                 { find: '@static', replacement: path.resolve(__dirname, './src/static') },

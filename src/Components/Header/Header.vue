@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 15:14:42
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-08 11:08:08
+ * @LastEditTime: 2024-03-19 16:40:31
  * @FilePath: /auto-i18n/src/Components/Header/Header.vue
  * @Description: Header
 -->
@@ -10,8 +10,9 @@
     <div class="header">
         <div class="left">{{ $translate('自动国际化') }}</div>
         <div class="right">
-            <div class="item">{{ $translate(`当前语言：{name}`, {
-                name: localeName
+            <div class="item">{{ $translate(`当前语言：{name} 当前时间：{time}`, {
+                name: localeName,
+                time: new Date().getTime()
             }) }}</div>
             <div class="change" @click="i18nChangeClick">{{ $translate('语言切换') }}</div>
         </div>

@@ -2,14 +2,15 @@
  * @Author: matiastang
  * @Date: 2023-07-20 17:35:04
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-18 16:21:13
+ * @LastEditTime: 2024-03-21 14:43:32
  * @FilePath: /auto-i18n/src/autoTranslate/baiduTranslate.ts
  * @Description: 百度翻译
  */
 import CryptoJS from 'crypto-js'
 import axios from 'axios'
 import { translateHashKey } from '../autoi18n/utils'
-import { LocaleType, Autoi18nMessages } from '../autoi18n/type'
+import { Autoi18nMessages } from '../autoi18n/type'
+import { TranslateTarget } from '../autoi18n/enum'
 
 interface BaiduTranslateParams {
     q: string
@@ -32,7 +33,7 @@ interface BaiduTranslateRes {
     error_msg?: string
 }
 
-const baiduTranslate = (q: string, to: LocaleType, from: LocaleType | 'auto' = 'auto') => {
+const baiduTranslate = (q: string, to: TranslateTarget, from: TranslateTarget | 'auto' = 'auto') => {
     // src: "工作台&基金圈：机构圈01&投研模板&况客推荐"
     // dst: "Workbench&Fund Circle: Institutional Circle 01&Investment Research Template&Customer Recommendation"
     // const q = '工作台&基金圈：机构圈01&投研模板&况客推荐'
@@ -145,7 +146,7 @@ const baiduTranslateMessage = (data: BaiduTranslateRes[], separator: string = '&
 const checkTranslateQuestions = (cache: Autoi18nMessages, list: {
     key: string;
     value: string;
-}[], to: LocaleType) => {
+}[], to: TranslateTarget) => {
     return list.filter((item) => {
         const info = cache[item.key]
         if (!info) {
@@ -156,7 +157,7 @@ const checkTranslateQuestions = (cache: Autoi18nMessages, list: {
     }).map(item => item.value)
 }
 
-const autoi18nTranslate = async (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages): Promise<Autoi18nMessages | null> => {
+const autoi18nTranslate = async (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages): Promise<Autoi18nMessages | null> => {
     console.log('需要翻译：', questions)
     const separator = '-'
     const hasQuestions = questions.map((value) => {

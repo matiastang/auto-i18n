@@ -2,21 +2,44 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2023-08-08 11:44:41
+ * @LastEditTime: 2024-03-21 15:15:00
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
 import { InputOptions } from 'rollup'
 // import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
 import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod, readTranslateJson, writeTranslateJson } from './utils'
-import { LocaleType, Autoi18nData, Autoi18nMessages } from './type'
+import { Autoi18nData, Autoi18nMessages } from './type'
+import { TranslateTarget } from './enum'
 import { merge } from 'lodash'
 import path from 'path'
+import zhipuaiTranslate from './translate/zhipuai'
 
 const autoi18nData: Autoi18nData = {
-    locale: 'zh',
-    locales: ['zh', 'en'],
+    locale: TranslateTarget.ZH,
+    locales: [TranslateTarget.ZH, TranslateTarget.EN],
     messages: {}
+}
+
+export enum TranslateType {
+    /**
+     * 智谱
+     */
+    ZHIPU_AI = 'zhipuai'
+}
+
+export interface ZhipuaiConfig {
+    api_key: string
+}
+
+export interface Autoi18nPluginOptions {
+    filePath?: string,
+    isDev?: Boolean,
+    locale?: TranslateTarget,
+    locales?: TranslateTarget[],
+    translateType?: TranslateType,
+    zhipuaiConfig?: ZhipuaiConfig,
+    translate?: (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>
 }
 
 /**
@@ -24,7 +47,7 @@ const autoi18nData: Autoi18nData = {
  * @param code 
  * @param id 
  */
-const devTransformModule = async (code: string, id: string, translate?: (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>) => {
+const devTransformModule = async (code: string, id: string, translate?: (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>) => {
     const texts = checkQuestions(code)
     let mQuestions = new Set(texts)
     const list = Array.from(mQuestions)
@@ -39,8 +62,8 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
         return code
     }
     let messages = await translate(list, tos, local, cacheMessages)
-    console.log('============1')
-    console.log(messages)
+    // console.log('============1')
+    // console.log(messages)
     if (messages) {
         autoi18nData.isTranslate = true
         merge(cacheMessages, messages)
@@ -50,11 +73,11 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     if (!autoi18nData.isDev) {
         return code
     }
-    console.log('============2')
-    console.log(messages)
+    // console.log('============2')
+    // console.log(messages)
     const msgText = devTransformMessages(messages)
-    console.log('============3')
-    console.log(msgText)
+    // console.log('============3')
+    // console.log(msgText)
     const autoi18nInject = `
     import { inject } from 'vue'
     import { translateHashKey } from '@autoi18n/utils'
@@ -89,15 +112,9 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     return replaceMethodCode
 }
 
-const autoi18nPlugin = (autoi18nOptions: {
-    filePath?: string,
-    isDev?: Boolean,
-    locale?: LocaleType,
-    locales?: LocaleType[],
-    translate?: (questions: string[], tos: LocaleType[], from: LocaleType, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>
-}) => {
+const autoi18nPlugin = (autoi18nOptions: Autoi18nPluginOptions) => {
     return {
-        name: 'html-transform',
+        name: 'autoi18n',
         version: '0.0.1',
         // /**
         //  * vite hook
@@ -251,11 +268,27 @@ const autoi18nPlugin = (autoi18nOptions: {
         async transform(code: string, id: string) {
             console.info('transform：', id)
             if (id.endsWith('.vue'))  {
+                debugger
+                // 转换类型
+                const translateType = autoi18nOptions.translateType
+                // 智谱ai
+                if (translateType === TranslateType.ZHIPU_AI) {
+                    const zhipuaiConfig = autoi18nOptions.zhipuaiConfig
+                    if (!zhipuaiConfig) {
+                        console.warn('autoi18n plugin zhipuai config is null')
+                        return null
+                    }
+                    const translate = async (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => {
+                        return await zhipuaiTranslate(zhipuaiConfig.api_key, questions, tos, from, cache)
+                    }
+                    const res = await devTransformModule(code, id, translate)
+                    return res
+                }
+                // 外部函数转换
                 const res = await devTransformModule(code, id, autoi18nOptions.translate)
                 return res
             }
             return null
-            
         },
         /**
          * 在 --watch 模式下，每当 Rollup 检测到监视文件的更改时，就会通知插件
