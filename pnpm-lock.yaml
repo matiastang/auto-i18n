@@ -55,6 +55,9 @@ devDependencies:
   del:
     specifier: ^7.1.0
     version: 7.1.0
+  github-markdown-css:
+    specifier: ^5.5.1
+    version: 5.5.1
   gl-matrix:
     specifier: ^3.4.3
     version: 3.4.3
@@ -76,6 +79,9 @@ devDependencies:
   gulp-sass:
     specifier: ^5.1.0
     version: 5.1.0
+  highlight.js:
+    specifier: ^11.9.0
+    version: 11.9.0
   less:
     specifier: ^4.1.3
     version: 4.1.3
@@ -85,6 +91,12 @@ devDependencies:
   lodash:
     specifier: ^4.17.21
     version: 4.17.21
+  marked:
+    specifier: ^12.0.1
+    version: 12.0.1
+  marked-highlight:
+    specifier: ^2.1.1
+    version: 2.1.1(marked@12.0.1)
   matias-pinia-persisted-state:
     specifier: ^0.2.0
     version: 0.2.0(typescript@5.1.3)(vue@3.3.4)
@@ -2416,6 +2428,11 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /github-markdown-css@5.5.1:
+    resolution: {integrity: sha512-2osyhNgFt7DEHnGHbgIifWawAqlc68gjJiGwO1xNw/S48jivj8kVaocsVkyJqUi3fm7fdYIDi4C6yOtcqR/aEQ==}
+    engines: {node: '>=10'}
+    dev: true
+
   /gl-matrix@3.4.3:
     resolution: {integrity: sha512-wcCp8vu8FT22BnvKVPjXa/ICBWRq/zjFfdofZy1WSpQZpphblv12/bOQLBC1rMM7SGOFS9ltVmKOHil5+Ml7gA==}
     dev: true
@@ -2718,6 +2735,11 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       function-bind: 1.1.2
+    dev: true
+
+  /highlight.js@11.9.0:
+    resolution: {integrity: sha512-fJ7cW7fQGCYAkgv4CPfwFHrfd/cLS4Hau96JuJ+ZTOWhjnhoeN1ub1tFmALm/+lW5z4WCAuAV9bm05AP0mS6Gw==}
+    engines: {node: '>=12.0.0'}
     dev: true
 
   /homedir-polyfill@1.0.3:
@@ -3371,6 +3393,20 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       object-visit: 1.0.1
+    dev: true
+
+  /marked-highlight@2.1.1(marked@12.0.1):
+    resolution: {integrity: sha512-ktdqwtBne8rim5mb+vvZ9FzElGFb+CHCgkx/g6DSzTjaSrVnxsJdSzB5YgCkknFrcOW+viocM1lGyIjC0oa3fg==}
+    peerDependencies:
+      marked: '>=4 <13'
+    dependencies:
+      marked: 12.0.1
+    dev: true
+
+  /marked@12.0.1:
+    resolution: {integrity: sha512-Y1/V2yafOcOdWQCX0XpAKXzDakPOpn6U0YLxTJs3cww6VxOzZV1BTOOYWLvH3gX38cq+iLwljHHTnMtlDfg01Q==}
+    engines: {node: '>= 18'}
+    hasBin: true
     dev: true
 
   /matchdep@2.0.0:
