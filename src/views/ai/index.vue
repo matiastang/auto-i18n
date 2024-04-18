@@ -143,6 +143,7 @@ const cancelClick = () => {
     const abort = abortController.value
     if (abort) {
         abort.abort()
+        isStreaming.value = false;
         abortController.value = null
     }
 }
