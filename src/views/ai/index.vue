@@ -1,28 +1,5 @@
-<!--
- * @Author: matiastang
- * @Date: 2023-07-13 17:42:47
- * @LastEditors: matiastang
- * @LastEditTime: 2024-04-18 17:24:29
- * @FilePath: /auto-i18n/src/views/home/i18Home.vue
- * @Description: i18Home
--->
 <template>
     <div class="page">
-        <div class="title">
-            <div class="item">{{ $translate(`你好，{name}`, {
-                name: orgName
-            }) }}</div>
-            <div class="item">{{ $translate(`工作台`) }}</div>
-            <div class="item">{{ $translate(`基金圈：{name}`, {
-                name: orgName
-            }) }}</div>
-            <div class="item">{{ $translate('投研模板') }}</div>
-            <div class="item">{{ $translate('况客推荐') }}</div>
-            <div class="item">{{ $translate(`用户名：{name}`, {
-                name: useName
-            }) }}</div>
-            <div class="item" @click="changeUser">{{ $translate('切换用户') }}</div>
-        </div>
         <div class="send-page">
             <div class="item">
                 <span class="lable">{{ $translate('问题：') }}</span>
@@ -30,10 +7,7 @@
             </div>
             <div class="item">
                 <span class="lable">{{ $translate('答案：') }}</span>
-                <!-- <span class="content">{{ answerValue }}</span> -->
-                <!-- <span class="content" v-html="answerHtml"></span> -->
-                <!-- <textarea  class="content" v-model="answerValue" disabled></textarea> -->
-                <MarkdownContent :content="answerValue"></MarkdownContent>
+                <MarkdownContent :content="answerValue" :isStreaming="isStreaming"></MarkdownContent>
             </div>
             <button class="item" @click="sendClick">{{ $translate('发送') }}</button>
             <button class="item" @click="cancelClick">{{ $translate('取消') }}</button>
@@ -41,64 +15,16 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
-import { autoTranslate } from '@autoi18n/autoi18n'
-import { Autoi18nMessageValue } from '@autoi18n/type'
+import { ref } from 'vue'
+import MarkdownContent from './components/MarkdownContent/index.vue'
 
-// Marked
-import { Marked } from 'marked'
-import { markedHighlight } from "marked-highlight"
-import hljs from 'highlight.js'
-//引入markdown样式
-import 'highlight.js/styles/github.css'
-
-// markdown-it-vue
-import MarkdownContent from '../ai/components/MarkdownContent/index.vue'
-
-const marked=new Marked(
-  markedHighlight({
-    langPrefix: 'hljs language-',
-    highlight(code, lang) {
-        const language = hljs.getLanguage(lang) ? lang : 'shell'
-        return hljs.highlight(code, { language }).value
-    }
-  })
-)
-
-const orgName = computed(() => {
-    return autoTranslate('机构圈01')
-})
-
-const useName = ref('MT01')
-
-const changeUser = () => {
-    const id = Math.floor(Math.random() * 10)
-    useName.value = `MT${id}`
-}
-
-// const questionValue = ref('使用js正则从“data: {"answer": " <="}  data: {"answer": " "}”中提取出“[{"answer": " <="},{"answer": " "}]”数组。')
 const questionValue = ref('写一个函数，判断一个数是不是质数')
 const answerValue = ref('👍🏻')
-const answerHtml = ref()
-
-watchEffect(() => {
-    answerHtml.value = marked.parse(answerValue.value)
-})
+const isStreaming = ref(true)
 
 const abortController = ref<AbortController | null>(null)
 
 const chunkParse = (text: string) => {
-    // 使用match搜索
-    // const matches = text.match(/data: (\{"answer": ".+"\})\n\n/g);
-    // let dataList = matches.map((match, ) => {
-    //     try {
-    //         return JSON.parse(match.replace(/data: /g, '').replace(/\}\s+/g, '}'))
-    //     } catch (error) {
-    //         console.error(error)
-    //         return {}
-    //     }
-    // });
-
     // 使用matchAll搜索
     const dataList = []
     for (const match of text.matchAll(/data: (\{"answer": ".+"\})\n\n/gi)) {
@@ -187,10 +113,12 @@ const sendClick = () => {
 
         const textDecoder = new TextDecoder();
         let result = true;
+        isStreaming.value = true;
         while (result) {
             const { done, value } = await reader.read();
             if (done) {
                 result = false;
+                isStreaming.value = false;
                 console.log('Done')
                 break;
             }
@@ -218,65 +146,14 @@ const cancelClick = () => {
         abortController.value = null
     }
 }
-
-// const orgName = computed(() => {
-//     return autoTranslate('机构圈01', {
-//         locale: 'zh'
-//     })
-//
-// }
-
-// const info = reactive({
-//     code: '60081'
-// })
-
-// onMounted(() => {
-//     info.code = '60082'
-// })
-
-// import { Autoi18nMessages, Autoi18n } from '../../autoi18n/type'
-
-// const autoi18n = inject<Autoi18n>('$autoi18n')
-
-// const localeMessages: Autoi18nMessages = {
-//     '你好': {
-//         zh: '你好，世界',
-//         en: 'hello world',
-//         ja: 'こんにちは、世界',
-//     }
-// }
-
-// const localeTranslate = (key: string) => {
-//     const locale = autoi18n.locale
-//     const values = localeMessages[key]
-//     if (!values) {
-//         return key
-//     }
-//     const value = values[locale]
-//     if (!value) {
-//         return key
-//     }
-//     return value
-// }
-
 </script>
 
 <style lang="less" scoped>
 .page {
     box-sizing: border-box;
     width: 100vw;
-    height: 100%;
+    height: 100vh;
     padding: 32px;
-    background: white;
-
-    .title {
-        display: flex;
-        align-items: center;
-
-        .item {
-            margin: 0px 16px;
-        }
-    }
 
     .send-page {
         .item {
