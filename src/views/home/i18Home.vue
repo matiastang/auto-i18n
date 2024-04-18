@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2024-04-17 18:11:17
+ * @LastEditTime: 2024-04-18 14:11:48
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
@@ -35,6 +35,7 @@
                 <!-- <textarea  class="content" v-model="answerValue" disabled></textarea> -->
             </div>
             <button class="item" @click="sendClick">{{ $translate('发送') }}</button>
+            <button class="item" @click="cancelClick">{{ $translate('取消') }}</button>
         </div>
     </div>
 </template>
@@ -69,13 +70,62 @@ const changeUser = () => {
     useName.value = `MT${id}`
 }
 
-const questionValue = ref('给出一元二次方程的通用解')
-const answerValue = ref('')
+const questionValue = ref('使用js正则从“data: {"answer": " <="}  data: {"answer": " "}”中提取出“[{"answer": " <="},{"answer": " "}]”数组。')
+const answerValue = ref('使用js正则从“data: {"answer": " <="}  data: {"answer": " "}”中提取出“[{"answer": " <="},{"answer": " "}]”数组。')
 const answerHtml = ref()
 
 watchEffect(() => {
     answerHtml.value = marked.parse(answerValue.value)
 })
+
+const abortController = ref<AbortController | null>(null)
+
+const chunkParse = (text: string) => {
+    // 使用match搜索
+    // const matches = text.match(/data: (\{"answer": ".+"\})\n\n/g);
+    // let dataList = matches.map((match, ) => {
+    //     try {
+    //         return JSON.parse(match.replace(/data: /g, '').replace(/\}\s+/g, '}'))
+    //     } catch (error) {
+    //         console.error(error)
+    //         return {}
+    //     }
+    // });
+
+    // 使用matchAll搜索
+    const dataList = []
+    for (const match of text.matchAll(/data: (\{"answer": ".+"\})\n\n/gi)) {
+        console.log(match);
+        let matchStr = match[0]
+        if (match.length > 1) {
+            matchStr = match[1]
+        } else {
+            matchStr = matchStr.replace(/data: /g, '').replace(/\}\s+/g, '}')
+        }
+        try {
+            const data = JSON.parse(matchStr)
+            dataList.push(data)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+    console.log(dataList)
+    return dataList.reduce((left, right) => {
+        const lAnswer = left.answer
+        const rAnswer = right.answer
+        if (!rAnswer) {
+            return left
+        }
+        if (lAnswer) {
+            left.answer = lAnswer + rAnswer
+        } else {
+            left.answer = rAnswer
+        }
+        return left
+    }, {
+        answer: '',
+    })
+}
 
 const sendClick = () => {
     const question = questionValue.value
@@ -85,6 +135,9 @@ const sendClick = () => {
         return
     }
     answerValue.value = ''
+    const abort = new AbortController()
+    abortController.value = abort
+    const signal = abort.signal
     const URL = 'http://127.0.0.1:8000/zhipu/stream/test'
     fetch(URL,{
         method: 'POST',
@@ -94,7 +147,8 @@ const sendClick = () => {
         },
         body: JSON.stringify({
             prompt: question,
-        })
+        }),
+        signal: signal,
     })
     .then(async (response) => {
         console.info(`流式响应-res：${Date.now()}`);
@@ -137,7 +191,8 @@ const sendClick = () => {
             const chunkText = textDecoder.decode(value);
             console.info(chunkText);
             try {
-                const chunkObj = JSON.parse(chunkText.replace('data: ', ''))
+                // const chunkObj = JSON.parse(chunkText.replace('data: ', ''))
+                const chunkObj = chunkParse(chunkText)
                 answerValue.value = answerValue.value + chunkObj.answer;
             } catch (error) {
                 console.error(error)
@@ -147,6 +202,14 @@ const sendClick = () => {
     .catch((error) => {
         console.warn(error);
     });
+}
+
+const cancelClick = () => {
+    const abort = abortController.value
+    if (abort) {
+        abort.abort()
+        abortController.value = null
+    }
 }
 
 // const orgName = computed(() => {
