@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-04-19 14:58:26
+ * @LastEditTime: 2024-04-25 10:36:22
  * @Description: vite配置文件
  */
 // node路径
@@ -88,9 +88,9 @@ export default defineConfig(({ mode }) => {
             fs: {
                 strict: false,
             },
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-            }
+            // headers: {
+            //     'Access-Control-Allow-Origin': '*',
+            // }
             // proxy: {
             //     // 选项写法
             //     [config.VITE_APP_BASE_API]: {

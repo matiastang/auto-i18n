@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-21 14:53:24
+ * @LastEditTime: 2024-04-25 11:29:14
  * @Description: main.ts
  */
 import { createApp } from 'vue'
@@ -60,6 +60,12 @@ app.use(autoi18n, {
 
 // 挂载
 app.mount('#app')
+
+// 卸载应用
+window.unmount = () => {
+    console.log('window.unmount')
+    app.unmount()
+}
 
 // import.meta.env.PROD
 console.info(`当前Vue版本为${app.version}`)
