@@ -2,44 +2,27 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-21 15:15:00
+ * @LastEditTime: 2024-08-15 17:38:17
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
 import { InputOptions } from 'rollup'
 // import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
 import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod, readTranslateJson, writeTranslateJson } from './utils'
-import { Autoi18nData, Autoi18nMessages } from './type'
-import { TranslateTarget } from './enum'
+import { Autoi18nMessages } from './@types/autoi18n'
+import { Autoi18nPluginConfig, Autoi18nPluginInfo } from './@types/autoi18nPlugin'
+import { TranslateTarget, TranslateAIModel } from './@types/enum'
 import { merge } from 'lodash'
 import path from 'path'
-import zhipuaiTranslate from './translate/zhipuai'
+import zhipuaiTranslate from './translates/zhipuai'
 
-const autoi18nData: Autoi18nData = {
+/**
+ * 插件设置信息
+ */
+const autoi18nPluginInfo: Autoi18nPluginInfo = {
     locale: TranslateTarget.ZH,
-    locales: [TranslateTarget.ZH, TranslateTarget.EN],
+    targets: [TranslateTarget.ZH, TranslateTarget.EN],
     messages: {}
-}
-
-export enum TranslateType {
-    /**
-     * 智谱
-     */
-    ZHIPU_AI = 'zhipuai'
-}
-
-export interface ZhipuaiConfig {
-    api_key: string
-}
-
-export interface Autoi18nPluginOptions {
-    filePath?: string,
-    isDev?: Boolean,
-    locale?: TranslateTarget,
-    locales?: TranslateTarget[],
-    translateType?: TranslateType,
-    zhipuaiConfig?: ZhipuaiConfig,
-    translate?: (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>
 }
 
 /**
@@ -54,10 +37,10 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     if (list.length <= 0) {
         return code
     }
-    const local = autoi18nData.locale
-    const locals = autoi18nData.locales
-    const cacheMessages = autoi18nData.messages
-    const tos = locals.filter(item => item !== local)
+    const local = autoi18nPluginInfo.locale
+    const targets = autoi18nPluginInfo.targets
+    const cacheMessages = autoi18nPluginInfo.messages
+    const tos = targets.filter(item => item !== local)
     if (tos.length <= 0) {
         return code
     }
@@ -65,12 +48,12 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     // console.log('============1')
     // console.log(messages)
     if (messages) {
-        autoi18nData.isTranslate = true
+        autoi18nPluginInfo.isTranslate = true
         merge(cacheMessages, messages)
     } else {
         messages = cacheMessages
     }
-    if (!autoi18nData.isDev) {
+    if (!autoi18nPluginInfo.isDev) {
         return code
     }
     // console.log('============2')
@@ -81,7 +64,7 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     const autoi18nInject = `
     import { inject } from 'vue'
     import { translateHashKey } from '@autoi18n/utils'
-    import { Autoi18nType, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/type'
+    import { Autoi18nType, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/@types/autoi18n'
 
     const _autoi18n = inject<Autoi18nType>('$autoi18n')
 
@@ -112,7 +95,12 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     return replaceMethodCode
 }
 
-const autoi18nPlugin = (autoi18nOptions: Autoi18nPluginOptions) => {
+/**
+ * autoi18n vite 插件
+ * @param config 
+ * @returns 
+ */
+const autoi18nPlugin = (config: Autoi18nPluginConfig) => {
     return {
         name: 'autoi18n',
         version: '0.0.1',
@@ -135,18 +123,18 @@ const autoi18nPlugin = (autoi18nOptions: Autoi18nPluginOptions) => {
          * 构建完成，构建阶段的最后一个钩子
          */
         async buildEnd(error?: Error) {
-            console.info('buildEnd', autoi18nData.messages)
+            console.info('buildEnd', autoi18nPluginInfo.messages)
             // const translate = options?.translate
             // if (translate) {
             //     translate(Array.from(questions))
             // }
-            const isTranslate = autoi18nData.isTranslate
+            const isTranslate = autoi18nPluginInfo.isTranslate
             if (!isTranslate) {
                 return
             }
-            const filePath = autoi18nOptions.filePath || path.resolve(__dirname, './translate.json')
+            const filePath = autoi18nPluginInfo.filePath || path.resolve(__dirname, './translate.json')
             // const url = path.resolve(__dirname, './translate.json')
-            const success = await writeTranslateJson(filePath, autoi18nData.messages)
+            const success = await writeTranslateJson(filePath, autoi18nPluginInfo.messages)
             console.info(`写入${success}`)
         },
         /**
@@ -154,20 +142,20 @@ const autoi18nPlugin = (autoi18nOptions: Autoi18nPluginOptions) => {
          */
         async buildStart(options: InputOptions) {
             console.info('buildStart')
-            const filePath = autoi18nOptions.filePath || path.resolve(__dirname, './translate.json')
+            const filePath = config.filePath || path.resolve(__dirname, './translate.json')
             // const url = path.resolve(__dirname, './translate.json')
             const fileContent = await readTranslateJson(filePath)
             console.info(filePath, fileContent)
-            const configLocal = autoi18nOptions.locale
+            const configLocal = config.locale
             if (configLocal) {
-                autoi18nData.locale = configLocal
+                autoi18nPluginInfo.locale = configLocal
             }
-            const configLocals = autoi18nOptions.locales
-            if (configLocals) {
-                autoi18nData.locales = configLocals
+            const configTargets = config.targets
+            if (configTargets) {
+                autoi18nPluginInfo.targets = configTargets
             }
-            autoi18nData.isDev = autoi18nOptions.isDev
-            autoi18nData.messages = fileContent
+            autoi18nPluginInfo.isDev = config.isDev
+            autoi18nPluginInfo.messages = fileContent
         },
         /**
          * 观察器进程即将关闭时通知插件
@@ -267,27 +255,35 @@ const autoi18nPlugin = (autoi18nOptions: Autoi18nPluginOptions) => {
          */
         async transform(code: string, id: string) {
             console.info('transform：', id)
-            if (id.endsWith('.vue'))  {
-                debugger
-                // 转换类型
-                const translateType = autoi18nOptions.translateType
-                // 智谱ai
-                if (translateType === TranslateType.ZHIPU_AI) {
-                    const zhipuaiConfig = autoi18nOptions.zhipuaiConfig
-                    if (!zhipuaiConfig) {
-                        console.warn('autoi18n plugin zhipuai config is null')
-                        return null
-                    }
-                    const translate = async (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => {
-                        return await zhipuaiTranslate(zhipuaiConfig.api_key, questions, tos, from, cache)
-                    }
-                    const res = await devTransformModule(code, id, translate)
-                    return res
-                }
+            if (!id.endsWith('.vue')) {
+                return null
+            }
+            const configTranslate = config.translate
+            if (configTranslate) {
                 // 外部函数转换
-                const res = await devTransformModule(code, id, autoi18nOptions.translate)
+                const res = await devTransformModule(code, id, configTranslate)
                 return res
             }
+            const modelConfig = config.aiModelConfig
+            if (!modelConfig) {
+                console.warn('autoi18n plugin aiModelConfig is null')
+                return null
+            }
+            const model = modelConfig.model
+            // 智谱ai转换
+            if (model === TranslateAIModel.ZHIPUAI) {
+                const config = modelConfig.config
+                if (!config) {
+                    console.warn('autoi18n plugin zhipuai config is null')
+                    return null
+                }
+                const translate = async (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => {
+                    return await zhipuaiTranslate(config.apiKey, questions, tos, from, cache)
+                }
+                const res = await devTransformModule(code, id, translate)
+                return res
+            }
+            console.warn('autoi18n plugin aiModelConfig model is null')
             return null
         },
         /**

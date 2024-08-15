@@ -2,15 +2,15 @@
  * @Author: matiastang
  * @Date: 2023-07-20 17:35:04
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-21 14:43:32
+ * @LastEditTime: 2024-08-15 17:39:35
  * @FilePath: /auto-i18n/src/autoTranslate/baiduTranslate.ts
  * @Description: 百度翻译
  */
 import CryptoJS from 'crypto-js'
 import axios from 'axios'
 import { translateHashKey } from '../autoi18n/utils'
-import { Autoi18nMessages } from '../autoi18n/type'
-import { TranslateTarget } from '../autoi18n/enum'
+import { Autoi18nMessages } from '../autoi18n/@types/autoi18n'
+import { TranslateTarget } from '../autoi18n/@types/enum'
 
 interface BaiduTranslateParams {
     q: string

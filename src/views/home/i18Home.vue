@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2024-04-18 17:24:29
+ * @LastEditTime: 2024-08-15 17:34:41
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
 import { autoTranslate } from '@autoi18n/autoi18n'
-import { Autoi18nMessageValue } from '@autoi18n/type'
+// import { Autoi18nMessageValue } from '@autoi18n/type'
 
 // Marked
 import { Marked } from 'marked'
@@ -74,6 +74,7 @@ const useName = ref('MT01')
 const changeUser = () => {
     const id = Math.floor(Math.random() * 10)
     useName.value = `MT${id}`
+    throw new Error('test error')
 }
 
 // const questionValue = ref('使用js正则从“data: {"answer": " <="}  data: {"answer": " "}”中提取出“[{"answer": " <="},{"answer": " "}]”数组。')

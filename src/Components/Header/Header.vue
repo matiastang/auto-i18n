@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 15:14:42
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-19 16:40:31
+ * @LastEditTime: 2024-08-15 17:52:02
  * @FilePath: /auto-i18n/src/Components/Header/Header.vue
  * @Description: Header
 -->
@@ -20,10 +20,10 @@
 </template>
 <script setup lang="ts">
 import { inject, computed } from 'vue'
-import { Autoi18n } from '@autoi18n/type'
+import { Autoi18nInfo } from '@autoi18n/@types/autoi18n'
 import { autoTranslate } from '@autoi18n/autoi18n'
 
-const autoi18n = inject<Autoi18n>('$autoi18n')
+const autoi18n = inject<Autoi18nInfo>('$autoi18n')
 
 // const a = getCurrentInstance()?.proxy
 // console.log(a?.$autoi18n)
@@ -48,25 +48,27 @@ const localeName = computed(() => {
 
 const i18nChangeClick = () => {
     const autoLocale = autoi18n.locale
-    const autoLocales = autoi18n.locales
-    if (autoLocales.length <= 0) {
+    const autoTargets = autoi18n.targets
+    if (autoTargets.length <= 0) {
         console.warn('autoi18n locales is emty')
         return
     }
-    const index = autoLocales.findIndex((item) => {
+    const index = autoTargets.findIndex((item) => {
         return item === autoLocale
     })
-    if (index >= autoLocales.length - 1) {
-        autoi18n.locale = autoLocales[0]
+    if (index >= autoTargets.length - 1) {
+        autoi18n.locale = autoTargets[0]
     } else {
-        autoi18n.locale = autoLocales[index + 1]
+        autoi18n.locale = autoTargets[index + 1]
     }
 }
+/**
+ * ====== 测试 ======
+ */
 // import { translateHashKey } from '@autoi18n/utils'
+// import { Autoi18nType, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/@types/autoi18n'
 
-// const translate = inject<Autoi18nTranslate>('$translate')
-
-// const _autoi18n = inject<Autoi18n>('$autoi18n')
+// const _autoi18n = inject<Autoi18nType>('$autoi18n')
 
 // const _localeMessages: Autoi18nMessages = {}
 
@@ -84,7 +86,7 @@ const i18nChangeClick = () => {
 //     if (options) {
 //         return Object.entries(options).reduce((left, item) => {
 //             const [_key, _val] = item
-//             return String(left).replaceAll('{' + _key + '}', _val)
+//             return String(left).replaceAll('{' + _key + '}', String(_val))
 //         }, value)
 //     }
 //     return value

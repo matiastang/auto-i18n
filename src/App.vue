@@ -1,19 +1,15 @@
 <!--
- * @Author: your name
- * @Date: 2021-10-15 15:54:50
- * @LastEditTime: 2023-06-15 23:17:08
- * @LastEditors: tangdaoyong
- * @Description: In User Settings Edit
- * @FilePath: App.vue
+ * @Author: matiastang
+ * @Date: 2023-07-13 17:42:47
+ * @LastEditors: matiastang
+ * @LastEditTime: 2024-08-15 15:33:27
+ * @FilePath: /auto-i18n/src/App.vue
+ * @Description: App
 -->
 <template>
     <router-view></router-view>
 </template>
 
-<script lang="ts">
+<script setup lang="ts"></script>
 
-</script>
-
-<style lang="less" scoped>
-
-</style>
+<style lang="less" scoped></style>

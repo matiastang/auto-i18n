@@ -1,7 +1,7 @@
 // import jwt from 'jsonwebtoken'
 import { translateHashKey, translateTargetText } from '../utils'
-import { Autoi18nMessages } from '../type'
-import { TranslateTarget } from '../enum'
+import { Autoi18nMessages } from '../@types/autoi18n'
+import { TranslateTarget } from '../@types/enum'
 
 /**
  * 翻译返回内容格式
@@ -137,12 +137,12 @@ const translate = async (apiKey: string, texts: string[], tos: TranslateTarget[]
         console.warn(err)
         return Promise.reject(err)
     }
-    const token = generate_token(apiKey)
-    if (!token) {
-        const err = '生成token失败'
-        console.warn(err)
-        return Promise.reject(err)
-    }
+    // const token = generate_token(apiKey)
+    // if (!token) {
+    //     const err = '生成token失败'
+    //     console.warn(err)
+    //     return Promise.reject(err)
+    // }
     const translatesRes:TranslateResult[] = []
     for (const to of tTos) {
         const target = translateTargetText(to)
@@ -160,7 +160,8 @@ const translate = async (apiKey: string, texts: string[], tos: TranslateTarget[]
         };
         const headers = {
             'Content-Type': 'application/json',
-            Authorization: token,
+            // Authorization: token,
+            Authorization: `Bearer ${apiKey}`,
         }
         const res = await fetch(
             zhipuai_url,

@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-04-25 10:36:22
+ * @LastEditTime: 2024-08-15 17:33:17
  * @Description: vite配置文件
  */
 // node路径
@@ -16,10 +16,10 @@ import vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
-import { autoi18nPlugin, TranslateTarget } from './src/autoi18n'
-import { TranslateType } from './src/autoi18n/autoi18nPlugin'
+import { autoi18nPlugin } from './src/autoi18n'
+import { TranslateTarget, TranslateAIModel } from './src/autoi18n/@types/enum'
 // import autoi18nTranslate from './src/autoTranslate/baiduTranslate'
-import autoi18nTranslate from './src/autoTranslate/zhipuaiTranslate'
+// import autoi18nTranslate from './src/autoTranslate/zhipuaiTranslate'
 
 export default defineConfig(({ mode }) => {
     return {
@@ -29,12 +29,16 @@ export default defineConfig(({ mode }) => {
                 isDev: mode !== 'production',
                 filePath: path.resolve(__dirname, './public/translate.json'),
                 locale: TranslateTarget.ZH,
-                locales: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
-                // translateType: TranslateType.ZHIPU_AI,
-                // zhipuaiConfig: {
-                //     api_key: ''
-                // }
-                translate: autoi18nTranslate, 
+                targets: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
+                aiModelConfig: {
+                    model: TranslateAIModel.ZHIPUAI,
+                    config: {
+                        baseUrl: '',
+                        // api_key: ''
+                        apiKey: '',
+                    }
+                }
+                // translate: autoi18nTranslate, 
             }),
             vue(),
             Inspect(),

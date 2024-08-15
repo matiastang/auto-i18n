@@ -1,10 +1,10 @@
 /*
  * @Author: matiastang
- * @Date: 2024-03-21 14:41:29
+ * @Date: 2024-08-15 15:40:17
  * @LastEditors: matiastang
- * @LastEditTime: 2024-03-21 14:41:46
- * @FilePath: /auto-i18n/src/autoi18n/enum.ts
- * @Description: 
+ * @LastEditTime: 2024-08-15 15:42:14
+ * @FilePath: /auto-i18n/src/autoi18n/@types/enum.ts
+ * @Description: 枚举
  */
 /**
  * 翻译目标
@@ -30,4 +30,14 @@ export enum TranslateTarget {
      * 法语
      */
     FRA = 'fra'
+}
+
+/**
+ * AI翻译模型
+ */
+export enum TranslateAIModel {
+    /**
+     * 智谱AI
+     */
+    ZHIPUAI = 'zhipuai'
 }

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { translateHashKey } from '../autoi18n/utils'
-import { Autoi18nMessages } from '../autoi18n/type'
-import { TranslateTarget } from '../autoi18n/enum'
+import { Autoi18nMessages } from '../autoi18n/@types/autoi18n'
+import { TranslateTarget } from '../autoi18n/@types/enum'
 
 /**
  * 翻译返回内容格式
@@ -36,7 +36,7 @@ interface ZhipuaiTranslateRes {
  * @returns 
  */
 const zhipuaiTranslate = (texts: string[], tos: TranslateTarget[], from: TranslateTarget = TranslateTarget.ZH) => {
-    const url = `http://127.0.0.1:8000/zhipu/translate/text`
+    const url = `http://127.0.0.1:8010/zhipu/translate/text`
     return new Promise<ZhipuaiTranslateData[]>((resolve, reject) => {
         axios.post<ZhipuaiTranslateRes>(url, {
             texts,
