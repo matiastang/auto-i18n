@@ -37,8 +37,8 @@
         // 目标语言的版本
         "target": "ESNext",
         // 生成代码的模板标准
-        // "module": "ESNext",
-        "module": "CommonJS", // 使用gulp需要CommonJS
+        "module": "ESNext",
+        // "module": "CommonJS", // 使用gulp需要CommonJS
         // "module": "ESNext",
         // 开启所有严格的类型检查
         "strict": false,

@@ -1,4 +1,11 @@
-// import jwt from 'jsonwebtoken'
+/*
+ * @Author: matiastang
+ * @Date: 2024-03-19 18:02:05
+ * @LastEditors: matiastang
+ * @LastEditTime: 2024-08-16 17:42:42
+ * @FilePath: /auto-i18n/src/autoi18n/translates/zhipuai.ts
+ * @Description: 智谱AI模型翻译
+ */
 import { translateHashKey, translateTargetText } from '../utils/translate'
 import { Autoi18nMessages, Autoi18nMessageItem } from '../@types/autoi18n'
 import { TranslateTarget } from '../@types/enum'
@@ -65,40 +72,6 @@ const messages = [
  */
 const isValidApikey = (str: string): boolean => {  
     return /^[a-z0-9]+\.[a-z0-9]+$/.test(str)
-}  
-
-/**
- * 生成token
- * @param apikey 
- * @param exp_seconds 
- * @returns 
- */
-const generate_token = (apikey: string, exp_seconds: number = 60 * 60): string | null => {
-    debugger
-    const valid = isValidApikey(apikey)
-    if (!valid) {
-        const err = 'apikey格式错误'
-        console.warn(err)
-        return null
-    }
-    try {
-        const [id, secret] = apikey.split(".")
-        const timestamp = Date.now()
-        const payload = {
-            "api_key": id,
-            timestamp: timestamp,
-            exp: timestamp + exp_seconds * 1000,
-        };
-        // 生成JWT
-        // const token: string = jwt.sign(payload, secret, {
-        //     algorithm: "HS256",
-        //     expiresIn: '1h' // 令牌有效期为1小时
-        // });
-        return 'token'
-    } catch (error) {
-        console.warn(error)
-        return null
-    }
 }
 
 /**
@@ -125,6 +98,12 @@ const extractContentBetweenTags = (input: string): string[] => {
  * @param from 
  */
 const translate = async (apiKey: string, texts: string[], tos: TranslateTarget[], from: TranslateTarget = TranslateTarget.ZH) => {
+    const valid = isValidApikey(apiKey)
+    if (!valid) {
+        const err = 'apikey格式错误'
+        console.warn(err)
+        return null
+    }
     const questions = texts.map(item => `<${item}>`).join('、')
     if (!questions) {
         const err = '没有待翻译内容'
@@ -137,12 +116,6 @@ const translate = async (apiKey: string, texts: string[], tos: TranslateTarget[]
         console.warn(err)
         return Promise.reject(err)
     }
-    // const token = generate_token(apiKey)
-    // if (!token) {
-    //     const err = '生成token失败'
-    //     console.warn(err)
-    //     return Promise.reject(err)
-    // }
     const translatesRes:TranslateResult[] = []
     for (const to of tTos) {
         const target = translateTargetText(to)
@@ -160,7 +133,6 @@ const translate = async (apiKey: string, texts: string[], tos: TranslateTarget[]
         };
         const headers = {
             'Content-Type': 'application/json',
-            // Authorization: token,
             Authorization: `Bearer ${apiKey}`,
         }
         const res = await fetch(

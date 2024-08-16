@@ -2,18 +2,18 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-15 17:38:17
+ * @LastEditTime: 2024-08-16 17:45:18
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
+import path from 'path'
+import { merge } from 'lodash'
 import { InputOptions } from 'rollup'
 // import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
 import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod, readTranslateJson, writeTranslateJson } from './utils'
 import { Autoi18nMessages } from './@types/autoi18n'
 import { Autoi18nPluginConfig, Autoi18nPluginInfo } from './@types/autoi18nPlugin'
 import { TranslateTarget, TranslateAIModel } from './@types/enum'
-import { merge } from 'lodash'
-import path from 'path'
 import zhipuaiTranslate from './translates/zhipuai'
 
 /**
