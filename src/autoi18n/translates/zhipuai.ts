@@ -1,6 +1,6 @@
 // import jwt from 'jsonwebtoken'
-import { translateHashKey, translateTargetText } from '../utils'
-import { Autoi18nMessages } from '../@types/autoi18n'
+import { translateHashKey, translateTargetText } from '../utils/translate'
+import { Autoi18nMessages, Autoi18nMessageItem } from '../@types/autoi18n'
 import { TranslateTarget } from '../@types/enum'
 
 /**
@@ -226,7 +226,7 @@ const translateMessage = (data: TranslateResult[], cache?: Autoi18nMessages) => 
                 msg[key] = {
                     [from]: src,
                     [to]: dst
-                }
+                } as Autoi18nMessageItem
                 continue
             }
             msg[key][to] = dst

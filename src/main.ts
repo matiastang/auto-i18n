@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-15 17:59:31
+ * @LastEditTime: 2024-08-15 18:18:19
  * @Description: main.ts
  */
 import path from 'path'
@@ -65,10 +65,10 @@ app.use(autoi18n, {
 app.mount('#app')
 
 // 卸载应用
-window.unmount = () => {
-    console.log('window.unmount')
-    app.unmount()
-}
+// window.unmount = () => {
+//     console.log('window.unmount')
+//     app.unmount()
+// }
 
 // import.meta.env.PROD
 console.info(`当前Vue版本为${app.version}`)

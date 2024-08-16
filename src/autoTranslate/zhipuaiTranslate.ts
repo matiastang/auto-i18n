@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { translateHashKey } from '../autoi18n/utils'
-import { Autoi18nMessages } from '../autoi18n/@types/autoi18n'
+import { Autoi18nMessages, Autoi18nMessageItem } from '../autoi18n/@types/autoi18n'
 import { TranslateTarget } from '../autoi18n/@types/enum'
 
 /**
@@ -85,7 +85,7 @@ const zhipuaiTranslateMessage = (data: ZhipuaiTranslateData[], cache?: Autoi18nM
                 msg[key] = {
                     [from]: src,
                     [to]: dst
-                }
+                } as Autoi18nMessageItem
                 continue
             }
             msg[key][to] = dst
