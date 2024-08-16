@@ -220,7 +220,7 @@ const translateMessage = (data: TranslateResult[], cache?: Autoi18nMessages) => 
             if (typeof src !== 'string' || typeof dst !== 'string') {
                 continue
             }
-            const key = translateHashKey(src, true)
+            const key = translateHashKey(src)
             const qMsg = msg[key]
             if (!qMsg) {
                 msg[key] = {
@@ -245,7 +245,7 @@ const translateMessage = (data: TranslateResult[], cache?: Autoi18nMessages) => 
  */
 const checkTranslateQuestions = (cache: Autoi18nMessages, questions: string[], tos: TranslateTarget[]) => {
     return questions.filter((item) => {
-        const key = translateHashKey(item, true)
+        const key = translateHashKey(item)
         const info = cache[key]
         if (!info) {
             return true

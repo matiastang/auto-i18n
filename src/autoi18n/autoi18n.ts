@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 16:05:35
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-15 17:55:37
+ * @LastEditTime: 2024-08-16 17:01:38
  * @FilePath: /auto-i18n/src/autoi18n/autoi18n.ts
  * @Description: autoi18n
  */
@@ -37,7 +37,7 @@ export const autoi18nInfo = reactive<Autoi18nInfo>({
  */
 export const autoTranslate = (key: string, options?: {[key: string]: string | number}) => {
     const locale = autoi18nInfo.locale
-    const localeKey = translateHashKey(key, true)
+    const localeKey = translateHashKey(key)
     const item = autoi18nInfo.messages[localeKey] as Autoi18nMessageItem
     if (!item) {
         console.info(key, localeKey, '未获取到翻译信息')

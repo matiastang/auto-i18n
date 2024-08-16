@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-20 17:35:04
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-15 18:22:43
+ * @LastEditTime: 2024-08-16 17:00:55
  * @FilePath: /auto-i18n/src/autoTranslate/baiduTranslate.ts
  * @Description: 百度翻译
  */
@@ -125,7 +125,7 @@ const baiduTranslateMessage = (data: BaiduTranslateRes[], separator: string = '&
             }
             for (let i = 0; i < questions.length; i++) {
                 const question = questions[i]
-                const key = translateHashKey(question, true)
+                const key = translateHashKey(question)
                 const answer = answers[i]
                 const qMsg = msg[key]
                 if (!qMsg) {
@@ -162,7 +162,7 @@ const autoi18nTranslate = async (questions: string[], tos: TranslateTarget[], fr
     const separator = '-'
     const hasQuestions = questions.map((value) => {
         return {
-            key: translateHashKey(value, true),
+            key: translateHashKey(value),
             value,
         }
     })
