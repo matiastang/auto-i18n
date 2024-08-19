@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 16:05:35
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-16 17:01:38
+ * @LastEditTime: 2024-08-19 11:27:23
  * @FilePath: /auto-i18n/src/autoi18n/autoi18n.ts
  * @Description: autoi18n
  */
@@ -67,6 +67,7 @@ const autoi18n = {
      * @param options 
      */
     async install(app: App, options: Autoi18nConfig) {
+        console.info('autoi18n插件初始化')
         const optionLocal = options.locale
         if (optionLocal) {
             autoi18nInfo.locale = optionLocal

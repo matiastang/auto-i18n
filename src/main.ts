@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-19 10:17:57
+ * @LastEditTime: 2024-08-19 11:31:05
  * @Description: main.ts
  */
 import path from 'path'
@@ -49,11 +49,13 @@ app.use(router)
 //         switch: 'swit换',
 //     }
 // }
+// const filePath = path.resolve(__dirname, './public/translate.json')
+// console.info(filePath)
 
 app.use(autoi18n, {
     filePath: '/translate.json',
     // filePath: './public/translate.json',
-    // filePath: path.resolve(__dirname, './public/translate.json'),
+    // filePath,
     locale: TranslateTarget.ZH,
     targets: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
 })

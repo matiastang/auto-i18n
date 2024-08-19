@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-16 17:45:18
+ * @LastEditTime: 2024-08-19 11:31:29
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
@@ -142,10 +142,15 @@ const autoi18nPlugin = (config: Autoi18nPluginConfig) => {
          */
         async buildStart(options: InputOptions) {
             console.info('buildStart')
+            console.info(options)
             const filePath = config.filePath || path.resolve(__dirname, './translate.json')
             // const url = path.resolve(__dirname, './translate.json')
             const fileContent = await readTranslateJson(filePath)
-            console.info(filePath, fileContent)
+            console.info(`filePath=${filePath}`, fileContent)
+            const configFilePath = config.filePath
+            if (configFilePath) {
+                autoi18nPluginInfo.filePath = configFilePath
+            }
             const configLocal = config.locale
             if (configLocal) {
                 autoi18nPluginInfo.locale = configLocal

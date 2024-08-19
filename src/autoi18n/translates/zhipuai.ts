@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2024-03-19 18:02:05
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-16 17:42:42
+ * @LastEditTime: 2024-08-19 11:12:22
  * @FilePath: /auto-i18n/src/autoi18n/translates/zhipuai.ts
  * @Description: 智谱AI模型翻译
  */
@@ -98,12 +98,12 @@ const extractContentBetweenTags = (input: string): string[] => {
  * @param from 
  */
 const translate = async (apiKey: string, texts: string[], tos: TranslateTarget[], from: TranslateTarget = TranslateTarget.ZH) => {
-    const valid = isValidApikey(apiKey)
-    if (!valid) {
-        const err = 'apikey格式错误'
-        console.warn(err)
-        return null
-    }
+    // const valid = isValidApikey(apiKey)
+    // if (!valid) {
+    //     const err = 'apikey格式错误'
+    //     console.warn(err)
+    //     return null
+    // }
     const questions = texts.map(item => `<${item}>`).join('、')
     if (!questions) {
         const err = '没有待翻译内容'
@@ -145,6 +145,7 @@ const translate = async (apiKey: string, texts: string[], tos: TranslateTarget[]
         ).then(res => res.json())
         console.log('=======ZHIPUAI 返回结果=======')
         console.log(res)
+        console.log(res.choices[0].message)
         // TODO: - 错误处理
         const content = res.choices[0].message.content
         console.log('=======返回文本=======')

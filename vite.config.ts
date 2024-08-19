@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-19 09:57:37
+ * @LastEditTime: 2024-08-19 11:08:01
  * @Description: vite配置文件
  */
 // node路径
