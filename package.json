@@ -24,6 +24,7 @@
         "ts:build": "tsc --build src/autoi18n/tsconfig.json",
         "build": "vite --config vite.build.config.ts build --mode production",
         "cp:type": "cp src/autoi18n/buildTypes/index.d.ts dist",
+        "cp:all:type": "cp -r src/autoi18n/buildTypes/* dist/",
         "plugin:build": "pnpm run ts:build && pnpm run build && pnpm run cp:type",
         "push:npm:package": "gulp versionPatch && gulp npmPackagePush",
         "plugin:build:push:npm:package": "pnpm run plugin:build && pnpm run push:npm:package"
@@ -44,7 +45,6 @@
         "@vitejs/plugin-vue": "^4.2.3",
         "@vue/runtime-core": "^3.3.4",
         "@webgpu/types": "^0.1.33",
-        "autoi18n": "file:dist",
         "axios": "^1.4.0",
         "buffer": "^6.0.3",
         "css-vars-ponyfill": "^2.4.8",

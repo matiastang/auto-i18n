@@ -72,7 +72,7 @@
         // "typeRoots": ["node_modules/@types"],
         // 加载的声明文件包
         // "types": ["vite/client", "@webgpu/types", "@types/dom-webcodecs", "@types/node"]
-        "types": ["vite/client", "node", "./src/vueAutoi18n.d.ts"]
+        "types": ["node", "./src/vueAutoi18n.d.ts"]
     },
     "files": ["global.d.ts"],
     "include": [
@@ -86,7 +86,7 @@
         "tests/**/*.tsx",
         "env.d.ts",
     ],
-    "exclude": ["node_modules"]
+    // "exclude": ["node_modules"]
 }
 // {
 //     "compilerOptions": {

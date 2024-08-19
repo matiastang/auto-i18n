@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-16 17:34:58
+ * @LastEditTime: 2024-08-19 10:17:57
  * @Description: main.ts
  */
 import path from 'path'
@@ -12,9 +12,11 @@ import router from '@/router'
 import { createPinia } from 'pinia'
 import { piniaPersistedState } from 'matias-pinia-persisted-state'
 import _package from '../package.json'
-// import { autoi18n } from './autoi18n'
-// import { TranslateTarget } from './autoi18n/@types/enum'
-import { autoi18n, TranslateTarget } from 'autoi18n/index'
+import { autoi18n } from './autoi18n'
+import { TranslateTarget } from './autoi18n/@types/enum'
+
+// import { autoi18n, TranslateTarget } from 'autoi18n'
+
 // import {createI18n} from 'vue-i18n'
 // import messages from './autoi18n/message'
 
