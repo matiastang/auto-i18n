@@ -2,19 +2,20 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-19 11:31:05
+ * @LastEditTime: 2024-08-23 17:13:17
  * @Description: main.ts
  */
-import path from 'path'
+// import path from 'path'
 import { createApp } from 'vue'
 import App from '@/App.vue'
 import router from '@/router'
 import { createPinia } from 'pinia'
 import { piniaPersistedState } from 'matias-pinia-persisted-state'
 import _package from '../package.json'
-import { autoi18n } from './autoi18n'
-import { TranslateTarget } from './autoi18n/@types/enum'
+// import { autoi18n } from './autoi18n'
+// import { TranslateTarget } from './autoi18n/@types/enum'
 
+import { autoi18n, TranslateTarget } from 'root/dist/index.es.js'
 // import { autoi18n, TranslateTarget } from 'autoi18n'
 
 // import {createI18n} from 'vue-i18n'

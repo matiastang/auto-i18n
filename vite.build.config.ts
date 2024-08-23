@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2021-12-30 15:37:18
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-16 17:50:05
+ * @LastEditTime: 2024-08-23 17:01:33
  * @FilePath: /auto-i18n/vite.build.config.ts
  * @Description: npm 打包上传配置
  */
@@ -27,14 +27,32 @@ export default defineConfig({
             fileName: (format) => `index.${format}.js`,
         },
         sourcemap: true, // 构建后是否生成 source map 文件。
+        /*
+        build. terserOptions is specified but build.minify is not set to use Terser.  Note Vite now defaults to use esbuild for minification.  If you still prefer Terser, set build. minify to "terser".
+        */
+        // 压缩配置(默认使用esbuild来压缩，效率更高)
+        // terserOptions: {
+        //     // compress: {
+        //     //     // warnings: false,
+        //     //     drop_console: mode === 'production', //打包时删除console
+        //     //     drop_debugger: true, //打包时删除 debugger
+        //     //     pure_funcs: ['console.log'],
+        //     // },
+        //     output: {
+        //         // 去掉注释内容
+        //         comments: true,
+        //     },
+        // },
         // 自定义底层的 Rollup 打包配置。这与从 Rollup 配置文件导出的选项相同，并将与 Vite 的内部 Rollup 选项合并。查看 Rollup 选项文档 获取更多细节。
         rollupOptions: {
             // 确保外部化处理那些你不想打包进库的依赖
-            external: ['vue'],
+            external: ['vue', 'rollup', 'lodash'],
             output: {
                 // 在 UMD 构建模式下为这些外部化的依赖提供一个全局变量
                 globals: {
-                    pinia: 'vue',
+                    vue: 'vue',
+                    rollup: 'rollup',
+                    lodash: 'lodash',
                 },
             },
         },

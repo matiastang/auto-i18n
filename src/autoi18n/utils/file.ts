@@ -2,11 +2,11 @@
  * @Author: matiastang
  * @Date: 2023-07-28 13:56:17
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-15 18:04:06
+ * @LastEditTime: 2024-08-23 18:34:52
  * @FilePath: /auto-i18n/src/autoi18n/utils/file.ts
  * @Description: autoi18n file
  */
-import * as fs from 'fs'
+// import * as fs from 'fs'
 import { Autoi18nMessages } from '../@types/autoi18n'
 
 /**
@@ -52,16 +52,24 @@ export const readJsonFile = (url: string) => {
  */
 export const readTranslateFile = async (url: string) => {
     return new Promise<string>((resolve, reject) => {
-        try {
-            fs.readFile(url, 'utf-8', (err: NodeJS.ErrnoException, data: string) => {
-                if (err) {
-                    reject(err)
-                    return
-                }
-                resolve(data)
-            })
-        } catch (error) {
-            reject(error)
+        if (typeof window === 'undefined') {  
+            // Node.js 环境  
+            try {
+                const fs = require('fs')
+                fs.readFile(url, 'utf-8', (err: NodeJS.ErrnoException, data: string) => {
+                    if (err) {
+                        reject(err)
+                        return
+                    }
+                    resolve(data)
+                })
+            } catch (error) {
+                reject(error)
+            }
+        } else {  
+            // 浏览器环境  
+            // 使用 Fetch API 或其他浏览器支持的 API  
+            reject('浏览器环境不支持，请求使用其他方案')
         }
     })
 }
@@ -92,13 +100,25 @@ export const readTranslateJson = async (url: string) => {
  */
 export const writeTranslateFile = async (url: string, data: string) => {
     return new Promise<Boolean>((resolve, reject) => {
-        fs.writeFile(url, data, (err: NodeJS.ErrnoException | null) => {
-            if (err) {
-                reject(err)
-                return
+        if (typeof window === 'undefined') {  
+            // Node.js 环境，只能这么导入，否则fs不会被打包
+            try {
+                const fs = require('fs')
+                fs.writeFile(url, data, (err: NodeJS.ErrnoException | null) => {
+                    if (err) {
+                        reject(err)
+                        return
+                    }
+                    resolve(true)
+                })
+            } catch (error) {
+                reject(error)
             }
-            resolve(true)
-        })
+        } else {  
+            // 浏览器环境  
+            // 使用 Fetch API 或其他浏览器支持的 API  
+            reject('浏览器环境不支持，请求使用其他方案')
+        }
     })
 }
 

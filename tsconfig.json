@@ -58,7 +58,7 @@
         "baseUrl": ".",
         // 路径映射，相对于baseUrl
         "paths": {
-            "root/*": ["src/style/utils/*"],
+            "root/*": ["./*"],
             "@/*": ["src/*"],
             "@utils/*": ["src/utils/*"],
             "@store/*": ["src/store/*"],

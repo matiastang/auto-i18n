@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 16:05:35
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-19 11:27:23
+ * @LastEditTime: 2024-08-23 14:47:34
  * @FilePath: /auto-i18n/src/autoi18n/autoi18n.ts
  * @Description: autoi18n
  */
@@ -60,7 +60,7 @@ export const autoTranslate = (key: string, options?: {[key: string]: string | nu
 /**
  * autoi18n插件
  */
-const autoi18n = {
+export const autoi18n = {
     /**
      * 初始化加载
      * @param app 
@@ -102,5 +102,3 @@ const autoi18n = {
         app.config.globalProperties.$translate = autoTranslate
     }
 }
-
-export default autoi18n

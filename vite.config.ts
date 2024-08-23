@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-19 11:08:01
+ * @LastEditTime: 2024-08-23 18:25:11
  * @Description: vite配置文件
  */
 // node路径
@@ -16,13 +16,33 @@ import vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
-import { autoi18nPlugin } from './src/autoi18n'
-import { TranslateTarget, TranslateAIModel } from './src/autoi18n/@types/enum'
+// import { autoi18nPlugin } from './src/autoi18n'
+// import { TranslateTarget, TranslateAIModel } from './src/autoi18n/@types/enum'
+// import { Autoi18nMessages } from './src/autoi18n/@types'
+// import { readTranslateJson, writeTranslateJson } from './src/autoi18n/utils'
+
+import { autoi18nPlugin, TranslateTarget, TranslateAIModel } from './dist/index.es.js'
+import { readTranslateJson, writeTranslateJson } from './dist/index.es.js'
+import { Autoi18nMessages } from './dist/@types'
 
 // import { autoi18nPlugin, TranslateTarget, TranslateAIModel } from 'autoi18n'
 
 // import autoi18nTranslate from './src/autoTranslate/baiduTranslate'
 // import autoi18nTranslate from './src/autoTranslate/zhipuaiTranslate'
+
+const readTranslateContent = async () => {
+    const filePath = path.resolve(__dirname, './public/translate.json')
+    console.log('readTranslateContent', filePath)
+    console.log(typeof window === 'undefined')
+    return await readTranslateJson(filePath)
+}
+
+const saveTranslateContent = async (data: Autoi18nMessages) => {
+    const filePath = path.resolve(__dirname, './public/translate.json')
+    console.log('saveTranslateContent', filePath)
+    console.log(data)
+    return await writeTranslateJson(filePath, data)
+}
 
 export default defineConfig(({ mode }) => {
     return {
@@ -30,7 +50,6 @@ export default defineConfig(({ mode }) => {
         plugins: [
             autoi18nPlugin({
                 isDev: mode !== 'production',
-                filePath: path.resolve(__dirname, './public/translate.json'),
                 locale: TranslateTarget.ZH,
                 targets: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
                 aiModelConfig: {
@@ -40,8 +59,10 @@ export default defineConfig(({ mode }) => {
                         // api_key: ''
                         apiKey: '',
                     }
-                }
-                // translate: autoi18nTranslate, 
+                },
+                readTranslateContent,
+                // translate: autoi18nTranslate,
+                saveTranslateContent,
             }),
             vue(),
             Inspect(),

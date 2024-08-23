@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2024-08-15 15:46:08
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-15 17:17:41
+ * @LastEditTime: 2024-08-23 18:04:55
  * @FilePath: /auto-i18n/src/autoi18n/@types/autoi18nPlugin.d.ts
  * @Description: 插件相关类型
  */
@@ -52,10 +52,6 @@ export type TranslateFunction = (
  */
 export interface Autoi18nPluginConfig {
     /**
-     * 翻译读取保存文件路径
-     */
-    filePath?: string,
-    /**
      * 是否dev环境
      */
     isDev?: Boolean,
@@ -73,6 +69,17 @@ export interface Autoi18nPluginConfig {
      */
     aiModelConfig?: TranslateAIModelConfig,
     /**
+     * 获取已翻译的内容
+     * @returns 
+     */
+    readTranslateContent: () => Promise<Autoi18nMessages>,
+    /**
+     * 保存已翻译的内容
+     * @param data 
+     * @returns 
+     */
+    saveTranslateContent: (data: Autoi18nMessages) => Promise<Boolean>,
+    /**
      * 转换函数
      * 如果存在，则使用该函数进行转换
      */
@@ -83,10 +90,6 @@ export interface Autoi18nPluginConfig {
  * autoi18n插件信息
  */
 export interface Autoi18nPluginInfo extends Autoi18nInfo {
-    /**
-     * 翻译保存文件路径
-     */
-    filePath?: string,
     /**
      * 是否翻译
      */

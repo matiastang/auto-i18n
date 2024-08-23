@@ -2,19 +2,20 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-19 11:31:29
+ * @LastEditTime: 2024-08-23 18:28:48
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
-import path from 'path'
+// import path from 'path'
 import { merge } from 'lodash'
 import { InputOptions } from 'rollup'
 // import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
-import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod, readTranslateJson, writeTranslateJson } from './utils'
+import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod } from './utils'
 import { Autoi18nMessages } from './@types/autoi18n'
 import { Autoi18nPluginConfig, Autoi18nPluginInfo } from './@types/autoi18nPlugin'
 import { TranslateTarget, TranslateAIModel } from './@types/enum'
 import zhipuaiTranslate from './translates/zhipuai'
+// import * as __package from '../../package.json'
 
 /**
  * 插件设置信息
@@ -100,9 +101,15 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
  * @param config 
  * @returns 
  */
-const autoi18nPlugin = (config: Autoi18nPluginConfig) => {
+export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
+    name: string;
+    version: string;
+    buildEnd(error?: Error): Promise<void>;
+    buildStart(options: InputOptions): Promise<void>;
+    transform(code: string, id: string): Promise<string>;
+} = (config: Autoi18nPluginConfig) => {
     return {
-        name: 'autoi18n',
+        name: 'autoi18n-plugin',
         version: '0.0.1',
         // /**
         //  * vite hook
@@ -132,24 +139,42 @@ const autoi18nPlugin = (config: Autoi18nPluginConfig) => {
             if (!isTranslate) {
                 return
             }
-            const filePath = autoi18nPluginInfo.filePath || path.resolve(__dirname, './translate.json')
-            // const url = path.resolve(__dirname, './translate.json')
-            const success = await writeTranslateJson(filePath, autoi18nPluginInfo.messages)
-            console.info(`写入${success}`)
+            const writeTranslateJson = config.saveTranslateContent
+            console.log(typeof writeTranslateJson)
+            if (!writeTranslateJson) {
+                return
+            }
+            // const filePath = autoi18nPluginInfo.filePath || path.resolve(__dirname, './translate.json')
+            // // const url = path.resolve(__dirname, './translate.json')
+            // const success = await writeTranslateJson(filePath, autoi18nPluginInfo.messages)
+            // console.info(`写入${success}`)
+            try {
+                const status = await writeTranslateJson(autoi18nPluginInfo.messages)
+                console.info(`保存翻译内容${status ? '成功' : '失败'}`)
+            } catch (error) {
+                console.error('saveTranslateContent error', error)
+            }
         },
         /**
          * 构建开始
          */
         async buildStart(options: InputOptions) {
-            console.info('buildStart')
-            console.info(options)
-            const filePath = config.filePath || path.resolve(__dirname, './translate.json')
+            console.info('buildStart', config)
+            // console.info(options)
+            // const filePath = config.filePath || path.resolve(__dirname, './translate.json')
             // const url = path.resolve(__dirname, './translate.json')
-            const fileContent = await readTranslateJson(filePath)
-            console.info(`filePath=${filePath}`, fileContent)
-            const configFilePath = config.filePath
-            if (configFilePath) {
-                autoi18nPluginInfo.filePath = configFilePath
+            // console.info(`filePath=${filePath}`)
+            const readTranslateJson = config.readTranslateContent
+            console.log(typeof readTranslateJson)
+            if (readTranslateJson) {
+                try {
+                    const fileContent = await readTranslateJson()
+                    autoi18nPluginInfo.messages = fileContent
+                } catch (error) {
+                    console.error('readTranslateJson error', error)
+                }
+            } else {
+                console.warn('readTranslateContent is not defined')
             }
             const configLocal = config.locale
             if (configLocal) {
@@ -160,7 +185,6 @@ const autoi18nPlugin = (config: Autoi18nPluginConfig) => {
                 autoi18nPluginInfo.targets = configTargets
             }
             autoi18nPluginInfo.isDev = config.isDev
-            autoi18nPluginInfo.messages = fileContent
         },
         /**
          * 观察器进程即将关闭时通知插件
@@ -334,5 +358,3 @@ const autoi18nPlugin = (config: Autoi18nPluginConfig) => {
         // }
     }
 }
-
-export default autoi18nPlugin
