@@ -15,9 +15,20 @@
         }
     },
     "keywords": [
-        "autoi18n",
-        "i18n"
+        "matias",
+        "matiastang",
+        "auto-i18n",
+        "autoi18n"
     ],
+    "author": {
+        "name": "matiastang",
+        "email": "matiastang@163.com"
+    },
+    "license": "Apache 2.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/matiastang/auto-i18n.git"
+    },
     "scripts": {
         "dev": "vite",
         "preview": "vite preview",
@@ -30,11 +41,6 @@
         "push:npm:package": "gulp versionPatch && gulp npmPackagePush",
         "plugin:build:push:npm:package": "pnpm run plugin:build && pnpm run push:npm:package"
     },
-    "author": {
-        "name": "matiastang",
-        "email": "matiastang@163.com"
-    },
-    "license": "ISC",
     "devDependencies": {
         "@types/dom-webcodecs": "^0.1.7",
         "@types/gulp": "^4.0.17",
@@ -78,13 +84,13 @@
         "typescript": "^5.1.3",
         "vite": "^4.3.9",
         "vite-plugin-inspect": "^0.7.28",
-        "vue": "3.3.4",
         "vue-router": "^4.2.2",
         "wgpu-matrix": "^2.4.2"
     },
     "dependencies": {
         "crypto-js": "^4.2.0",
         "lodash": "^4.17.21",
-        "rollup": "^4.20.0"
+        "rollup": "^4.20.0",
+        "vue": "^3.3.4"
     }
 }
