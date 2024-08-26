@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-26 16:52:52
+ * @LastEditTime: 2024-08-26 17:44:22
  * @Description: main.ts
  */
 // import path from 'path'
@@ -22,9 +22,6 @@ import _package from '../package.json'
 
 // npm包测试
 import { autoi18n, TranslateTarget } from 'auto-i18n-vue'
-
-// import {createI18n} from 'vue-i18n'
-// import messages from './autoi18n/message'
 
 // 默认主题（如果是其他预编译样式可以配置vite默认导入）
 import '@/style/themes/default.css'
