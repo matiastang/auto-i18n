@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-26 17:34:26
+ * @LastEditTime: 2024-08-26 17:43:45
  * @FilePath: /auto-i18n/src/views/autoi18nHome.vue
  * @Description: i18Home
 -->
@@ -21,7 +21,7 @@
                 <p class="text">{{ $translate(`用户名：{name}`, {
                     name: userName
                 })}}</p>
-                <div class="item" @click="changeUser">{{ $translate('切换用户') }}</div>
+                <div class="action" @click="changeUser">{{ $translate('切换用户') }}</div>
             </div>
         </div>
     </div>
@@ -63,13 +63,16 @@ const changeUser = () => {
 
         .item {
             display: flex;
-            
             justify-content: space-between;
             align-items: center;
             margin: 0px 16px;
 
             .text {
                 font-size: 16px;
+            }
+
+            .action {
+                flex-shrink: 0;
             }
         }
     }
