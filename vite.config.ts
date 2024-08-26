@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:55:07
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-23 18:25:11
+ * @LastEditTime: 2024-08-26 16:20:09
  * @Description: vite配置文件
  */
 // node路径
@@ -16,15 +16,18 @@ import vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
+// 本地测试
 // import { autoi18nPlugin } from './src/autoi18n'
 // import { TranslateTarget, TranslateAIModel } from './src/autoi18n/@types/enum'
 // import { Autoi18nMessages } from './src/autoi18n/@types'
 // import { readTranslateJson, writeTranslateJson } from './src/autoi18n/utils'
 
+// 本地打包测试
 import { autoi18nPlugin, TranslateTarget, TranslateAIModel } from './dist/index.es.js'
 import { readTranslateJson, writeTranslateJson } from './dist/index.es.js'
 import { Autoi18nMessages } from './dist/@types'
 
+// npm包测试
 // import { autoi18nPlugin, TranslateTarget, TranslateAIModel } from 'autoi18n'
 
 // import autoi18nTranslate from './src/autoTranslate/baiduTranslate'

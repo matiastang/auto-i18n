@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-23 17:13:17
+ * @LastEditTime: 2024-08-26 16:19:41
  * @Description: main.ts
  */
 // import path from 'path'
@@ -12,10 +12,15 @@ import router from '@/router'
 import { createPinia } from 'pinia'
 import { piniaPersistedState } from 'matias-pinia-persisted-state'
 import _package from '../package.json'
+
+// 本地测试
 // import { autoi18n } from './autoi18n'
 // import { TranslateTarget } from './autoi18n/@types/enum'
 
+// 本地打包测试
 import { autoi18n, TranslateTarget } from 'root/dist/index.es.js'
+
+// npm包测试
 // import { autoi18n, TranslateTarget } from 'autoi18n'
 
 // import {createI18n} from 'vue-i18n'
