@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-21 15:14:42
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-15 17:52:02
+ * @LastEditTime: 2024-08-26 17:08:45
  * @FilePath: /auto-i18n/src/Components/Header/Header.vue
  * @Description: Header
 -->
@@ -20,8 +20,11 @@
 </template>
 <script setup lang="ts">
 import { inject, computed } from 'vue'
-import { Autoi18nInfo } from '@autoi18n/@types/autoi18n'
-import { autoTranslate } from '@autoi18n/autoi18n'
+// import { Autoi18nInfo } from '@autoi18n/@types/autoi18n'
+// import { autoTranslate } from '@autoi18n/autoi18n'
+
+import { Autoi18nInfo } from 'auto-i18n-vue/dist/@types'
+import { autoTranslate } from 'auto-i18n-vue'
 
 const autoi18n = inject<Autoi18nInfo>('$autoi18n')
 

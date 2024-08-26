@@ -51,6 +51,9 @@ importers:
       '@webgpu/types':
         specifier: ^0.1.33
         version: 0.1.33
+      auto-i18n-vue:
+        specifier: 0.0.1
+        version: 0.0.1
       axios:
         specifier: ^1.4.0
         version: 1.4.0
@@ -858,6 +861,9 @@ packages:
     resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
     engines: {node: '>= 4.5.0'}
     hasBin: true
+
+  auto-i18n-vue@0.0.1:
+    resolution: {integrity: sha512-sZDeEhR/hCJX7RqOr8zXKJ8qf+julXnngQoXIFWvkM5uXULSxkwdK1mTO0TtWjujxqVWcAx0PS3vklLcjGt6KA==}
 
   autoprefixer@10.4.18:
     resolution: {integrity: sha512-1DKbDfsr6KUElM6wg+0zRNkB/Q7WcKYAaK+pzXn+Xqmszm/5Xa9coeNdtP88Vi+dPzZnMjhge8GIV49ZQkDa+g==}
@@ -4167,6 +4173,13 @@ snapshots:
   asynckit@0.4.0: {}
 
   atob@2.1.2: {}
+
+  auto-i18n-vue@0.0.1:
+    dependencies:
+      crypto-js: 4.2.0
+      lodash: 4.17.21
+      rollup: 4.20.0
+      vue: 3.3.4
 
   autoprefixer@10.4.18(postcss@8.4.36):
     dependencies:

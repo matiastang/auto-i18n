@@ -2,7 +2,7 @@
  * @Author: matiastang
  * @Date: 2023-07-13 17:42:47
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-19 11:09:10
+ * @LastEditTime: 2024-08-26 17:16:30
  * @FilePath: /auto-i18n/src/views/home/i18Home.vue
  * @Description: i18Home
 -->
@@ -35,6 +35,9 @@
                 <!-- <textarea  class="content" v-model="answerValue" disabled></textarea> -->
                 <MarkdownContent :content="answerValue"></MarkdownContent>
             </div>
+            <div>
+                <p>{{ $translate('需要翻译的文案') }}</p>
+            </div>
             <button class="item" @click="sendClick">{{ $translate('发送') }}</button>
             <button class="item" @click="cancelClick">{{ $translate('取消') }}</button>
             <button class="item" @click="cancelClick">{{ $translate('结束') }}</button>
@@ -43,8 +46,9 @@
 </template>
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { autoTranslate } from '@autoi18n/autoi18n'
+// import { autoTranslate } from '@autoi18n/autoi18n'
 // import { Autoi18nMessageValue } from '@autoi18n/type'
+import { autoTranslate } from 'auto-i18n-vue'
 
 // Marked
 import { Marked } from 'marked'

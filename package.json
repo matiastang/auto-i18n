@@ -1,5 +1,5 @@
 {
-    "name": "autoi18n",
+    "name": "auto-i18n-vue",
     "version": "0.0.1",
     "description": "自动国际化",
     "main": "./dist/index.umd.js",
@@ -18,7 +18,7 @@
         "matias",
         "matiastang",
         "auto-i18n",
-        "autoi18n"
+        "auto-i18n-vue"
     ],
     "author": {
         "name": "matiastang",
@@ -52,6 +52,7 @@
         "@vitejs/plugin-vue": "^4.2.3",
         "@vue/runtime-core": "^3.3.4",
         "@webgpu/types": "^0.1.33",
+        "auto-i18n-vue": "0.0.1",
         "axios": "^1.4.0",
         "buffer": "^6.0.3",
         "css-vars-ponyfill": "^2.4.8",

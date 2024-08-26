@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2023-06-15 22:54:49
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-26 16:19:41
+ * @LastEditTime: 2024-08-26 16:52:52
  * @Description: main.ts
  */
 // import path from 'path'
@@ -18,10 +18,10 @@ import _package from '../package.json'
 // import { TranslateTarget } from './autoi18n/@types/enum'
 
 // 本地打包测试
-import { autoi18n, TranslateTarget } from 'root/dist/index.es.js'
+// import { autoi18n, TranslateTarget } from 'root/dist/index.es.js'
 
 // npm包测试
-// import { autoi18n, TranslateTarget } from 'autoi18n'
+import { autoi18n, TranslateTarget } from 'auto-i18n-vue'
 
 // import {createI18n} from 'vue-i18n'
 // import messages from './autoi18n/message'
