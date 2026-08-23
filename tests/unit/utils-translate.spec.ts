@@ -14,6 +14,7 @@ import {
     devTransformMethod,
 } from '../../src/autoi18n/utils/translate'
 import { TranslateTarget } from '../../src/autoi18n/@types/enum'
+import { Autoi18nMessageItem } from '../../src/autoi18n/@types/autoi18n'
 
 describe('translateTargetText', () => {
     it('返回全部支持语言的描述', () => {
@@ -94,7 +95,7 @@ describe('devTransformMessages', () => {
     it('生成消息字面量代码', () => {
         const key = translateHashKey('你好')
         const code = devTransformMessages({
-            [key]: { zh: '你好', en: 'Hello' },
+            [key]: { zh: '你好', en: 'Hello' } as Autoi18nMessageItem,
         })
         expect(code).toContain(`  ${key}: {`)
         expect(code).toContain(`zh: '你好',`)

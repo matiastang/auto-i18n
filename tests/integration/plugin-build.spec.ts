@@ -4,7 +4,7 @@
  */
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { build } from 'vite'
+import { build, Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { RollupOutput } from 'rollup'
 import { autoi18nPlugin } from '../../src/autoi18n/autoi18nPlugin'
@@ -23,6 +23,8 @@ describe('集成：autoi18nPlugin × vite build', () => {
             root: fixtureRoot,
             logLevel: 'warn',
             plugins: [
+                // 插件返回类型基于仓库 rollup 4 的 InputOptions 声明，与 vite 4 内置
+                // 的 rollup 3 类型存在结构冲突，运行时兼容，这里用断言桥接
                 autoi18nPlugin({
                     isDev: true,
                     locale: TranslateTarget.ZH,
@@ -42,7 +44,7 @@ describe('集成：autoi18nPlugin × vite build', () => {
                         saved.push(data)
                         return true
                     },
-                }),
+                }) as unknown as Plugin,
                 vue(),
             ],
             resolve: {
