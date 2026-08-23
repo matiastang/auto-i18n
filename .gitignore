@@ -11,3 +11,6 @@ buildTypes
 # python
 __pycache__/
 *.pyc
+# playwright
+test-results/
+playwright-report/
