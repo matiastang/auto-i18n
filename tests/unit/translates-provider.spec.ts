@@ -4,7 +4,7 @@
  * 优先级：自定义 translate > LLM(aiModelConfig 有效) > 免费三方翻译（默认）
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { TranslateTarget } from '../../src/autoi18n/@types/enum'
+import { TranslateTarget, TranslateAIModel } from '../../src/autoi18n/@types/enum'
 import { Autoi18nMessages } from '../../src/autoi18n/@types/autoi18n'
 
 beforeEach(() => {
@@ -94,6 +94,76 @@ describe('resolveTranslateFunction（三级优先级）', () => {
             {} as Autoi18nMessages,
         )
         expect(res).toBeNull()
+        vi.unstubAllGlobals()
+    })
+})
+
+describe('resolveTranslateFunction（LLM 分支行为验证，stub fetch）', () => {
+    const chatResponse = { choices: [{ message: { content: '<Hello>' } }] }
+
+    it('model=OPENAI 且 apiKey/model 齐备：返回 OpenAI 兼容源（请求发往配置的 baseUrl）', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
+            ok: true,
+            json: () => Promise.resolve(chatResponse),
+        }))
+        vi.stubGlobal('fetch', fetchMock)
+        const { resolveTranslateFunction } = await loadModules()
+        const fn = resolveTranslateFunction({
+            aiModelConfig: {
+                model: TranslateAIModel.OPENAI,
+                config: { apiKey: 'sk-test', baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat' },
+            },
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async () => true,
+        })
+        const res = await fn(['你好'], [TranslateTarget.EN], TranslateTarget.ZH, {})
+        const [url, init] = fetchMock.mock.calls[0]
+        expect(url).toBe('https://api.deepseek.com/chat/completions')
+        expect(JSON.parse(String(init.body)).model).toBe('deepseek-chat')
+        expect(res && Object.values(res)[0]?.[TranslateTarget.EN]).toBe('Hello')
+        vi.unstubAllGlobals()
+    })
+
+    it('model=OPENAI 缺 model：警告并回退免费翻译源', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const { resolveTranslateFunction, freeTranslate } = await loadModules()
+        const fn = resolveTranslateFunction({
+            aiModelConfig: {
+                model: TranslateAIModel.OPENAI,
+                config: { apiKey: 'sk-test' },
+            },
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async () => true,
+        })
+        expect(fn).toBe(freeTranslate)
+        expect(warnSpy).toHaveBeenCalled()
+    })
+
+    it('model=ZHIPUAI 且 apiKey 齐备：返回智谱源（默认 glm-4 发往智谱端点）', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
+            ok: true,
+            json: () => Promise.resolve(chatResponse),
+        }))
+        vi.stubGlobal('fetch', fetchMock)
+        const { resolveTranslateFunction } = await loadModules()
+        const fn = resolveTranslateFunction({
+            aiModelConfig: {
+                model: TranslateAIModel.ZHIPUAI,
+                config: { apiKey: 'zhipu-key' },
+            },
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async () => true,
+        })
+        const res = await fn(['你好'], [TranslateTarget.EN], TranslateTarget.ZH, {})
+        const [url, init] = fetchMock.mock.calls[0]
+        expect(url).toBe('https://open.bigmodel.cn/api/paas/v4/chat/completions')
+        expect(JSON.parse(String(init.body)).model).toBe('glm-4')
+        expect(res && Object.values(res)[0]?.[TranslateTarget.EN]).toBe('Hello')
         vi.unstubAllGlobals()
     })
 })

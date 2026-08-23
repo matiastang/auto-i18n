@@ -205,3 +205,102 @@ describe('Use Case: 免费三方翻译工作流（默认翻译源，stub fetch�
         vi.restoreAllMocks()
     })
 })
+
+describe('Use Case: OpenAI 兼容 LLM 翻译工作流（stub fetch）', () => {
+    it('配置 OPENAI（apiKey/baseUrl/model）→ 兼容接口翻译 → 注入 → 落盘', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
+            ok: true,
+            json: () => Promise.resolve({ choices: [{ message: { content: '<Hello, LLM world>' } }] }),
+        }))
+        vi.stubGlobal('fetch', fetchMock)
+        const autoi18nPlugin = await loadPlugin()
+        const saved: Autoi18nMessages[] = []
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            aiModelConfig: {
+                model: 'openai' as never,
+                config: { apiKey: 'sk-test', baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat' },
+            },
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async (data) => {
+                saved.push(data)
+                return true
+            },
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        const out = await plugin.transform(sfc('LLM 文案'), '/project/src/App.vue')
+        const [url] = fetchMock.mock.calls[0]
+        expect(url).toBe('https://api.deepseek.com/chat/completions')
+        expect(out).toContain('_localeTranslate')
+        expect(out).toContain('Hello, LLM world')
+
+        await plugin.buildEnd()
+        expect(saved).toHaveLength(1)
+        expect(saved[0][translateHashKey('LLM 文案')]?.en).toBe('Hello, LLM world')
+        vi.unstubAllGlobals()
+        vi.restoreAllMocks()
+    })
+})
+
+describe('Use Case: 自定义翻译函数优先级（最高且独占）', () => {
+    it('同时配置 translate 与 aiModelConfig 时仅自定义函数被调用（零网络请求）', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const fetchMock = vi.fn()
+        vi.stubGlobal('fetch', fetchMock)
+        const autoi18nPlugin = await loadPlugin()
+        const saved: Autoi18nMessages[] = []
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            translate: dictionaryTranslate,
+            aiModelConfig: {
+                model: 'openai' as never,
+                config: { apiKey: 'sk-test', model: 'any-model' },
+            },
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async (data) => {
+                saved.push(data)
+                return true
+            },
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        const out = await plugin.transform(sfc('优先级文案'), '/project/src/App.vue')
+        expect(fetchMock).not.toHaveBeenCalled()
+        expect(out).toContain('EN(优先级文案)')
+        await plugin.buildEnd()
+        expect(saved[0][translateHashKey('优先级文案')]?.en).toBe('EN(优先级文案)')
+        vi.unstubAllGlobals()
+        vi.restoreAllMocks()
+    })
+
+    it('自定义函数抛异常：警告、不中断、不落盘', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const autoi18nPlugin = await loadPlugin()
+        const saveFn = vi.fn(async () => true)
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            translate: async () => {
+                throw new Error('custom translate boom')
+            },
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: saveFn,
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        const out = await plugin.transform(sfc('异常文案'), '/project/src/App.vue')
+        expect(out).toContain('_localeTranslate')
+        expect(warnSpy).toHaveBeenCalled()
+        await plugin.buildEnd()
+        expect(saveFn).not.toHaveBeenCalled()
+        vi.restoreAllMocks()
+    })
+})

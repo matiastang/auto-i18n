@@ -18,9 +18,13 @@ export interface AIModelConfig {
      */
     apiKey: string
     /**
-     * 地址
+     * 地址（OPENAI 模式下为任一 OpenAI 兼容服务地址）
      */
     baseUrl?: string
+    /**
+     * 模型名（OPENAI 模式必填有效值，缺失时回退免费翻译；ZHIPUAI 模式缺省 glm-4）
+     */
+    model?: string
 }
 
 /**

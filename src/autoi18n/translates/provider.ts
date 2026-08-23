@@ -11,6 +11,7 @@ import { Autoi18nPluginConfig, TranslateFunction } from '../@types/autoi18nPlugi
 import { TranslateTarget, TranslateAIModel } from '../@types/enum'
 import { Autoi18nMessages } from '../@types/autoi18n'
 import zhipuaiTranslate from './zhipuai'
+import { openaiTranslate } from './openai'
 import { freeTranslate } from './free'
 
 // 免费翻译默认行为提示只打印一次（transform 每个模块都会触发解析）
@@ -41,10 +42,21 @@ export const resolveTranslateFunction = (config: Autoi18nPluginConfig): Translat
                 return await zhipuaiTranslate(aiConfig.apiKey, questions, tos, from, cache)
             }
         }
+        // OpenAI 兼容接口：apiKey 与 model 均需有效，否则回退免费翻译
+        if (modelConfig.model === TranslateAIModel.OPENAI && aiConfig?.apiKey && aiConfig?.model) {
+            return async (
+                questions: string[],
+                tos: TranslateTarget[],
+                from: TranslateTarget,
+                cache?: Autoi18nMessages,
+            ) => {
+                return await openaiTranslate(aiConfig, questions, tos, from, cache)
+            }
+        }
         console.warn(
             `autoi18n：aiModelConfig 无效（model=${String(modelConfig.model)}，apiKey=${
                 aiConfig?.apiKey ? '已配置' : '缺失'
-            }），回退免费三方翻译`,
+            }${modelConfig.model === TranslateAIModel.OPENAI ? '，model=' + (aiConfig?.model || '缺失') : ''}），回退免费三方翻译`,
         )
     }
     // ③ 免费三方翻译（默认行为，零配置）
