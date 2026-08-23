@@ -16,11 +16,10 @@ import vue from '@vitejs/plugin-vue'
 import Inspect from 'vite-plugin-inspect'
 import _package from './package.json'
 
-// 本地测试
-// import { autoi18nPlugin } from './src/autoi18n'
-// import { TranslateTarget, TranslateAIModel } from './src/autoi18n/@types/enum'
-// import { Autoi18nMessages } from './src/autoi18n/@types'
-// import { readTranslateJson, writeTranslateJson } from './src/autoi18n/utils'
+// 本地源验证（v0.0.3 未发布能力；发布后可切回下方 npm 包导入）
+import { autoi18nPlugin, TranslateTarget, TranslateAIModel, readTranslateJson, writeTranslateJson } from './src/autoi18n/index'
+import { Autoi18nMessages, } from './src/autoi18n/@types/autoi18n'
+import { TranslateAIModelConfig } from './src/autoi18n/@types/autoi18nPlugin'
 
 // 本地打包测试
 // import { autoi18nPlugin, TranslateTarget, TranslateAIModel } from './dist/index.es.js'
@@ -28,8 +27,8 @@ import _package from './package.json'
 // import { Autoi18nMessages } from './dist/@types'
 
 // npm包测试
-import { autoi18nPlugin, TranslateTarget, TranslateAIModel, readTranslateJson, writeTranslateJson } from 'auto-i18n-vue'
-import { Autoi18nMessages } from 'auto-i18n-vue'
+// import { autoi18nPlugin, TranslateTarget, TranslateAIModel, readTranslateJson, writeTranslateJson } from 'auto-i18n-vue'
+// import { Autoi18nMessages } from 'auto-i18n-vue'
 
 const readTranslateContent = async () => {
     const filePath = path.resolve(__dirname, './public/translate.json')
@@ -48,6 +47,25 @@ const saveTranslateContent = async (data: Autoi18nMessages) => {
 export default defineConfig(({ mode }) => {
     // 读取本地环境变量，apiKey保存在不入库的.env.local中
     const env = loadEnv(mode, process.cwd(), '')
+    // 翻译源：环境变量存在则使用对应 LLM（智谱/OpenAI 兼容），否则零配置走免费三方翻译（默认）
+    let aiModelConfig: TranslateAIModelConfig | undefined
+    if (env.ZHIPUAI_API_KEY) {
+        aiModelConfig = {
+            model: TranslateAIModel.ZHIPUAI,
+            config: {
+                apiKey: env.ZHIPUAI_API_KEY,
+            },
+        }
+    } else if (env.OPENAI_API_KEY) {
+        aiModelConfig = {
+            model: TranslateAIModel.OPENAI,
+            config: {
+                apiKey: env.OPENAI_API_KEY,
+                baseUrl: env.OPENAI_BASE_URL,
+                model: env.OPENAI_MODEL,
+            },
+        }
+    }
     return {
         // 共享配置
         plugins: [
@@ -55,13 +73,7 @@ export default defineConfig(({ mode }) => {
                 isDev: mode !== 'production',
                 locale: TranslateTarget.ZH,
                 targets: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
-                aiModelConfig: {
-                    model: TranslateAIModel.ZHIPUAI,
-                    config: {
-                        baseUrl: '',
-                        apiKey: env.ZHIPUAI_API_KEY || '',
-                    }
-                },
+                aiModelConfig,
                 readTranslateContent,
                 // translate: autoi18nTranslate,
                 saveTranslateContent,
@@ -75,6 +87,8 @@ export default defineConfig(({ mode }) => {
                 { find: 'root', replacement: path.resolve(__dirname, './') },
                 { find: '@', replacement: path.resolve(__dirname, './src') },
                 { find: '@autoi18n', replacement: path.resolve(__dirname, './src/autoi18n') },
+                // 演示应用经包名引用本地源（验证未发布能力；发布后可移除）
+                { find: 'auto-i18n-vue', replacement: path.resolve(__dirname, './src/autoi18n/index.ts') },
             ],
         },
         css: {
