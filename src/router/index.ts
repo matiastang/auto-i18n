@@ -10,7 +10,6 @@ import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw } 
 // layout
 import HeaderLayout from '@/Components/HeaderLayout/HeaderLayout.vue'
 // web
-import I18Home from '@/views/home/i18Home.vue'
 import AiHome from '@/views/ai/index.vue'
 import Home from '@/views/autoi18nHome.vue'
 // NotFound

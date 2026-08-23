@@ -8,7 +8,7 @@
 // node路径
 import path from 'path'
 // vite
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 // 解析.vue文件
 import vue from '@vitejs/plugin-vue'
 // import config from './loadenv'
@@ -31,9 +31,6 @@ import _package from './package.json'
 import { autoi18nPlugin, TranslateTarget, TranslateAIModel, readTranslateJson, writeTranslateJson } from 'auto-i18n-vue'
 import { Autoi18nMessages } from 'auto-i18n-vue'
 
-// import autoi18nTranslate from './src/autoTranslate/baiduTranslate'
-// import autoi18nTranslate from './src/autoTranslate/zhipuaiTranslate'
-
 const readTranslateContent = async () => {
     const filePath = path.resolve(__dirname, './public/translate.json')
     console.log('readTranslateContent', filePath)
@@ -49,6 +46,8 @@ const saveTranslateContent = async (data: Autoi18nMessages) => {
 }
 
 export default defineConfig(({ mode }) => {
+    // 读取本地环境变量，apiKey保存在不入库的.env.local中
+    const env = loadEnv(mode, process.cwd(), '')
     return {
         // 共享配置
         plugins: [
@@ -60,8 +59,7 @@ export default defineConfig(({ mode }) => {
                     model: TranslateAIModel.ZHIPUAI,
                     config: {
                         baseUrl: '',
-                        // api_key: ''
-                        apiKey: '',
+                        apiKey: env.ZHIPUAI_API_KEY || '',
                     }
                 },
                 readTranslateContent,
@@ -74,12 +72,8 @@ export default defineConfig(({ mode }) => {
         resolve: {
             // 别名
             alias: [
-                { find: 'buffer/', replacement: path.resolve(__dirname, 'node_modules/buffer/') },
                 { find: 'root', replacement: path.resolve(__dirname, './') },
                 { find: '@', replacement: path.resolve(__dirname, './src') },
-                { find: '@static', replacement: path.resolve(__dirname, './src/static') },
-                { find: '@store', replacement: path.resolve(__dirname, './src/store') },
-                { find: '@utils', replacement: path.resolve(__dirname, './src/utils') },
                 { find: '@autoi18n', replacement: path.resolve(__dirname, './src/autoi18n') },
             ],
         },
@@ -107,9 +101,6 @@ export default defineConfig(({ mode }) => {
                     additionalData: `@use "@/style/scss/index.scss" as * ;`,
                 },
                 sass: {},
-                stylus: {
-                    additionalData: '@import "../src/style/stylus/index.styl";',
-                },
             },
         },
         // 开发服务配置

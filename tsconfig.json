@@ -60,9 +60,6 @@
         "paths": {
             "root/*": ["./*"],
             "@/*": ["src/*"],
-            "@utils/*": ["src/utils/*"],
-            "@store/*": ["src/store/*"],
-            "@static/*": ["src/static/*"],
             "@autoi18n/*": ["src/autoi18n/*"],
         },
         // TS需要引用的库，即声明文件，es5 默认引用dom、es5、scripthost,如需要使用es的高级版本特性，通常都需要配置，如es8的数组新特性需要引入"ES2019.Array",
@@ -76,14 +73,11 @@
     },
     "files": ["global.d.ts"],
     "include": [
-        "src/vuei18n.ts",
         // "src/*.d.ts",
         "src/**/*.d.ts",
         "src/**/*.ts",
         "src/**/*.tsx",
         "src/**/*.vue",
-        "tests/**/*.ts",
-        "tests/**/*.tsx",
         "env.d.ts",
     ],
     // "exclude": ["node_modules"]

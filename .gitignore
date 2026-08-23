@@ -5,3 +5,6 @@ node_modules
 dist*
 buildJs
 buildTypes
+# local env files (.env.local contains apiKey)
+.env.local
+.env.*.local

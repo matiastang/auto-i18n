@@ -20,7 +20,7 @@ import cssVars from 'css-vars-ponyfill'
 const text = ref('404')
 
 const changeTheme = () => {
-    // toggleTheme('darkly')
+
     cssVars({
         preserveStatic: false,
         variables: {

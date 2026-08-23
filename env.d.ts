@@ -8,12 +8,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-    readonly BAIDU_APP_ID: string
-    readonly BAIDU_APP_KEY: string
-    readonly VITE_APP_BASE_API: string
-    readonly VITE_APP_BASE_HOST: string
-    VUE_APP_BUILD_TIME: string
-    
+    VITE_APP_BUILD_TIME: string
 }
 
 interface ImportMeta {
