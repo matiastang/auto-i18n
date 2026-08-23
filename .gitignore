@@ -8,3 +8,6 @@ buildTypes
 # local env files (.env.local contains apiKey)
 .env.local
 .env.*.local
+# python
+__pycache__/
+*.pyc
