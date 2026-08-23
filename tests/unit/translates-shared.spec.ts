@@ -260,6 +260,42 @@ describe('chatCompletionsTranslate（OpenAI 兼容通用客户端）', () => {
         expect(warnSpy).toHaveBeenCalled()
     })
 
+    it('译文丢失 {name} 占位符时丢弃该目标整批并警告（FR-006）', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ choices: [{ message: { content: '<username: >' } }] }),
+        }))
+        vi.stubGlobal('fetch', fetchMock)
+        const res = await chatCompletionsTranslate(
+            options,
+            ['用户名：{name}'],
+            [TranslateTarget.EN],
+            TranslateTarget.ZH,
+        )
+        expect(res).toEqual([])
+        expect(warnSpy).toHaveBeenCalled()
+    })
+
+    it('HTTP 非 200 时跳过该目标并警告', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
+            ok: false,
+            status: 401,
+            json: () => Promise.resolve({}),
+        }))
+        vi.stubGlobal('fetch', fetchMock)
+        const res = await chatCompletionsTranslate(
+            options,
+            ['你好'],
+            [TranslateTarget.EN],
+            TranslateTarget.ZH,
+        )
+        expect(res).toEqual([])
+        expect(warnSpy).toHaveBeenCalled()
+    })
+
     it('无待翻译文本时不发请求', async () => {
         const fetchMock = vi.fn()
         vi.stubGlobal('fetch', fetchMock)

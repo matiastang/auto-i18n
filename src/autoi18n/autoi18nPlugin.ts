@@ -164,7 +164,16 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
          * 构建开始
          */
         async buildStart(options: InputOptions) {
-            console.info('buildStart', config)
+            // 不打印原始 config——其中包含 aiModelConfig 的 apiKey，会泄漏到终端与 CI 日志
+            console.info('buildStart', {
+                locale: config.locale,
+                targets: config.targets,
+                translateSource: config.translate
+                    ? 'custom'
+                    : config.aiModelConfig
+                      ? String(config.aiModelConfig.model)
+                      : 'free',
+            })
             // console.info(options)
             // const filePath = config.filePath || path.resolve(__dirname, './translate.json')
             // const url = path.resolve(__dirname, './translate.json')

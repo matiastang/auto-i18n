@@ -12,7 +12,7 @@ import { Autoi18nMessages, Autoi18nMessageItem } from '../@types/autoi18n'
 import { TranslateTarget } from '../@types/enum'
 import { toIsoLocale } from '../utils/language'
 import { translateHashKey } from '../utils/translate'
-import { checkTranslateQuestions } from './shared'
+import { checkTranslateQuestions, placeholdersPreserved } from './shared'
 
 // MyMemory 免费匿名接口（单次一个 q，中文用 zh-CN）
 const MYMEMORY_URL = 'https://api.mymemory.translated.net/get'
@@ -20,6 +20,8 @@ const MYMEMORY_URL = 'https://api.mymemory.translated.net/get'
 const GOOGLE_GTX_URL = 'https://translate.googleapis.com/translate_a/single'
 // MyMemory 单条查询上限约 500 字符，预留余量
 const FREE_TEXT_MAX_LENGTH = 450
+// 单次免费请求超时（毫秒）——翻译运行在构建 transform 钩子内，必须可超时退出
+const FREE_REQUEST_TIMEOUT_MS = 10_000
 
 /**
  * 单条文本翻译服务（失败抛错，由回退链处理）
@@ -46,7 +48,7 @@ interface FreeService {
  */
 const decodeHtmlEntities = (text: string): string => {
     return text
-        .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+        .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
         .replace(/&quot;/g, '"')
         .replace(/&apos;/g, "'")
         .replace(/&lt;/g, '<')
@@ -63,7 +65,10 @@ const myMemoryService: FreeService = {
         const url = `${MYMEMORY_URL}?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(
             `${fromIso}|${toIso}`,
         )}`
-        const res = await fetch(url)
+        const res = await fetch(url, { signal: AbortSignal.timeout(FREE_REQUEST_TIMEOUT_MS) })
+        if (!res.ok) {
+            throw new Error(`MyMemory HTTP ${res.status}`)
+        }
         const data = await res.json()
         if (data?.quotaFinished === true || String(data?.responseStatus) !== '200') {
             throw new Error(`MyMemory 响应异常：${data?.responseDetails || data?.responseStatus}`)
@@ -83,7 +88,10 @@ const googleGtxService: FreeService = {
     name: 'Google',
     translateOne: async (text, fromIso, toIso) => {
         const url = `${GOOGLE_GTX_URL}?client=gtx&sl=${fromIso}&tl=${toIso}&dt=t&q=${encodeURIComponent(text)}`
-        const res = await fetch(url)
+        const res = await fetch(url, { signal: AbortSignal.timeout(FREE_REQUEST_TIMEOUT_MS) })
+        if (!res.ok) {
+            throw new Error(`Google HTTP ${res.status}`)
+        }
         const data = await res.json()
         const translated = data?.[0]?.[0]?.[0]
         if (typeof translated !== 'string' || !translated) {
@@ -112,7 +120,13 @@ const translateWithFallback = async (
 ): Promise<string | null> => {
     for (const service of FREE_SERVICES) {
         try {
-            return await service.translateOne(text, fromIso, toIso)
+            const dst = await service.translateOne(text, fromIso, toIso)
+            // 占位符（{name}）必须原样保留（FR-006）——三方机器翻译可能翻译/丢弃大括号内容，
+            // 丢失即视为该服务失败，交给回退链处理
+            if (!placeholdersPreserved(text, dst)) {
+                throw new Error(`${service.name} 译文丢失占位符`)
+            }
+            return dst
         } catch (error) {
             console.warn(
                 `免费翻译（${service.name}）失败，尝试下一个服务：`,

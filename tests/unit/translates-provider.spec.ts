@@ -46,20 +46,23 @@ describe('resolveTranslateFunction（三级优先级）', () => {
         expect(fn).toBe(custom)
     })
 
-    it('aiModelConfig 未知模型：警告并回退免费翻译源', async () => {
+    it('aiModelConfig 未知模型：警告并回退免费翻译源（警告仅打印一次）', async () => {
         vi.spyOn(console, 'info').mockImplementation(() => {})
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const { resolveTranslateFunction, freeTranslate } = await loadModules()
-        const fn = resolveTranslateFunction({
+        const config = {
             aiModelConfig: {
                 model: 'unknown-model' as never,
                 config: { apiKey: 'key' },
             },
             readTranslateContent: async () => ({}),
             saveTranslateContent: async () => true,
-        })
+        }
+        const fn = resolveTranslateFunction(config)
         expect(fn).toBe(freeTranslate)
-        expect(warnSpy).toHaveBeenCalled()
+        // 多个模块触发解析时警告不重复（transform 每模块调用一次）
+        resolveTranslateFunction(config)
+        expect(warnSpy).toHaveBeenCalledTimes(1)
     })
 
     it('aiModelConfig apiKey 为空：警告并回退免费翻译源', async () => {

@@ -47,6 +47,10 @@ export const openaiTranslate = async (
         console.log('OpenAI 兼容翻译：全部命中缓存，无需翻译')
         return null
     }
+    // 直接调用（未经插件调度器校验）且未配置 model 时给出提示，避免静默使用默认模型计费
+    if (!config.model) {
+        console.warn(`OpenAI 兼容翻译：未配置 model，使用默认模型 ${DEFAULT_OPENAI_MODEL}（建议显式配置）`)
+    }
     const results = await chatCompletionsTranslate(
         {
             apiKey: config.apiKey,

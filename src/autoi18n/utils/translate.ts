@@ -122,18 +122,20 @@ export const checkQuestions = (code: string) => {
 
 /**
  * 转换映射内容
- * @param msg 
+ * 值经 JSON.stringify 转义——译文可能含单引号/双引号/换行（如 MyMemory 译出的 It's），
+ * 裸拼接会生成非法 JS 导致开发期注入代码语法错误、构建中断
+ * @param msg
  */
 export const devTransformMessages = (msg: Autoi18nMessages) => {
     const localTransform = (info: Autoi18nMessageItem) => {
         return Object.entries(info).reduce((left, item) => {
             const [key, value] = item
-            return left + `    ${key}: '${value}',\n`
+            return left + `    ${JSON.stringify(key)}: ${JSON.stringify(value)},\n`
         }, '{\n') + '  },\n'
     }
     return Object.entries(msg).reduce((left, item) => {
         const [key, value] = item
-        return left + `  ${key}: ${localTransform(value)}`
+        return left + `  ${JSON.stringify(key)}: ${localTransform(value)}`
     }, '{\n') + '}\n'
 }
 

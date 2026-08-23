@@ -209,6 +209,54 @@ describe('freeTranslate（MyMemory 主 + Google 备回退链）', () => {
         expect(res?.[translateHashKey('没关系')]?.[TranslateTarget.EN]).toBe("It's ok & fine")
     })
 
+    it('占位符保护：译文丢失 {name} 时视为该服务失败并回退（FR-006）', async () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const fetchMock = stubFetch(async (url) => {
+            if (url.startsWith('https://api.mymemory.translated.net')) {
+                // MyMemory 把 {name} 翻译掉了
+                return myMemoryResponse('username: ')
+            }
+            // Google 保留占位符
+            return googleResponse('username: {name}')
+        })
+        const res = await freeTranslate(
+            ['用户名：{name}'],
+            [TranslateTarget.EN],
+            TranslateTarget.ZH,
+            {},
+        )
+        expect(fetchMock).toHaveBeenCalledTimes(2)
+        expect(res?.[translateHashKey('用户名：{name}')]?.[TranslateTarget.EN]).toBe('username: {name}')
+    })
+
+    it('占位符保护：全部服务均丢失占位符时跳过该条并返回 null', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const fetchMock = stubFetch(async () => myMemoryResponse('username: '))
+        const res = await freeTranslate(
+            ['用户名：{name}'],
+            [TranslateTarget.EN],
+            TranslateTarget.ZH,
+            {},
+        )
+        // MyMemory 与 Google 均丢失占位符，各尝试一次
+        expect(fetchMock).toHaveBeenCalledTimes(2)
+        expect(res).toBeNull()
+        expect(warnSpy).toHaveBeenCalled()
+    })
+
+    it('HTTP 非 200 视为失败并回退下一服务', async () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
+            ok: false,
+            status: 503,
+            json: () => Promise.resolve({}),
+        }))
+        vi.stubGlobal('fetch', fetchMock)
+        const res = await freeTranslate(['你好'], [TranslateTarget.EN], TranslateTarget.ZH, {})
+        expect(fetchMock).toHaveBeenCalledTimes(2)
+        expect(res).toBeNull()
+    })
+
     it('源语言回填：返回值包含源语言原文', async () => {
         stubFetch(async () => myMemoryResponse('Hello'))
         const res = await freeTranslate(

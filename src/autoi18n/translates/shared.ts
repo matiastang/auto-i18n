@@ -80,9 +80,12 @@ const LLM_MESSAGES = [
     },
     {
         role: 'assistant',
-        content: '<テクノロジー>、<指数>、<経済>、<スルー>',
+        content: '<テクノロジー>、<指数>、<経済>',
     },
 ]
+
+// 单次翻译请求超时（毫秒）——翻译运行在构建 transform 钩子内，必须可超时退出
+const REQUEST_TIMEOUT_MS = 10_000
 
 /**
  * 构造批量翻译请求文本：每条以 <...> 包裹并用顿号连接
@@ -160,6 +163,25 @@ export const translateMessage = (data: TranslateResult[], cache?: Autoi18nMessag
 }
 
 /**
+ * 提取文本中的插值占位符（{name} 形式）
+ * @param text 文本
+ * @returns 占位符数组（可能为空）
+ */
+export const extractPlaceholders = (text: string): string[] => {
+    return text.match(/\{[^{}]+\}/g) || []
+}
+
+/**
+ * 校验译文是否原样保留了原文的全部占位符（FR-006）
+ * @param src 原文
+ * @param dst 译文
+ * @returns 全部保留返回 true
+ */
+export const placeholdersPreserved = (src: string, dst: string): boolean => {
+    return extractPlaceholders(src).every((placeholder) => dst.includes(placeholder))
+}
+
+/**
  * 拼接 chat/completions 地址（末尾斜杠容错）
  * @param baseUrl 服务地址
  * @returns 完整请求地址
@@ -219,15 +241,28 @@ export const chatCompletionsTranslate = async (
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers,
-            }).then((r) => r.json())
-            const content = res?.choices?.[0]?.message?.content
+                signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+            })
+            if (!res.ok) {
+                console.warn(`模型翻译 HTTP ${res.status}（${to}），跳过`)
+                continue
+            }
+            const data = await res.json()
+            const content = data?.choices?.[0]?.message?.content
             if (typeof content !== 'string' || !content) {
-                console.warn(`模型返回内容异常（${to}），跳过`, res)
+                console.warn(`模型返回内容异常（${to}），跳过`, data)
                 continue
             }
             const resTexts = extractContentBetweenTags(content)
             if (resTexts.length !== texts.length) {
                 console.warn(`模型返回条数（${resTexts.length}）与请求条数（${texts.length}）不符（${to}），跳过`)
+                continue
+            }
+            // 占位符（{name}）必须原样保留，任一丢失即丢弃该目标整批（FR-006）
+            if (
+                texts.some((text, index) => !placeholdersPreserved(text, resTexts[index]))
+            ) {
+                console.warn(`模型译文丢失占位符（${to}），跳过`)
                 continue
             }
             translatesRes.push({

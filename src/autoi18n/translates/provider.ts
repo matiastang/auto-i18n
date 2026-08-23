@@ -14,8 +14,9 @@ import zhipuaiTranslate from './zhipuai'
 import { openaiTranslate } from './openai'
 import { freeTranslate } from './free'
 
-// 免费翻译默认行为提示只打印一次（transform 每个模块都会触发解析）
+// 免费翻译默认行为提示/无效配置警告只打印一次（transform 每个模块都会触发解析）
 let freeDefaultNotified = false
+let invalidConfigNotified = false
 
 /**
  * 按优先级解析翻译函数
@@ -53,11 +54,14 @@ export const resolveTranslateFunction = (config: Autoi18nPluginConfig): Translat
                 return await openaiTranslate(aiConfig, questions, tos, from, cache)
             }
         }
-        console.warn(
-            `autoi18n：aiModelConfig 无效（model=${String(modelConfig.model)}，apiKey=${
-                aiConfig?.apiKey ? '已配置' : '缺失'
-            }${modelConfig.model === TranslateAIModel.OPENAI ? '，model=' + (aiConfig?.model || '缺失') : ''}），回退免费三方翻译`,
-        )
+        if (!invalidConfigNotified) {
+            console.warn(
+                `autoi18n：aiModelConfig 无效（model=${String(modelConfig.model)}，apiKey=${
+                    aiConfig?.apiKey ? '已配置' : '缺失'
+                }${modelConfig.model === TranslateAIModel.OPENAI ? '，model=' + (aiConfig?.model || '缺失') : ''}），回退免费三方翻译`,
+            )
+            invalidConfigNotified = true
+        }
     }
     // ③ 免费三方翻译（默认行为，零配置）
     if (!freeDefaultNotified) {

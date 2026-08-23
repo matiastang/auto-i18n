@@ -97,11 +97,25 @@ describe('devTransformMessages', () => {
         const code = devTransformMessages({
             [key]: { zh: '你好', en: 'Hello' } as Autoi18nMessageItem,
         })
-        expect(code).toContain(`  ${key}: {`)
-        expect(code).toContain(`zh: '你好',`)
-        expect(code).toContain(`en: 'Hello',`)
+        expect(code).toContain(`  "${key}": {`)
+        expect(code).toContain(`"zh": "你好",`)
+        expect(code).toContain(`"en": "Hello",`)
         expect(code.trim().startsWith('{')).toBe(true)
         expect(code.trim().endsWith('}')).toBe(true)
+    })
+
+    it("值中的引号/换行被转义，生成的字面量可被解析（免费译文含 It's 等不破坏注入代码）", () => {
+        const key = translateHashKey('引号文案')
+        const value = 'It\'s "ok"\nline2'
+        const code = devTransformMessages({
+            [key]: {
+                zh: '引号"文案',
+                en: value,
+            } as unknown as Autoi18nMessageItem,
+        })
+        const parsed = new Function(`return ${code}`)() as Record<string, Record<string, string>>
+        expect(parsed[key].zh).toBe('引号"文案')
+        expect(parsed[key].en).toBe(value)
     })
 })
 
