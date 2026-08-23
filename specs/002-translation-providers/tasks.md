@@ -28,7 +28,7 @@ description: "Task list for feature implementation"
 
 **Purpose**: 基线确认，无新初始化需求（工程基线 v0.0.2 已就绪）
 
-- [ ] T001 运行 `pnpm type-check && pnpm test` 确认既有基线全绿（记录用例数作为 SC-005 基准）
+- [x] T001 运行 `pnpm type-check && pnpm test` 确认既有基线全绿（记录用例数作为 SC-005 基准）
 
 ---
 
@@ -38,13 +38,13 @@ description: "Task list for feature implementation"
 
 ### Tests (先写、确认失败)
 
-- [ ] T002 [P] 新增 `tests/unit/utils-language.spec.ts`：`toIsoLocale` 映射（zh→zh-CN、en→en、jp→ja、ara→ar、fra→fr）、未知值返回 null（FR-009）
-- [ ] T003 [P] 新增 `tests/unit/translates-shared.spec.ts`：LLM 提示词构造（含目标语种中文名、`<...>` 包裹、保留 `{xx}` 指令）；`extractContentBetweenTags` 提取；`checkTranslateQuestions` 缓存过滤（完整命中不返回、部分命中只返回缺失项、空列表→空）；`translateMessage` 折叠（键=`translateHashKey(src)`、源语言回填、多目标合并）；chatCompletions 响应条数≠请求条数→丢弃（FR-006/FR-008）
+- [x] T002 [P] 新增 `tests/unit/utils-language.spec.ts`：`toIsoLocale` 映射（zh→zh-CN、en→en、jp→ja、ara→ar、fra→fr）、未知值返回 null（FR-009）
+- [x] T003 [P] 新增 `tests/unit/translates-shared.spec.ts`：LLM 提示词构造（含目标语种中文名、`<...>` 包裹、保留 `{xx}` 指令）；`extractContentBetweenTags` 提取；`checkTranslateQuestions` 缓存过滤（完整命中不返回、部分命中只返回缺失项、空列表→空）；`translateMessage` 折叠（键=`translateHashKey(src)`、源语言回填、多目标合并）；chatCompletions 响应条数≠请求条数→丢弃（FR-006/FR-008）
 
 ### Implementation
 
-- [ ] T004 [P] 实现 `src/autoi18n/utils/language.ts`（`toIsoLocale`）并在 `src/autoi18n/utils/index.ts` 导出（T002 转 绿）
-- [ ] T005 实现 `src/autoi18n/translates/shared.ts`：`buildTranslatePrompt`、`extractContentBetweenTags`、`checkTranslateQuestions`、`translateMessage`、`chatCompletionsTranslate`（通用 OpenAI 兼容客户端：baseUrl 拼接容错、Bearer 头、`choices[0].message.content` 解析、条数校验、错误→警告+null）；`src/autoi18n/translates/index.ts` 导出（T003 转绿）
+- [x] T004 [P] 实现 `src/autoi18n/utils/language.ts`（`toIsoLocale`）并在 `src/autoi18n/utils/index.ts` 导出（T002 转 绿）
+- [x] T005 实现 `src/autoi18n/translates/shared.ts`：`buildTranslatePrompt`、`extractContentBetweenTags`、`checkTranslateQuestions`、`translateMessage`、`chatCompletionsTranslate`（通用 OpenAI 兼容客户端：baseUrl 拼接容错、Bearer 头、`choices[0].message.content` 解析、条数校验、错误→警告+null）；`src/autoi18n/translates/index.ts` 导出（T003 转绿）
 
 **Checkpoint**: 共享层就绪；`pnpm test` 全绿
 
@@ -58,15 +58,15 @@ description: "Task list for feature implementation"
 
 ### Tests (先写、确认失败)
 
-- [ ] T006 [P] [US1] 新增 `tests/unit/translates-free.spec.ts`：MyMemory 请求（`langpair=zh-CN|en` 形式、q 为原文）与响应解析（`responseData.translatedText`、`responseStatus!==200`/`quotaFinished`→失败）；Google gtx 请求（`client=gtx&sl&tl&dt=t`）与嵌套数组解析（`data[0][0][0]`）；MyMemory 失败→Google 回退（同一条文本）；双链失败→跳过该条仅警告；questions 为空→直接 null 且零 fetch；缓存完整命中→零 fetch；返回键=`translateHashKey(原文)` 且源语言回填、多目标合并；未知目标语言（ISO 映射缺失）跳过并警告（FR-004/FR-009/FR-010/FR-011）
-- [ ] T007 [P] [US1] 新增 `tests/unit/translates-provider.spec.ts`（调度基础部分）：无任何翻译配置→返回免费源且打印一次性提示；`config.translate` 存在→直接返回该函数；`aiModelConfig.model` 为未知枚举/apiKey 空→警告并回退免费源（FR-001）
-- [ ] T008 [US1] 扩展 `tests/usecase/translate-workflow.spec.ts`：免费源完整工作流（stub fetch）——buildStart 读缓存→transform 触发免费翻译→buildEnd 落盘新增译文；免费源整体失败（fetch reject）→仅警告、原代码返回、不落盘（FR-007）
+- [x] T006 [P] [US1] 新增 `tests/unit/translates-free.spec.ts`：MyMemory 请求（`langpair=zh-CN|en` 形式、q 为原文）与响应解析（`responseData.translatedText`、`responseStatus!==200`/`quotaFinished`→失败）；Google gtx 请求（`client=gtx&sl&tl&dt=t`）与嵌套数组解析（`data[0][0][0]`）；MyMemory 失败→Google 回退（同一条文本）；双链失败→跳过该条仅警告；questions 为空→直接 null 且零 fetch；缓存完整命中→零 fetch；返回键=`translateHashKey(原文)` 且源语言回填、多目标合并；未知目标语言（ISO 映射缺失）跳过并警告（FR-004/FR-009/FR-010/FR-011）
+- [x] T007 [P] [US1] 新增 `tests/unit/translates-provider.spec.ts`（调度基础部分）：无任何翻译配置→返回免费源且打印一次性提示；`config.translate` 存在→直接返回该函数；`aiModelConfig.model` 为未知枚举/apiKey 空→警告并回退免费源（FR-001）
+- [x] T008 [US1] 扩展 `tests/usecase/translate-workflow.spec.ts`：免费源完整工作流（stub fetch）——buildStart 读缓存→transform 触发免费翻译→buildEnd 落盘新增译文；免费源整体失败（fetch reject）→仅警告、原代码返回、不落盘（FR-007）
 
 ### Implementation
 
-- [ ] T009 [US1] 实现 `src/autoi18n/translates/free.ts`：`freeTranslate`（`TranslateFunction` 签名；服务链 MyMemory→Google 逐条回退；每条×每目标一次请求；失败警告跳过；先 `checkTranslateQuestions` 过滤缓存）（T006 转绿）
-- [ ] T010 [US1] 实现 `src/autoi18n/translates/provider.ts`：`resolveTranslateFunction(config)` 三级优先级（custom > LLM(有效) > free），模块级一次性提示去重；在 `src/autoi18n/translates/index.ts` 与 `src/autoi18n/index.ts` 导出 `freeTranslate`、`resolveTranslateFunction`（T007 转绿）
-- [ ] T011 [US1] 修改 `src/autoi18n/autoi18nPlugin.ts`：`transform` 中的分支逻辑收敛为 `resolveTranslateFunction(config)`；`devTransformModule` 的 `await translate(...)` 包 try/catch（异常→警告+返回原代码，FR-007）；插件 `version` 常量 `'0.0.1'`→`'0.0.3'`（T008 转绿）
+- [x] T009 [US1] 实现 `src/autoi18n/translates/free.ts`：`freeTranslate`（`TranslateFunction` 签名；服务链 MyMemory→Google 逐条回退；每条×每目标一次请求；失败警告跳过；先 `checkTranslateQuestions` 过滤缓存）（T006 转绿）
+- [x] T010 [US1] 实现 `src/autoi18n/translates/provider.ts`：`resolveTranslateFunction(config)` 三级优先级（custom > LLM(有效) > free），模块级一次性提示去重；在 `src/autoi18n/translates/index.ts` 与 `src/autoi18n/index.ts` 导出 `freeTranslate`、`resolveTranslateFunction`（T007 转绿）
+- [x] T011 [US1] 修改 `src/autoi18n/autoi18nPlugin.ts`：`transform` 中的分支逻辑收敛为 `resolveTranslateFunction(config)`；`devTransformModule` 的 `await translate(...)` 包 try/catch（异常→警告+返回原代码，FR-007）；插件 `version` 常量 `'0.0.1'`→`'0.0.3'`（T008 转绿）
 
 **Checkpoint**: US1 独立可验证——空配置即可免费翻译；`pnpm test` 全绿；提交 commit ①
 
@@ -80,16 +80,16 @@ description: "Task list for feature implementation"
 
 ### Tests (先写、确认失败)
 
-- [ ] T012 [P] [US2] 新增 `tests/unit/translates-openai.spec.ts`：请求格式（`{baseUrl}/chat/completions` 拼接与尾 `/` 容错、默认 `https://api.openai.com/v1`、`Authorization: Bearer`、body 含 `model` 与批量提示词）；响应 `<...>` 提取折叠；条数不符→该目标整批丢弃→null；fetch 非 200/reject→警告+null；缓存完整命中→零 fetch（FR-002/FR-006/FR-008）
-- [ ] T013 [P] [US2] 扩展 `tests/unit/translates-provider.spec.ts`：`model: OPENAI` 且 apiKey/model 齐备→返回 OpenAI 源；OPENAI 缺 model→警告回退免费；`model: ZHIPUAI`→返回智谱源（优先级与有效性规则）
-- [ ] T014 [US2] 扩展 `tests/usecase/translate-workflow.spec.ts`：OpenAI 工作流（stub fetch）全流程落盘
+- [x] T012 [P] [US2] 新增 `tests/unit/translates-openai.spec.ts`：请求格式（`{baseUrl}/chat/completions` 拼接与尾 `/` 容错、默认 `https://api.openai.com/v1`、`Authorization: Bearer`、body 含 `model` 与批量提示词）；响应 `<...>` 提取折叠；条数不符→该目标整批丢弃→null；fetch 非 200/reject→警告+null；缓存完整命中→零 fetch（FR-002/FR-006/FR-008）
+- [x] T013 [P] [US2] 扩展 `tests/unit/translates-provider.spec.ts`：`model: OPENAI` 且 apiKey/model 齐备→返回 OpenAI 源；OPENAI 缺 model→警告回退免费；`model: ZHIPUAI`→返回智谱源（优先级与有效性规则）
+- [x] T014 [US2] 扩展 `tests/usecase/translate-workflow.spec.ts`：OpenAI 工作流（stub fetch）全流程落盘
 
 ### Implementation
 
-- [ ] T015 [US2] 实现 `src/autoi18n/translates/openai.ts`：`openaiTranslate`（基于 `shared.chatCompletionsTranslate`，默认 baseUrl/model 常量）并在 `translates/index.ts`、`src/autoi18n/index.ts` 导出（T012 转绿）
-- [ ] T016 [US2] 重构 `src/autoi18n/translates/zhipuai.ts`：内部委托 `shared.chatCompletionsTranslate`（baseUrl=`https://open.bigmodel.cn/api/paas/v4`、model 默认 `glm-4`，保留 `zhipuaiTranslate` 公开签名与导出）；`pnpm test` 既有用例不回退（FR-003）（T013 转绿）
-- [ ] T017 [US2] `src/autoi18n/translates/provider.ts` 增加 OPENAI 分支与有效性校验（apiKey 空或 model 缺→警告回退免费）（T013/T014 转绿）
-- [ ] T018 [US2] 类型扩展：`src/autoi18n/@types/enum.ts` 增加 `TranslateAIModel.OPENAI='openai'`；`src/autoi18n/@types/autoi18nPlugin.d.ts` 的 `AIModelConfig` 增加 `model?: string`（`pnpm type-check` 通过）
+- [x] T015 [US2] 实现 `src/autoi18n/translates/openai.ts`：`openaiTranslate`（基于 `shared.chatCompletionsTranslate`，默认 baseUrl/model 常量）并在 `translates/index.ts`、`src/autoi18n/index.ts` 导出（T012 转绿）
+- [x] T016 [US2] 重构 `src/autoi18n/translates/zhipuai.ts`：内部委托 `shared.chatCompletionsTranslate`（baseUrl=`https://open.bigmodel.cn/api/paas/v4`、model 默认 `glm-4`，保留 `zhipuaiTranslate` 公开签名与导出）；`pnpm test` 既有用例不回退（FR-003）（T013 转绿）
+- [x] T017 [US2] `src/autoi18n/translates/provider.ts` 增加 OPENAI 分支与有效性校验（apiKey 空或 model 缺→警告回退免费）（T013/T014 转绿）
+- [x] T018 [US2] 类型扩展：`src/autoi18n/@types/enum.ts` 增加 `TranslateAIModel.OPENAI='openai'`；`src/autoi18n/@types/autoi18nPlugin.d.ts` 的 `AIModelConfig` 增加 `model?: string`（`pnpm type-check` 通过）
 
 **Checkpoint**: US2 独立可验证——配置任一兼容 LLM 即可翻译；`pnpm test` 全绿；提交 commit ②
 
@@ -103,12 +103,12 @@ description: "Task list for feature implementation"
 
 ### Tests (先写、确认失败)
 
-- [ ] T019 [P] [US3] 新增 `tests/unit/index-exports.spec.ts`：断言入口导出 `autoi18n`、`autoi18nPlugin`、`freeTranslate`、`openaiTranslate`、`zhipuaiTranslate`、`resolveTranslateFunction`、`toIsoLocale`、`TranslateAIModel.OPENAI/ZHIPUAI`、`TranslateTarget` 全成员（FR-005 契约导出）
-- [ ] T020 [US3] 扩展 `tests/usecase/translate-workflow.spec.ts`：优先级用例——config 同时含 `translate` 与有效 `aiModelConfig`，仅自定义函数被调用（fetch stub 计数为 0）；自定义函数抛异常→警告+原代码+不落盘（FR-001/FR-007）
+- [x] T019 [P] [US3] 新增 `tests/unit/index-exports.spec.ts`：断言入口导出 `autoi18n`、`autoi18nPlugin`、`freeTranslate`、`openaiTranslate`、`zhipuaiTranslate`、`resolveTranslateFunction`、`toIsoLocale`、`TranslateAIModel.OPENAI/ZHIPUAI`、`TranslateTarget` 全成员（FR-005 契约导出）
+- [x] T020 [US3] 扩展 `tests/usecase/translate-workflow.spec.ts`：优先级用例——config 同时含 `translate` 与有效 `aiModelConfig`，仅自定义函数被调用（fetch stub 计数为 0）；自定义函数抛异常→警告+原代码+不落盘（FR-001/FR-007）
 
 ### Implementation
 
-- [ ] T021 [US3] 核对/补齐 `src/autoi18n/index.ts` 公开导出与 `@types/` 类型再导出（`TranslateFunction`、`AIModelConfig`、`TranslateAIModelConfig` 等类型对库使用方可见）（T019/T020 转绿）
+- [x] T021 [US3] 核对/补齐 `src/autoi18n/index.ts` 公开导出与 `@types/` 类型再导出（`TranslateFunction`、`AIModelConfig`、`TranslateAIModelConfig` 等类型对库使用方可见）（T019/T020 转绿）
 
 **Checkpoint**: US3 独立可验证；`pnpm test` 全绿；提交 commit ③
 
@@ -118,18 +118,18 @@ description: "Task list for feature implementation"
 
 **Purpose**: 用演示应用模拟"其他 Vue+Vite 项目接入"
 
-- [ ] T022 修改 `vite.config.ts`：`resolve.alias` 增加 `auto-i18n-vue → src/autoi18n/index.ts`（本地源验证未发布能力）；`aiModelConfig` 改为环境变量存在才配置（`ZHIPUAI_API_KEY` 或 `OPENAI_API_KEY`+`OPENAI_BASE_URL`+`OPENAI_MODEL`），否则走免费默认；`pnpm dev` 手动确认 demo 正常
-- [ ] T023 按 `specs/002-translation-providers/quickstart.md` §2 做一次性免费翻译真实验证（备份→清空 `public/translate.json`→`pnpm dev`→确认免费译文生成→恢复备份），把结果记录到 quickstart 或 CHANGELOG 备注
-- [ ] T024 运行 `pnpm test:e2e` 确认演示应用 e2e 在本地源 alias 下仍全绿（SC-005）；提交 commit ④
+- [x] T022 修改 `vite.config.ts`：`resolve.alias` 增加 `auto-i18n-vue → src/autoi18n/index.ts`（本地源验证未发布能力）；`aiModelConfig` 改为环境变量存在才配置（`ZHIPUAI_API_KEY` 或 `OPENAI_API_KEY`+`OPENAI_BASE_URL`+`OPENAI_MODEL`），否则走免费默认；`pnpm dev` 手动确认 demo 正常
+- [x] T023 按 `specs/002-translation-providers/quickstart.md` §2 做一次性免费翻译真实验证（备份→清空 `public/translate.json`→`pnpm dev`→确认免费译文生成→恢复备份），把结果记录到 quickstart 或 CHANGELOG 备注
+- [x] T024 运行 `pnpm test:e2e` 确认演示应用 e2e 在本地源 alias 下仍全绿（SC-005）；提交 commit ④
 
 ---
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T025 重新生成构建产物：`pnpm ts:build`（`src/autoi18n/buildJs/`、`buildTypes/` 随源码更新）；`pnpm plugin:build` 确认库构建成功
-- [ ] T026 版本与文档：`package.json` version→`0.0.3`；`CHANGELOG.md` 增加 0.0.3 条目（三种翻译模式、用法示例）；`README.md`/`README.zh-CN.md` 更新"翻译源配置"章节（中英同步）；`docs/requirements.md` v0.0.3 节末追加"实现补充说明"（免费源选型与实测记录、优先级规则）；`specs/002-translation-providers/spec.md` Status→Complete；提交 commit ⑤
-- [ ] T027 循环 code review：对全部改动做系统性审查（正确性/边界/类型安全/契约一致性/测试有效性），修复全部中等及以上严重问题后复跑 `pnpm type-check && pnpm test && pnpm test:e2e`；如产生修复，逐修复提交
-- [ ] T028 终验：`pnpm type-check && pnpm test:all` 全绿（SC-004/SC-005 达成）
+- [x] T025 重新生成构建产物：`pnpm ts:build`（`src/autoi18n/buildJs/`、`buildTypes/` 随源码更新）；`pnpm plugin:build` 确认库构建成功
+- [x] T026 版本与文档：`package.json` version→`0.0.3`；`CHANGELOG.md` 增加 0.0.3 条目（三种翻译模式、用法示例）；`README.md`/`README.zh-CN.md` 更新"翻译源配置"章节（中英同步）；`docs/requirements.md` v0.0.3 节末追加"实现补充说明"（免费源选型与实测记录、优先级规则）；`specs/002-translation-providers/spec.md` Status→Complete；提交 commit ⑤
+- [x] T027 循环 code review：对全部改动做系统性审查（正确性/边界/类型安全/契约一致性/测试有效性），修复全部中等及以上严重问题后复跑 `pnpm type-check && pnpm test && pnpm test:e2e`；如产生修复，逐修复提交
+- [x] T028 终验：`pnpm type-check && pnpm test:all` 全绿（SC-004/SC-005 达成）
 
 ---
 

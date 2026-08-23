@@ -4,6 +4,29 @@
 
 All notable changes to this project will be documented in this file. The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [0.0.3] - 2026-08-24
+
+实现核心翻译能力：三级翻译源体系，其他 Vue + Vite 项目接入后可快速获得 i18n 支持（验证阶段，规格产物见 `specs/002-translation-providers/`）。全部自动化测试离线运行（stub 网络），未调用任何收费 API；免费三方接口做过一次性真实验证（17 条文案经 MyMemory 翻译落盘）。
+
+### Added
+
+- 免费三方翻译（默认翻译源）：未配置任何翻译源时零配置自动启用，服务链 MyMemory（主）→ Google 免费接口（备）逐条回退；单条失败仅警告并跳过，不中断构建
+- OpenAI 兼容 LLM 翻译源：支持任一 OpenAI Chat Completions 兼容服务（OpenAI、DeepSeek、Moonshot/Kimi、通义千问兼容模式、本地 Ollama 等），配置 `apiKey` + `baseUrl` + `model` 即可
+- 语言代码映射工具 `toIsoLocale`：内部语言枚举 → 三方服务 ISO 代码（`zh→zh-CN`、`jp→ja`、`ara→ar`、`fra→fr`），未知语言跳过并警告
+- 翻译源统一调度 `resolveTranslateFunction`：固定优先级 `translate`（自定义）> `aiModelConfig`（LLM）> 免费三方翻译（默认）；LLM 配置无效时警告并回退免费源
+- 入口公开导出翻译契约：`TranslateFunction`、`AIModelConfig` 等类型与 `freeTranslate` / `openaiTranslate` / `zhipuaiTranslate` / `resolveTranslateFunction` / `toIsoLocale` 运行时导出
+
+### Changed
+
+- 智谱 GLM 翻译重构为共享 OpenAI 兼容客户端的预置参数实例（公开签名与 glm-4 默认行为不变），LLM 批量提示词、`<...>` 提取、缓存过滤、结果折叠统一收敛到 `translates/shared.ts`
+- Vite 插件 `transform` 分支逻辑收敛为单一调度器调用；翻译调用统一 try/catch，任何翻译源异常仅警告、不中断构建
+- 插件版本号常量 `0.0.1` → `0.0.3`
+- 演示应用切换为本地源验证（包名 alias 到 `src/autoi18n`），翻译源按环境变量条件配置（`ZHIPUAI_API_KEY` 或 `OPENAI_API_KEY`/`OPENAI_BASE_URL`/`OPENAI_MODEL`），无 Key 时走免费默认路径
+
+### Tests
+
+- 新增 57 个离线测试用例（语言映射、共享协议、免费源回退链与错误路径、OpenAI 兼容请求格式、调度器优先级、入口导出契约、免费/OpenAI/自定义优先级 Use Case），全量 `pnpm test:all` 通过
+
 ## [0.0.2] - 2026-08-24
 
 补齐"开发基本要求"工程能力（对照 `docs/requirements.md` v0.0.2 清单，规格产物见 `specs/001-complete-dev-requirements/`）。

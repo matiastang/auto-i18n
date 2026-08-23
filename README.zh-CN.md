@@ -79,14 +79,25 @@ export default defineConfig(({ mode }) => {
                 isDev: mode !== 'production',
                 locale: TranslateTarget.ZH,
                 targets: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
-                aiModelConfig: {
-                    model: TranslateAIModel.ZHIPUAI,
-                    config: {
-                        apiKey: env.ZHIPUAI_API_KEY || '',
-                    },
-                },
+                // 翻译源按优先级自动选择：
+                //   translate（自定义）> aiModelConfig（LLM）> 免费三方翻译（默认）
+                aiModelConfig: env.ZHIPUAI_API_KEY
+                    ? {
+                          model: TranslateAIModel.ZHIPUAI,
+                          config: { apiKey: env.ZHIPUAI_API_KEY },
+                      }
+                    : env.OPENAI_API_KEY
+                      ? {
+                            model: TranslateAIModel.OPENAI,
+                            config: {
+                                apiKey: env.OPENAI_API_KEY,
+                                baseUrl: env.OPENAI_BASE_URL, // 如 https://api.deepseek.com
+                                model: env.OPENAI_MODEL, // 如 deepseek-chat
+                            },
+                        }
+                      : undefined, // 未配置任何 Key -> 免费三方翻译（默认）
                 readTranslateContent,
-                // translate: 自定义翻译函数,
+                // translate: 自定义翻译函数（最高优先级，独占使用）,
                 saveTranslateContent,
             }),
             // 其他插件
@@ -96,8 +107,17 @@ export default defineConfig(({ mode }) => {
 })
 ```
 
-* `model`目前只支持`智谱AI`，后面将接入其他模型。对于翻译现在的大模型基本都没什么问题。
-* 可以通过`translate`自定义翻译转换
+### 翻译源
+
+三种翻译源按优先级自动选择——`translate`（自定义）> `aiModelConfig`（LLM）> **免费三方翻译（默认）**：
+
+1. **自定义翻译函数**——实现导出的 `TranslateFunction` 契约并传入 `translate`，优先且独占使用，适合自建翻译服务或需要术语表的场景。
+2. **配置 LLM API Key**——`aiModelConfig` 支持：
+    * `TranslateAIModel.OPENAI`：任一 **OpenAI Chat Completions 兼容**服务（OpenAI、DeepSeek、Moonshot/Kimi、通义千问兼容模式、本地 Ollama 等），配置 `apiKey` + `baseUrl` + `model`。
+    * `TranslateAIModel.ZHIPUAI`：智谱 GLM（模型默认 `glm-4`），配置 `apiKey`。
+3. **免费三方翻译（默认）**——前两者均未配置时，自动使用免费翻译服务（MyMemory 为主，Google 免费接口为备），**零配置、无需任何 API Key**。失败仅警告并跳过，不会中断构建；适合快速接入体验，注意存在速率限制。
+
+已缓存的文案不会重复翻译，`{name}` 占位符保持原样，任何翻译错误只打印警告、不影响构建。
 
 ### 编写可翻译文案
 
