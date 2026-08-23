@@ -134,3 +134,74 @@ describe('Use Case: 翻译采集工作流', () => {
         expect(saved[0][translateHashKey('生产文案')]?.en).toBe('EN(生产文案)')
     })
 })
+
+describe('Use Case: 免费三方翻译工作流（默认翻译源，stub fetch）', () => {
+    /** MyMemory 形状假响应 */
+    const myMemoryResponse = (text: string) => ({
+        responseData: { translatedText: text, match: 0.99 },
+        quotaFinished: false,
+        responseStatus: 200,
+    })
+
+    it('零配置（无 translate/aiModelConfig）→ 免费翻译 → 注入 → 落盘', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const fetchMock = vi.fn(async () => ({
+            ok: true,
+            json: () => Promise.resolve(myMemoryResponse('Hello, free world')),
+        }))
+        vi.stubGlobal('fetch', fetchMock)
+        const autoi18nPlugin = await loadPlugin()
+        const saved: Autoi18nMessages[] = []
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            // 不配置 translate / aiModelConfig —— 免费翻译应为默认行为
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async (data) => {
+                saved.push(data)
+                return true
+            },
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        const out = await plugin.transform(sfc('免费文案'), '/project/src/App.vue')
+        expect(fetchMock).toHaveBeenCalled()
+        expect(out).toContain('_localeTranslate')
+        expect(out).toContain('Hello, free world')
+
+        await plugin.buildEnd()
+        expect(saved).toHaveLength(1)
+        expect(saved[0][translateHashKey('免费文案')]?.en).toBe('Hello, free world')
+        expect(saved[0][translateHashKey('免费文案')]?.zh).toBe('免费文案')
+        vi.unstubAllGlobals()
+        vi.restoreAllMocks()
+    })
+
+    it('免费翻译全部失败（网络不可用）：仅警告、不中断、不落盘', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
+        const autoi18nPlugin = await loadPlugin()
+        const saveFn = vi.fn(async () => true)
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: saveFn,
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        const code = sfc('失败文案')
+        const out = await plugin.transform(code, '/project/src/App.vue')
+        // 注入仍发生（回退缓存=空），但不中断构建
+        expect(out).toContain('_localeTranslate')
+        expect(warnSpy).toHaveBeenCalled()
+
+        await plugin.buildEnd()
+        expect(saveFn).not.toHaveBeenCalled()
+        vi.unstubAllGlobals()
+        vi.restoreAllMocks()
+    })
+})

@@ -12,9 +12,9 @@ import { InputOptions } from 'rollup'
 // import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
 import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod } from './utils'
 import { Autoi18nMessages } from './@types/autoi18n'
-import { Autoi18nPluginConfig, Autoi18nPluginInfo } from './@types/autoi18nPlugin'
-import { TranslateTarget, TranslateAIModel } from './@types/enum'
-import zhipuaiTranslate from './translates/zhipuai'
+import { Autoi18nPluginConfig, Autoi18nPluginInfo, TranslateFunction } from './@types/autoi18nPlugin'
+import { TranslateTarget } from './@types/enum'
+import { resolveTranslateFunction } from './translates/provider'
 // import * as __package from '../../package.json'
 
 /**
@@ -28,10 +28,10 @@ const autoi18nPluginInfo: Autoi18nPluginInfo = {
 
 /**
  * dev 开发转换
- * @param code 
- * @param id 
+ * @param code
+ * @param id
  */
-const devTransformModule = async (code: string, id: string, translate?: (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => Promise<Autoi18nMessages | null>) => {
+const devTransformModule = async (code: string, id: string, translate: TranslateFunction) => {
     const texts = checkQuestions(code)
     let mQuestions = new Set(texts)
     const list = Array.from(mQuestions)
@@ -45,9 +45,14 @@ const devTransformModule = async (code: string, id: string, translate?: (questio
     if (tos.length <= 0) {
         return code
     }
-    let messages = await translate(list, tos, local, cacheMessages)
-    // console.log('============1')
-    // console.log(messages)
+    let messages: Autoi18nMessages | null = null
+    try {
+        messages = await translate(list, tos, local, cacheMessages)
+    } catch (error) {
+        // 任何翻译源抛错都不得中断构建（FR-007）
+        console.warn('autoi18n：翻译执行异常，跳过本模块新增翻译', error)
+        messages = null
+    }
     if (messages) {
         autoi18nPluginInfo.isTranslate = true
         merge(cacheMessages, messages)
@@ -110,7 +115,7 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
 } = (config: Autoi18nPluginConfig) => {
     return {
         name: 'autoi18n-plugin',
-        version: '0.0.1',
+        version: '0.0.3',
         // /**
         //  * vite hook
         //  * @param html 
@@ -287,33 +292,10 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
             if (!id.endsWith('.vue')) {
                 return null
             }
-            const configTranslate = config.translate
-            if (configTranslate) {
-                // 外部函数转换
-                const res = await devTransformModule(code, id, configTranslate)
-                return res
-            }
-            const modelConfig = config.aiModelConfig
-            if (!modelConfig) {
-                console.warn('autoi18n plugin aiModelConfig is null')
-                return null
-            }
-            const model = modelConfig.model
-            // 智谱ai转换
-            if (model === TranslateAIModel.ZHIPUAI) {
-                const config = modelConfig.config
-                if (!config) {
-                    console.warn('autoi18n plugin zhipuai config is null')
-                    return null
-                }
-                const translate = async (questions: string[], tos: TranslateTarget[], from: TranslateTarget, cache?: Autoi18nMessages) => {
-                    return await zhipuaiTranslate(config.apiKey, questions, tos, from, cache)
-                }
-                const res = await devTransformModule(code, id, translate)
-                return res
-            }
-            console.warn('autoi18n plugin aiModelConfig model is null')
-            return null
+            // 三级优先级调度：自定义 translate > LLM（aiModelConfig）> 免费三方翻译（默认）
+            const translate = resolveTranslateFunction(config)
+            const res = await devTransformModule(code, id, translate)
+            return res
         },
         /**
          * 在 --watch 模式下，每当 Rollup 检测到监视文件的更改时，就会通知插件
