@@ -1,34 +1,31 @@
-<!--
- * @Author: matiastang
- * @Date: 2023-07-13 17:27:11
- * @LastEditors: matiastang
- * @LastEditTime: 2024-08-26 16:39:27
- * @FilePath: /auto-i18n/README.md
- * @Description: autoi18n
--->
+<!-- prettier-ignore -->
+[English](./README.md) | [简体中文](./README.zh-CN.md)
+
 # autoi18n
 
-`Vite`+`Vue3`+`大模型`开发阶段自动翻译文本内容，保存到文件中，生产环境拉取部署的翻译内容实现翻译。
+Automatic i18n for Vue 3 + Vite: with a large language model (LLM) translating your UI texts **during development** and persisting them to a translation file, your production build simply loads the deployed translations — no manual translation work, no runtime translation cost.
 
-## 支持
+> `Vite` + `Vue3` + `LLM`: texts are translated automatically at dev time, saved to a file, and pulled from the deployed translation content in production.
 
-目前只支持`Vue3`+`Vite`。
+## Support
 
-## 安装
+Currently supports `Vue3` + `Vite` only.
+
+## Install
 
 ```sh
-pnpm add -D autoi18n
+pnpm add -D auto-i18n-vue
 ```
 
-## 使用
+## Usage
 
-### 引入
+### Runtime plugin (Vue)
 
 * `main.ts`
 
 ```ts
 import { createApp } from 'vue'
-import { autoi18n, TranslateTarget } from 'autoi18n'
+import { autoi18n, TranslateTarget } from 'auto-i18n-vue'
 
 const app = createApp(App)
 
@@ -39,19 +36,26 @@ app.use(autoi18n, {
 })
 ```
 
-**注意** `filePath`是部署时，翻译内容保存的地址，如上是放在`public`文件夹下面
+**Note**: `filePath` is where the deployed translation content lives — in the example above it is served from the `public` folder.
+
+### Vite plugin (build time)
 
 * `vite.config.ts`
 
 ```ts
-// node路径
+// node path
 import path from 'path'
 // vite
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
-import { autoi18nPlugin, TranslateTarget, TranslateAIModel } from 'autoi18n'
-import { readTranslateJson, writeTranslateJson } from 'autoi18n'
-import { Autoi18nMessages } from 'autoi18n/@types'
+import {
+    autoi18nPlugin,
+    TranslateTarget,
+    TranslateAIModel,
+    readTranslateJson,
+    writeTranslateJson,
+} from 'auto-i18n-vue'
+import { Autoi18nMessages } from 'auto-i18n-vue'
 
 const readTranslateContent = async () => {
     const filePath = path.resolve(__dirname, './public/translate.json')
@@ -64,6 +68,8 @@ const saveTranslateContent = async (data: Autoi18nMessages) => {
 }
 
 export default defineConfig(({ mode }) => {
+    // load local env vars; keep your apiKey in a git-ignored .env.local
+    const env = loadEnv(mode, process.cwd(), '')
     return {
         plugins: [
             autoi18nPlugin({
@@ -73,23 +79,46 @@ export default defineConfig(({ mode }) => {
                 aiModelConfig: {
                     model: TranslateAIModel.ZHIPUAI,
                     config: {
-                        apiKey: '*******',
-                    }
+                        apiKey: env.ZHIPUAI_API_KEY || '',
+                    },
                 },
                 readTranslateContent,
-                // translate: autoi18nTranslate,
+                // translate: myCustomTranslate, // optional custom translate function
                 saveTranslateContent,
             }),
-            // 其他插件
+            // other plugins
         ],
-        // 其他配置
+        // other config
     }
 })
 ```
 
-* `model`目前只支持`智谱AI`，后面将接入其他模型。对于翻译现在的大模型基本都没什么问题。
-* 可以通过`translate`自定义翻译转换
+* The AI model currently supports **Zhipu AI** only; more models will be integrated later. Any mainstream LLM handles this translation task well.
+* You can plug in your own translation pipeline via the `translate` option.
 
-### 使用
+### Writing translatable texts
 
-* 后面更新
+Use `$translate(...)` in templates (or `autoTranslate(...)` in scripts). During development the Vite plugin extracts these texts, translates them, and rewrites the calls; at runtime the translation for the current locale is looked up (with `{name}`-style interpolation), falling back to the original text.
+
+```vue
+<template>
+    <p>{{ $translate(`Hello, {name}`, { name: userName }) }}</p>
+</template>
+```
+
+## Development
+
+```sh
+pnpm install        # install dependencies (activates husky hooks)
+pnpm dev            # start the demo app (port 3001)
+pnpm test           # unit + integration + use-case tests (Vitest)
+pnpm test:e2e       # e2e tests (Playwright, needs `pnpm exec playwright install chromium` once)
+pnpm test:all       # everything above in one command
+pnpm type-check     # TypeScript type checking (source + tests)
+```
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) and are enforced locally by commitlint + husky. CI runs on every push/PR to `main` (type check + all tests).
+
+## License
+
+[Apache-2.0](./LICENSE)
