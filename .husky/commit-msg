@@ -1,0 +1,2 @@
+# commit-msg 钩子：提交信息必须符合约定式提交（Conventional Commits）
+pnpm exec commitlint --edit "$1"
