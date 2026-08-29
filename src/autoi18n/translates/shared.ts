@@ -5,7 +5,7 @@
  * @LastEditTime: 2026-08-24 01:11:00
  * @FilePath: /auto-i18n/src/autoi18n/translates/shared.ts
  * @Description: 翻译源共享协议：LLM 批量提示词、<...> 提取、缓存过滤、结果折叠、
- *               OpenAI Chat Completions 兼容通用客户端（智谱/OpenAI/DeepSeek 等共用）
+ *               OpenAI Chat Completions 兼容通用客户端（各兼容服务共用）
  */
 import { translateHashKey, translateTargetText } from '../utils/translate'
 import { Autoi18nMessages, Autoi18nMessageItem } from '../@types/autoi18n'

@@ -12,7 +12,6 @@ import { autoi18n, autoi18nInfo, autoTranslate } from './autoi18n'
 import { autoi18nPlugin } from './autoi18nPlugin'
 import { freeTranslate } from './translates/free'
 import { openaiTranslate } from './translates/openai'
-import { zhipuaiTranslate } from './translates/zhipuai'
 import { resolveTranslateFunction } from './translates/provider'
 
 export {
@@ -22,6 +21,5 @@ export {
     autoi18nPlugin,
     freeTranslate,
     openaiTranslate,
-    zhipuaiTranslate,
     resolveTranslateFunction,
 }

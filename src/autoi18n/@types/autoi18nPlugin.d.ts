@@ -22,7 +22,7 @@ export interface AIModelConfig {
      */
     baseUrl?: string
     /**
-     * 模型名（OPENAI 模式必填有效值，缺失时回退免费翻译；ZHIPUAI 模式缺省 glm-4，可通过 config.model 覆盖）
+     * 模型名（必填有效值，缺失时回退免费翻译）
      */
     model?: string
 }

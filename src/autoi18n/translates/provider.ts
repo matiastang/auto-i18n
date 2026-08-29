@@ -10,7 +10,6 @@
 import { Autoi18nPluginConfig, TranslateFunction } from '../@types/autoi18nPlugin'
 import { TranslateTarget, TranslateAIModel } from '../@types/enum'
 import { Autoi18nMessages } from '../@types/autoi18n'
-import zhipuaiTranslate from './zhipuai'
 import { openaiTranslate } from './openai'
 import { freeTranslate } from './free'
 
@@ -29,20 +28,10 @@ export const resolveTranslateFunction = (config: Autoi18nPluginConfig): Translat
     if (customTranslate) {
         return customTranslate
     }
-    // ② LLM（API Key 配置）
+    // ② LLM（API Key 配置）——唯一形态为 OpenAI Chat Completions 兼容接口
     const modelConfig = config.aiModelConfig
     if (modelConfig) {
         const aiConfig = modelConfig.config
-        if (modelConfig.model === TranslateAIModel.ZHIPUAI && aiConfig?.apiKey) {
-            return async (
-                questions: string[],
-                tos: TranslateTarget[],
-                from: TranslateTarget,
-                cache?: Autoi18nMessages,
-            ) => {
-                return await zhipuaiTranslate(aiConfig.apiKey, questions, tos, from, cache, aiConfig.model)
-            }
-        }
         // OpenAI 兼容接口：apiKey 与 model 均需有效，否则回退免费翻译
         if (modelConfig.model === TranslateAIModel.OPENAI && aiConfig?.apiKey && aiConfig?.model) {
             return async (

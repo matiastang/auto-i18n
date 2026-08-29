@@ -54,12 +54,12 @@ description: "Task list for feature implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] `src/autoi18n/@types/enum.ts`：删除 `TranslateAIModel.ZHIPUAI` 成员及其 JSDoc，仅保留 `OPENAI`
-- [ ] T006 [US1] 删除 `src/autoi18n/translates/zhipuai.ts`（整个模块：`zhipuaiTranslate`、`DEFAULT_ZHIPUAI_MODEL`、智谱 baseUrl 常量）
-- [ ] T007 [P] [US1] `src/autoi18n/translates/index.ts`：删除 `export * from './zhipuai'`
-- [ ] T008 [P] [US1] `src/autoi18n/index.ts`：删除 `zhipuaiTranslate` 的 import 与具名导出
-- [ ] T009 [US1] `src/autoi18n/translates/provider.ts`：删除 `zhipuaiTranslate` import 与 ZHIPUAI 调度分支（`modelConfig.model === TranslateAIModel.ZHIPUAI` 整块）
-- [ ] T010 [P] [US1] 注释清理：`src/autoi18n/@types/autoi18nPlugin.d.ts` 的 `model` 字段注释删除"ZHIPUAI 模式缺省 glm-4"表述；`src/autoi18n/translates/shared.ts` 文件头注释去除智谱字样（实现零改动）
+- [x] T005 [US1] `src/autoi18n/@types/enum.ts`：删除 `TranslateAIModel.ZHIPUAI` 成员及其 JSDoc，仅保留 `OPENAI`
+- [x] T006 [US1] 删除 `src/autoi18n/translates/zhipuai.ts`（整个模块：`zhipuaiTranslate`、`DEFAULT_ZHIPUAI_MODEL`、智谱 baseUrl 常量）
+- [x] T007 [P] [US1] `src/autoi18n/translates/index.ts`：删除 `export * from './zhipuai'`
+- [x] T008 [P] [US1] `src/autoi18n/index.ts`：删除 `zhipuaiTranslate` 的 import 与具名导出
+- [x] T009 [US1] `src/autoi18n/translates/provider.ts`：删除 `zhipuaiTranslate` import 与 ZHIPUAI 调度分支（`modelConfig.model === TranslateAIModel.ZHIPUAI` 整块）
+- [x] T010 [P] [US1] 注释清理：`src/autoi18n/@types/autoi18nPlugin.d.ts` 的 `model` 字段注释删除"ZHIPUAI 模式缺省 glm-4"表述；`src/autoi18n/translates/shared.ts` 文件头注释去除智谱字样（实现零改动）
 
 **Checkpoint**: `pnpm type-check` 通过；`pnpm vitest run tests/unit/index-exports.spec.ts tests/unit/translates-provider.spec.ts` 全绿（US1 独立成立：库面已无智谱入口，迁移路径由 OPENAI 参数覆盖）
 
