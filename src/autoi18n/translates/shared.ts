@@ -43,44 +43,46 @@ export interface ChatCompletionsOptions {
     model: string
 }
 
-// few-shot 提示词：文本以 <...> 包裹、顿号连接、大括号占位符原样保留
+// few-shot 提示词：文本以编号标签包裹、顿号连接、大括号占位符原样保留。
+// 编号协议（<n>译文</n>）让解析按序号回填而非按出现位置对齐，
+// 模型少返回/错位/乱序时都能被精确检测与定位，不会把 A 的译文记到 B 头上
 const LLM_MESSAGES = [
     {
         role: 'system',
         content:
-            '你只需要做翻译，需要翻译使用<>符号包裹的的内容，翻译的结果也使用<>包裹，大括号包裹的内容，无需翻译，直接输出在对应的位置就行。',
+            '你只需要做翻译，需要翻译的内容使用形如<n>…</n>的编号标签包裹（n 为从 1 开始的序号）。每段内容单独一个标签，保留原有序号与格式依次输出；结果之间用顿号、连接。大括号包裹的内容无需翻译，直接输出在对应的位置。',
     },
     {
         role: 'user',
-        content: '将：<你好，{name}>，翻译为英语。',
+        content: '将：<1>你好，{name}</1>，翻译为英语。',
     },
     {
         role: 'assistant',
-        content: '<Hello, {name}>',
+        content: '<1>Hello, {name}</1>',
     },
     {
         role: 'user',
-        content: '将：<你好，{name}>、<科技>，翻译为英语。',
+        content: '将：<1>你好，{name}</1>、<2>科技</2>，翻译为英语。',
     },
     {
         role: 'assistant',
-        content: '<Hello, {name}>、<technology>',
+        content: '<1>Hello, {name}</1>、<2>technology</2>',
     },
     {
         role: 'user',
-        content: '将：<科技>、<指数>、<经济>，翻译为英语。',
+        content: '将：<1>科技</1>、<2>指数</2>、<3>经济</3>，翻译为英语。',
     },
     {
         role: 'assistant',
-        content: '<technology>、<index>、<economy>',
+        content: '<1>technology</1>、<2>index</2>、<3>economy</3>',
     },
     {
         role: 'user',
-        content: '将：<科技>、<指数>、<经济>，翻译为日语。',
+        content: '将：<1>科技</1>、<2>指数</2>、<3>经济</3>，翻译为日语。',
     },
     {
         role: 'assistant',
-        content: '<テクノロジー>、<指数>、<経済>',
+        content: '<1>テクノロジー</1>、<2>指数</2>、<3>経済</3>',
     },
 ]
 
@@ -88,27 +90,34 @@ const LLM_MESSAGES = [
 const REQUEST_TIMEOUT_MS = 10_000
 
 /**
- * 构造批量翻译请求文本：每条以 <...> 包裹并用顿号连接
+ * 构造批量翻译请求文本：每条以编号标签包裹并用顿号连接
  * @param texts 待翻译文本
  * @returns 批量请求文本；空列表返回空字符串
  */
 export const buildTranslateQuestion = (texts: string[]): string => {
-    return texts.map((item) => `<${item}>`).join('、')
+    return texts.map((item, index) => `<${index + 1}>${item}</${index + 1}>`).join('、')
 }
 
 /**
- * 提取 <...> 标签内的全部内容（保持顺序）
+ * 按编号标签解析模型输出，返回与请求顺序对齐的译文数组
+ * 编号协议下解析按序号回填而非按出现位置对齐——乱序输出会被检测而不是串位
  * @param input 模型输出
- * @returns 标签内容数组；无标签返回空数组
+ * @param expectedCount 请求的文本条数
+ * @returns 与请求对齐的译文；缺失序号/重复序号等结构异常时返回 null
  */
-export const extractContentBetweenTags = (input: string): string[] => {
-    const regex = /<([^>]*)>/g
-    const matches = input.matchAll(regex)
-    const result: string[] = []
-    for (const match of matches) {
-        result.push(match[1])
+export const parseNumberedTranslations = (input: string, expectedCount: number): string[] | null => {
+    const result: (string | undefined)[] = []
+    for (const match of input.matchAll(/<(\d+)>([\s\S]*?)<\/\1>/g)) {
+        const index = Number(match[1]) - 1
+        if (index < 0 || index >= expectedCount || result[index] !== undefined) {
+            return null
+        }
+        result[index] = match[2]
     }
-    return result
+    if (result.length !== expectedCount || result.some((item) => item === undefined)) {
+        return null
+    }
+    return result as string[]
 }
 
 /**
@@ -253,9 +262,9 @@ export const chatCompletionsTranslate = async (
                 console.warn(`模型返回内容异常（${to}），跳过`, data)
                 continue
             }
-            const resTexts = extractContentBetweenTags(content)
-            if (resTexts.length !== texts.length) {
-                console.warn(`模型返回条数（${resTexts.length}）与请求条数（${texts.length}）不符（${to}），跳过`)
+            const resTexts = parseNumberedTranslations(content, texts.length)
+            if (!resTexts) {
+                console.warn(`模型返回编号标签结构异常（${to}），跳过`)
                 continue
             }
             // 占位符（{name}）必须原样保留，任一丢失即丢弃该目标整批（FR-006）

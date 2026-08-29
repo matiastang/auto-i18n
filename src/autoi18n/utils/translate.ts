@@ -9,79 +9,48 @@
 import CryptoJS from 'crypto-js'
 import { TranslateTarget } from '../@types/enum'
 import { Autoi18nMessages, Autoi18nMessageItem } from '../@types/autoi18n'
+import { languageMetaOf } from './language'
 
 /**
  * 目标语言描述
- * @param to 
- * @returns 
+ * @param to
+ * @returns
  */
 export const translateTargetText = (to: TranslateTarget): string | null => {
-    switch (to) {
-        case TranslateTarget.ZH:
-            return '中文'
-        case TranslateTarget.EN:
-            return '英语'
-        case TranslateTarget.JP:
-            return '日语'
-        case TranslateTarget.ARA:
-            return '阿拉伯语'
-        case TranslateTarget.FRA:
-            return '法语'
-        default:
-            return null
-    }
+    return languageMetaOf(to)?.text ?? null
 }
 
 /**
+ * 字符串实参片段：按定界符闭合匹配（'..' / ".." / `..`，模板字符串可跨行），
+ * 每种定界符捕获内容为独立分组（提取时取第一个非 undefined 分组）
+ * 贪婪 (.*) 会把同一行多个调用合并成一条文本（如模板中相邻的两个插值），
+ * 也会吞掉定界符内的异类引号（"It's"），必须按定界符精确闭合
+ */
+const STRING_ARG = `(?:'([^']*)'|"([^"]*)"|\`([^\`]*)\`)`
+
+/**
  * 提取翻译转换
- * @param code 
- * @returns 
+ * @param code
+ * @returns
  */
 export const detectionTranslateMsg = (code: string): string[] => {
-    // TODO: - 正则合并及精准匹配
-    const msgs: string[] = []
-    const RE = /\$translate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?\)/g
-    const reTranslates = code.match(RE)
-    if (Array.isArray(reTranslates) && reTranslates.length > 0) {
-        msgs.push(...reTranslates.map((item) => item)) 
-    }
-    const optionRE = /\$translate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?,/g
-    const optionReTranslates = code.match(optionRE)
-    if (Array.isArray(optionReTranslates) && optionReTranslates.length > 0) {
-        msgs.push(...optionReTranslates.map((item) => item))
-    }
-    const autoReTranslates = code.match(/autoTranslate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?\)/g)
-    if (Array.isArray(autoReTranslates) && autoReTranslates.length > 0) {
-        msgs.push(...autoReTranslates.map((item) => item)) 
-    }
-    const autoOptionReTranslates = code.match(/autoTranslate\([\s\n.]?[`'"](.*)[`'"][\s\n.]?,/g)
-    if (Array.isArray(autoOptionReTranslates) && autoOptionReTranslates.length > 0) {
-        msgs.push(...autoOptionReTranslates.map((item) => item))
-    }
-    console.log(reTranslates, optionReTranslates, msgs)
-    return msgs
+    const RE = new RegExp(`(?:\\$translate|autoTranslate)\\([\\s\\n.]?${STRING_ARG}[\\s\\n.]?[,)]`, 'g')
+    const matched = code.match(RE)
+    return Array.isArray(matched) ? matched : []
 }
 
 /**
  * 提取翻译文本
- * @param tText 
- * @returns 
+ * @param tText
+ * @returns
  */
 export const detectionTranslateText = (msg: string): string | null => {
-    const textRE = /\$translate\([\`'"](.*)[\`'"].*/g
+    const textRE = new RegExp(`(?:\\$translate|autoTranslate)\\([\\s\\n.]?${STRING_ARG}`)
     const textRes = textRE.exec(msg)
-    if (!Array.isArray(textRes) || textRes.length <= 1) {
-        console.log(`${msg} not extract text`)
-        const autoTextRE = /autoTranslate\([\`'"](.*)[\`'"].*/g
-        const autoTextRes = autoTextRE.exec(msg)
-        if (!Array.isArray(autoTextRes) || autoTextRes.length <= 1) {
-            console.log(`${msg} not extract text`)
-            return null
-        }
-        return autoTextRes[1]
+    if (!Array.isArray(textRes) || textRes.length <= 3) {
+        return null
     }
-    console.log(`${msg} extract: ${textRes[1]}`)
-    return textRes[1]
+    return textRes[1] ?? textRes[2] ?? textRes[3] ?? ''
 }
 
 /**
@@ -141,20 +110,67 @@ export const devTransformMessages = (msg: Autoi18nMessages) => {
 
 /**
  * 注入
- * @param code 
- * @param msg 
+ * @param code
+ * @param msg
  */
 export const devInjectMessages = (code: string, msg: string) => {
+    if (!/<script[^>]*>/.test(code)) {
+        // 只有 <template> 的 SFC：追加一个 setup 脚本块承载注入代码。
+        // 若直接跳过注入，模板中的调用已被替换成 _localeTranslate( 而无定义，运行时 ReferenceError
+        return `${code}\n<script setup>\n${msg}\n</script>\n`
+    }
     return code.replace(/(\<script.*\>)/, `$1\n${msg}\n`)
 }
 
 /**
- * 转换方法替换
- * @param code 
- * @returns 
+ * 转换方法替换：仅替换"调用点"（紧跟 "("），且要求前一个非空字符不是标识符字符
+ * ——避免把属性键（{ autoTranslate: ... }）、普通单词（xxx$translate）误改成调用。
+ *
+ * 注意：不做字符串/注释/正则字面量识别，因为 Vue SFC 的 <template> 段里
+ * 既包含 Vue 模板插值（`{{ $translate(\`…\`) }}`）也包含 HTML 属性值，
+ * JS 词法层无法可靠识别哪些 `\`` 是字符串边界、哪些是 Vue 模板语法——
+ * 单纯"跳过字符串"的策略会破坏模板内的调用点替换。
+ *
+ * 当前策略：调用点必须是 `$translate(` 或 `autoTranslate(`，且前一个非空
+ * 字符不在 [A-Za-z0-9_$]（标识符字符）——这条规则足以排除"作为标识符一部分"
+ * 与"作为属性键"两种误伤场景。
  */
 export const devTransformMethod = (code: string) => {
-    return code.replace(/\$translate/g, '_localeTranslate').replace(/autoTranslate\(/g, '_localeTranslate(')
+    let out = ''
+    const n = code.length
+    let prevNonSpace = ''
+    for (let i = 0; i < n; i += 1) {
+        const c = code[i]
+        // $translate(  →  _localeTranslate(
+        if (c === '$' && code.startsWith('$translate(', i)) {
+            // 单词边界：$translate 的 $ 之前不能是标识符字符
+            if (prevNonSpace === '' || !isWordChar(prevNonSpace)) {
+                out += '_localeTranslate('
+                // 跳过 '$translate(' 共 11 字符
+                i += 10
+                prevNonSpace = '('
+                continue
+            }
+        }
+        // autoTranslate(  →  _localeTranslate(
+        if (c === 'a' && code.startsWith('autoTranslate(', i)) {
+            if (prevNonSpace === '' || !isWordChar(prevNonSpace)) {
+                out += '_localeTranslate('
+                i += 13
+                prevNonSpace = '('
+                continue
+            }
+        }
+        out += c
+        if (c !== ' ' && c !== '\t' && c !== '\n' && c !== '\r') {
+            prevNonSpace = c
+        }
+    }
+    return out
+}
+
+const isWordChar = (ch: string): boolean => {
+    return /[A-Za-z0-9_$]/.test(ch)
 }
 
 // const test = () => {

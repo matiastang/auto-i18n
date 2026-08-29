@@ -102,7 +102,7 @@ describe('resolveTranslateFunction（三级优先级）', () => {
 })
 
 describe('resolveTranslateFunction（LLM 分支行为验证，stub fetch）', () => {
-    const chatResponse = { choices: [{ message: { content: '<Hello>' } }] }
+    const chatResponse = { choices: [{ message: { content: '<1>Hello</1>' } }] }
 
     it('model=OPENAI 且 apiKey/model 齐备：返回 OpenAI 兼容源（请求发往配置的 baseUrl）', async () => {
         vi.spyOn(console, 'info').mockImplementation(() => {})

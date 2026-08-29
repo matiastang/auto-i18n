@@ -22,6 +22,11 @@ const GOOGLE_GTX_URL = 'https://translate.googleapis.com/translate_a/single'
 const FREE_TEXT_MAX_LENGTH = 450
 // 单次免费请求超时（毫秒）——翻译运行在构建 transform 钩子内，必须可超时退出
 const FREE_REQUEST_TIMEOUT_MS = 10_000
+// 并发请求数上限：文案多时逐条串行会让构建显著变慢
+const FREE_CONCURRENCY = 5
+// 连续失败熔断阈值：服务整体不可达时避免对剩余文案继续无效请求
+// （每条「回退链整体失败」计 1 次，任一成功即清零；须大于单条失败的连续次数，避免误伤孤立失败）
+const FAILURE_TRIP_LIMIT = 6
 
 /**
  * 单条文本翻译服务（失败抛错，由回退链处理）
@@ -168,6 +173,9 @@ export const freeTranslate = async (
     }
     const messages: Autoi18nMessages = {}
     let failedCount = 0
+    // 展开为「文本 × 目标语言」任务列表；写入 messages 的键互不冲突，无需加锁
+    type FreeTask = { question: string; to: TranslateTarget; toIso: string }
+    const tasks: FreeTask[] = []
     for (const to of translateTos) {
         const toIso = toIsoLocale(to)
         if (!toIso) {
@@ -180,30 +188,71 @@ export const freeTranslate = async (
                 failedCount += 1
                 continue
             }
-            const dst = await translateWithFallback(question, fromIso, toIso)
+            tasks.push({ question, to, toIso })
+        }
+    }
+
+    let consecutiveFailures = 0
+    let tripped = false
+    let processed = 0
+    // 并发 worker 池：单线程事件循环下任务游标读取/推进无竞态
+    let cursorIndex = 0
+    // 简单互斥：5 个 worker 共享的"取任务 + 熔断判定"通过取号串行化
+    // （JS 单线程下 `cursorIndex` 读写是原子的，关键字 await 之间不会被打断）
+    const takeNext = (): FreeTask | null => {
+        if (tripped) return null
+        if (cursorIndex >= tasks.length) return null
+        const t = tasks[cursorIndex]
+        cursorIndex += 1
+        return t
+    }
+    const worker = async (): Promise<void> => {
+        for (;;) {
+            const task = takeNext()
+            if (!task) return
+            processed += 1
+            const dst = await translateWithFallback(task.question, fromIso, task.toIso)
             if (dst === null) {
                 failedCount += 1
-                console.warn(`免费翻译：全部免费服务失败，跳过该条：${question}`)
+                consecutiveFailures += 1
+                if (consecutiveFailures >= FAILURE_TRIP_LIMIT) {
+                    tripped = true
+                    // 只在阈值第一次跨越时打一次警告；并发 worker 共享计数器，
+                    // 多个 worker 都可能在阈值处自检——只在严格等于阈值时打印避免重复
+                    if (consecutiveFailures === FAILURE_TRIP_LIMIT) {
+                        console.warn(
+                            '免费翻译：免费服务连续失败已达上限，剩余文案本模块内直接跳过',
+                        )
+                    }
+                    return
+                }
+                console.warn(`免费翻译：全部免费服务失败，跳过该条：${task.question}`)
                 continue
             }
-            const key = translateHashKey(question)
+            consecutiveFailures = 0
+            const key = translateHashKey(task.question)
             const item = messages[key]
             if (item) {
-                item[to] = dst
+                item[task.to] = dst
             } else {
                 messages[key] = {
-                    [from]: question,
-                    [to]: dst,
+                    [from]: task.question,
+                    [task.to]: dst,
                 } as Autoi18nMessageItem
             }
         }
     }
+    await Promise.all(
+        Array.from({ length: Math.min(FREE_CONCURRENCY, tasks.length) }, () => worker()),
+    )
+    // 熔断后未执行的记入失败计数
+    failedCount += tasks.length - processed
+    if (failedCount > 0) {
+        console.warn(`免费翻译：共 ${failedCount} 条翻译失败已跳过`)
+    }
     if (!Object.keys(messages).length) {
         console.warn('免费翻译：没有产生任何译文（MyMemory/Google 均不可用或文本被跳过）')
         return null
-    }
-    if (failedCount > 0) {
-        console.warn(`免费翻译：共 ${failedCount} 条翻译失败已跳过`)
     }
     return messages
 }

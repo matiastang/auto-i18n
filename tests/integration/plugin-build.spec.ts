@@ -13,7 +13,6 @@ import { Autoi18nMessageItem, Autoi18nMessages } from '../../src/autoi18n/@types
 import { translateHashKey } from '../../src/autoi18n/utils/translate'
 
 const fixtureRoot = fileURLToPath(new URL('./fixtures/app/', import.meta.url))
-const autoi18nRoot = fileURLToPath(new URL('../../src/autoi18n/', import.meta.url))
 
 describe('集成：autoi18nPlugin × vite build', () => {
     it('插件在完整构建管线中对 SFC 注入翻译并替换调用', async () => {
@@ -48,7 +47,15 @@ describe('集成：autoi18nPlugin × vite build', () => {
                 vue(),
             ],
             resolve: {
-                alias: [{ find: '@autoi18n', replacement: autoi18nRoot }],
+                // 注入代码从包名 'auto-i18n-vue' 导入 translateHashKey（不再依赖仓库内
+                // @autoi18n 别名）。仓库 devDependencies 固定的是已发布的 0.0.1（无该
+                // 导出），这里别名到本地源，等价于消费方安装了含此导出的正式版本
+                alias: [
+                    {
+                        find: 'auto-i18n-vue',
+                        replacement: fileURLToPath(new URL('../../src/autoi18n/index.ts', import.meta.url)),
+                    },
+                ],
             },
             build: { write: false, minify: false },
         })) as RollupOutput

@@ -16,7 +16,7 @@ const chatResponse = (content: string) => ({
 const stubFetch = () => {
     const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
         ok: true,
-        json: () => Promise.resolve(chatResponse('<Hello>、<technology>')),
+        json: () => Promise.resolve(chatResponse('<1>Hello</1>、<2>technology</2>')),
     }))
     vi.stubGlobal('fetch', fetchMock)
     return fetchMock
@@ -45,7 +45,7 @@ describe('openaiTranslate（OpenAI Chat Completions 兼容）', () => {
         const body = JSON.parse(String(init.body))
         expect(body.model).toBe('deepseek-chat')
         // 提示词含批量协议与占位符保留指令
-        expect(body.messages[body.messages.length - 1].content).toBe('将：<你好>、<科技>，翻译为英语。')
+        expect(body.messages[body.messages.length - 1].content).toBe('将：<1>你好</1>、<2>科技</2>，翻译为英语。')
         expect(res?.[translateHashKey('你好')]?.[TranslateTarget.EN]).toBe('Hello')
         expect(res?.[translateHashKey('科技')]?.[TranslateTarget.EN]).toBe('technology')
     })
@@ -80,7 +80,7 @@ describe('openaiTranslate（OpenAI Chat Completions 兼容）', () => {
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const fetchMock = vi.fn(async () => ({
             ok: true,
-            json: () => Promise.resolve(chatResponse('<only-one>')),
+            json: () => Promise.resolve(chatResponse('<1>only-one</1>')),
         }))
         vi.stubGlobal('fetch', fetchMock)
         const res = await openaiTranslate(

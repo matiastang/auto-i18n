@@ -146,4 +146,14 @@ describe('autoTranslate', () => {
         autoi18nInfo.locale = TranslateTarget.EN
         expect(autoTranslate('共{n}条', { n: 3 })).toBe('3 items')
     })
+
+    it('插值值含 $& 等特殊替换串时原样输出（替换串模式展开回归）', () => {
+        const key = translateHashKey('值{name}')
+        autoi18nInfo.messages = {
+            [key]: { zh: '值{name}', en: 'V: {name}' } as Autoi18nMessageItem,
+        }
+        autoi18nInfo.locale = TranslateTarget.EN
+        expect(autoTranslate('值{name}', { name: 'A$&B' })).toBe('V: A$&B')
+        expect(autoTranslate('值{name}', { name: "$`$'" })).toBe('V: $`$\'')
+    })
 })

@@ -72,6 +72,21 @@ describe('detectionTranslateMsg / detectionTranslateText / checkQuestions', () =
     it('非翻译调用文本返回 null', () => {
         expect(detectionTranslateText('not a translate call')).toBeNull()
     })
+
+    it('同一行多个调用分别提取，不合并成一条（贪婪正则回归）', () => {
+        const code = `<p>{{ $translate('Hello') }} - {{ $translate('World') }}</p>`
+        expect(checkQuestions(code)).toEqual(['Hello', 'World'])
+    })
+
+    it('定界符内出现异类引号时完整提取（"It\'s" / `含"双引号"`）', () => {
+        expect(checkQuestions(`$translate("It's fine")`)).toEqual(["It's fine"])
+        expect(checkQuestions('$translate(`他说"你好"`)')).toEqual(['他说"你好"'])
+    })
+
+    it('单引号与双引号定界的调用均可提取', () => {
+        const code = `$translate('甲') + $translate("乙")`
+        expect(checkQuestions(code)).toEqual(['甲', '乙'])
+    })
 })
 
 describe('translateHashKey', () => {
@@ -127,6 +142,15 @@ describe('devInjectMessages', () => {
         // 原内容保留
         expect(injected).toContain('const a = 1')
     })
+
+    it('模板-only SFC（无 <script>）：追加 <script setup> 块承载注入代码，原 <template> 完整保留', () => {
+        const sfc = `<template><p>{{ $translate('hello') }}</p></template>`
+        const injected = devInjectMessages(sfc, '/* INJECT */')
+        // 原 <template> 完整保留作前缀
+        expect(injected.startsWith(sfc)).toBe(true)
+        // 末尾追加 <script setup> 块承载注入代码
+        expect(injected).toMatch(/<script setup>\s*\/\* INJECT \*\/\s*<\/script>\s*$/)
+    })
 })
 
 describe('devTransformMethod', () => {
@@ -138,5 +162,28 @@ describe('devTransformMethod', () => {
     it('不影响 _localeTranslate 自身定义', () => {
         const code = 'const _localeTranslate = (key) => key'
         expect(devTransformMethod(code)).toBe(code)
+    })
+
+    it('注释中提到 $translate 不被替换（防止注释被改写）', () => {
+        const code = '// TODO: refactor $translate usage here\nexport const x = 1'
+        expect(devTransformMethod(code)).toBe(code)
+    })
+
+    it('字符串字面量中出现 $translate 不被替换', () => {
+        const code = "const tip = 'call $translate(\"x\") to translate'; const y = 1"
+        const out = devTransformMethod(code)
+        expect(out).toContain('call $translate("x") to translate')
+        expect(out).toContain('const y = 1')
+        // 关键回归：不应出现 _localeTranslate(
+        expect(out).not.toContain('_localeTranslate(')
+    })
+
+    it('对象属性名（无括号）中出现 autoTranslate 不被替换', () => {
+        const code = 'const obj = { autoTranslate: true, name: $translate(`real`) }'
+        const out = devTransformMethod(code)
+        // 属性键 autoTranslate 原样保留
+        expect(out).toContain('autoTranslate: true')
+        // 真调用点被替换
+        expect(out).toContain('_localeTranslate(`real`)')
     })
 })

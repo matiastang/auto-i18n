@@ -66,42 +66,48 @@ describe('readTranslateJson / writeTranslateJson（Node fs 分支）', () => {
     })
 })
 
-describe('readJsonFile（XHR 分支，stub XMLHttpRequest）', () => {
-    let scenario: { status: number; body: string }
-
-    class FakeXHR {
-        status = 0
-        readyState = 0
-        responseText = ''
-        onreadystatechange: (() => void) | null = null
-        overrideMimeType() {}
-        open() {}
-        send() {
-            this.readyState = 4
-            this.status = scenario.status
-            this.responseText = scenario.body
-            this.onreadystatechange?.()
-        }
-    }
-
-    beforeEach(() => {
-        scenario = { status: 200, body: '{}' }
-        vi.stubGlobal('XMLHttpRequest', FakeXHR)
+describe('readJsonFile（fetch 分支，stub fetch）', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals()
+        vi.restoreAllMocks()
     })
 
     it('200 且合法 JSON：resolve 解析结果', async () => {
-        scenario = { status: 200, body: '{"autoi18n_k1":{"zh":"你好"}}' }
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue({
+                ok: true,
+                status: 200,
+                text: () => Promise.resolve('{"autoi18n_k1":{"zh":"你好"}}'),
+            }),
+        )
         await expect(readJsonFile('/translate.json')).resolves.toEqual({
             autoi18n_k1: { zh: '你好' },
-        })    })
+        })
+    })
 
-    it('非 200：reject', async () => {
-        scenario = { status: 404, body: '' }
-        await expect(readJsonFile('/translate.json')).rejects.toBeTruthy()
+    it('非 200：reject（含状态码信息）', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue({ ok: false, status: 404, text: () => Promise.resolve('') }),
+        )
+        await expect(readJsonFile('/translate.json')).rejects.toThrow(/404/)
     })
 
     it('200 但非法 JSON：reject', async () => {
-        scenario = { status: 200, body: '{ oops' }
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue({
+                ok: true,
+                status: 200,
+                text: () => Promise.resolve('{ oops'),
+            }),
+        )
         await expect(readJsonFile('/translate.json')).rejects.toBeTruthy()
+    })
+
+    it('请求异常（网络错误）向上抛出由调用方兜底', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
+        await expect(readJsonFile('/translate.json')).rejects.toThrow('network down')
     })
 })

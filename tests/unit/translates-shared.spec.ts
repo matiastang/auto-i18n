@@ -5,7 +5,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
     buildTranslateQuestion,
-    extractContentBetweenTags,
+    parseNumberedTranslations,
     checkTranslateQuestions,
     translateMessage,
     chatCompletionsTranslate,
@@ -19,10 +19,10 @@ afterEach(() => {
     vi.restoreAllMocks()
 })
 
-describe('buildTranslateQuestion', () => {
-    it('文本以 <...> 包裹并用顿号连接（LLM 批量协议）', () => {
-        expect(buildTranslateQuestion(['你好'])).toBe('<你好>')
-        expect(buildTranslateQuestion(['你好，{name}', '科技'])).toBe('<你好，{name}>、<科技>')
+describe('buildTranslateQuestion（编号协议）', () => {
+    it('文本以编号标签包裹并用顿号连接', () => {
+        expect(buildTranslateQuestion(['你好'])).toBe('<1>你好</1>')
+        expect(buildTranslateQuestion(['你好，{name}', '科技'])).toBe('<1>你好，{name}</1>、<2>科技</2>')
     })
 
     it('空列表返回空字符串', () => {
@@ -30,16 +30,34 @@ describe('buildTranslateQuestion', () => {
     })
 })
 
-describe('extractContentBetweenTags', () => {
-    it('提取全部 <...> 内容并保持顺序', () => {
-        expect(extractContentBetweenTags('<Hello, {name}>、<technology>')).toEqual([
-            'Hello, {name}',
+describe('parseNumberedTranslations（编号解析，按序号回填）', () => {
+    it('按序号提取全部译文', () => {
+        expect(parseNumberedTranslations('<1>Hello</1>、<2>technology</2>', 2)).toEqual([
+            'Hello',
             'technology',
         ])
+        expect(parseNumberedTranslations('<1>Hello</1>', 1)).toEqual(['Hello'])
     })
 
-    it('无标签时返回空数组', () => {
-        expect(extractContentBetweenTags('没有任何标签')).toEqual([])
+    it('无标签返回 null', () => {
+        expect(parseNumberedTranslations('没有任何标签', 1)).toBeNull()
+    })
+
+    it('缺失序号时返回 null（不被静默错位）', () => {
+        expect(parseNumberedTranslations('<1>Hello</1>', 2)).toBeNull()
+    })
+
+    it('重复序号时返回 null', () => {
+        expect(parseNumberedTranslations('<1>A</1>、<1>B</1>', 2)).toBeNull()
+    })
+
+    it('序号越界时返回 null', () => {
+        expect(parseNumberedTranslations('<3>C</3>', 2)).toBeNull()
+    })
+
+    it('乱序输出按序号回填到正确位置（位置对齐回归）', () => {
+        const out = '<2>technology</2>、<1>Hello, {name}</1>'
+        expect(parseNumberedTranslations(out, 2)).toEqual(['Hello, {name}', 'technology'])
     })
 })
 
@@ -148,7 +166,7 @@ describe('chatCompletionsTranslate（OpenAI 兼容通用客户端）', () => {
             ok: true,
             json: () =>
                 Promise.resolve({
-                    choices: [{ message: { content: '<Hello>、<technology>' } }],
+                    choices: [{ message: { content: '<1>Hello</1>、<2>technology</2>' } }],
                 }),
         })
         vi.stubGlobal('fetch', fetchMock)
@@ -169,7 +187,7 @@ describe('chatCompletionsTranslate（OpenAI 兼容通用客户端）', () => {
         expect(body.model).toBe('test-model')
         const lastMessage = body.messages[body.messages.length - 1]
         expect(lastMessage.role).toBe('user')
-        expect(lastMessage.content).toBe('将：<你好>、<科技>，翻译为英语。')
+        expect(lastMessage.content).toBe('将：<1>你好</1>、<2>科技</2>，翻译为英语。')
         // 提示词要求保留大括号占位符
         expect(body.messages[0].content).toContain('大括号')
         expect(res).toEqual([
@@ -187,7 +205,7 @@ describe('chatCompletionsTranslate（OpenAI 兼容通用客户端）', () => {
     it('baseUrl 末尾斜杠容错拼接', async () => {
         const fetchMock = vi.fn().mockResolvedValue({
             ok: true,
-            json: () => Promise.resolve({ choices: [{ message: { content: '<Hello>' } }] }),
+            json: () => Promise.resolve({ choices: [{ message: { content: '<1>Hello</1>' } }] }),
         })
         vi.stubGlobal('fetch', fetchMock)
         await chatCompletionsTranslate(
@@ -204,11 +222,11 @@ describe('chatCompletionsTranslate（OpenAI 兼容通用客户端）', () => {
             .fn()
             .mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve({ choices: [{ message: { content: '<Hello>' } }] }),
+                json: () => Promise.resolve({ choices: [{ message: { content: '<1>Hello</1>' } }] }),
             })
             .mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve({ choices: [{ message: { content: '<こんにちは>' } }] }),
+                json: () => Promise.resolve({ choices: [{ message: { content: '<1>こんにちは</1>' } }] }),
             })
         vi.stubGlobal('fetch', fetchMock)
         const res = await chatCompletionsTranslate(
@@ -223,11 +241,11 @@ describe('chatCompletionsTranslate（OpenAI 兼容通用客户端）', () => {
         expect(res[1].trans_result[0].dst).toBe('こんにちは')
     })
 
-    it('响应条数与请求条数不符时丢弃该目标整批并警告', async () => {
+    it('响应编号标签缺失时丢弃该目标整批并警告', async () => {
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const fetchMock = vi.fn().mockResolvedValue({
             ok: true,
-            json: () => Promise.resolve({ choices: [{ message: { content: '<only-one>' } }] }),
+            json: () => Promise.resolve({ choices: [{ message: { content: '<1>only-one</1>' } }] }),
         })
         vi.stubGlobal('fetch', fetchMock)
         const res = await chatCompletionsTranslate(
@@ -265,7 +283,7 @@ describe('chatCompletionsTranslate（OpenAI 兼容通用客户端）', () => {
         const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
             ok: true,
             status: 200,
-            json: () => Promise.resolve({ choices: [{ message: { content: '<username: >' } }] }),
+            json: () => Promise.resolve({ choices: [{ message: { content: '<1>username: </1>' } }] }),
         }))
         vi.stubGlobal('fetch', fetchMock)
         const res = await chatCompletionsTranslate(

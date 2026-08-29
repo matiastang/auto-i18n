@@ -267,4 +267,68 @@ describe('freeTranslate（MyMemory 主 + Google 备回退链）', () => {
         )
         expect(res?.[translateHashKey('你好')]?.[TranslateTarget.ZH]).toBe('你好')
     })
+
+    it('熔断：连续失败达上限后剩余任务直接跳过（失败计数含未执行项）', async () => {
+        // 20 条文案 × 1 个目标 = 20 个任务；阈值 6
+        // 全部失败时：触发熔断后剩余任务被记入 failedCount，最终汇总应=20
+        const fetchMock = stubFetch(async () => {
+            throw new TypeError('network down')
+        })
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+        const questions = Array.from({ length: 20 }, (_, i) => `文案${i}`)
+        const res = await freeTranslate(
+            questions,
+            [TranslateTarget.EN],
+            TranslateTarget.ZH,
+            {},
+        )
+        expect(res).toBeNull()
+        // 至少要发请求才触发熔断
+        expect(fetchMock.mock.calls.length).toBeGreaterThan(0)
+        // 熔断提示应出现一次
+        const tripWarns = warnSpy.mock.calls.filter((c) =>
+            String(c[0]).includes('连续失败已达上限'),
+        )
+        expect(tripWarns.length).toBe(1)
+        // 失败汇总消息应包含全部 20 条（包括熔断后跳过的）
+        const failSummary = warnSpy.mock.calls.filter((c) =>
+            String(c[0]).includes('条翻译失败已跳过'),
+        )
+        expect(failSummary.length).toBe(1)
+        expect(String(failSummary[0][0])).toContain('共 20 条')
+    })
+
+    it('熔断自愈：连续失败之间出现一次成功则计数清零，不会触发熔断', async () => {
+        // 10 条文案，全部交替：失败、成功、失败、成功...，不应触发熔断
+        let callIndex = 0
+        const fetchMock = stubFetch(async (url) => {
+            const idx = callIndex
+            callIndex += 1
+            // MyMemory 主调用，奇数次失败，偶数次成功
+            if (idx % 2 === 0) {
+                return myMemoryResponse('ok')
+            }
+            // 失败路径：MyMemory reject → Google 也 reject → 该任务整链失败
+            throw new TypeError('flaky')
+        })
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+        const questions = Array.from({ length: 10 }, (_, i) => `q${i}`)
+        const res = await freeTranslate(
+            questions,
+            [TranslateTarget.EN],
+            TranslateTarget.ZH,
+            {},
+        )
+        // 至少一部分文案被翻译成功
+        expect(res).not.toBeNull()
+        // 不应出现熔断提示
+        const tripWarns = warnSpy.mock.calls.filter((c) =>
+            String(c[0]).includes('连续失败已达上限'),
+        )
+        expect(tripWarns.length).toBe(0)
+        // 全部 10 条均被尝试（成功路径覆盖每条至少一次）
+        expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(10)
+    })
 })

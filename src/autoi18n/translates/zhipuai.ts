@@ -13,8 +13,8 @@ import { checkTranslateQuestions, chatCompletionsTranslate, translateMessage } f
 
 // 智谱服务地址（OpenAI Chat Completions 兼容）
 const zhipuai_base_url = 'https://open.bigmodel.cn/api/paas/v4'
-// 智谱默认模型
-const zhipuai_model = 'glm-4'
+// 智谱默认模型（可由调用方通过 model 参数覆盖）
+export const DEFAULT_ZHIPUAI_MODEL = 'glm-4'
 
 /**
  * 智谱翻译，过滤掉已经在缓存中的内容
@@ -23,6 +23,7 @@ const zhipuai_model = 'glm-4'
  * @param tos 目标语言
  * @param from 源语言
  * @param cache 翻译缓存
+ * @param model 模型名（缺省 glm-4）
  * @returns 新增译文；无新增或失败返回 null
  */
 export const zhipuaiTranslate = async (
@@ -31,6 +32,7 @@ export const zhipuaiTranslate = async (
     tos: TranslateTarget[],
     from: TranslateTarget,
     cache?: Autoi18nMessages,
+    model?: string,
 ): Promise<Autoi18nMessages | null> => {
     const translateTos = tos.filter((item) => item !== from)
     if (!questions.length || !translateTos.length) {
@@ -45,7 +47,7 @@ export const zhipuaiTranslate = async (
         {
             apiKey,
             baseUrl: zhipuai_base_url,
-            model: zhipuai_model,
+            model: model || DEFAULT_ZHIPUAI_MODEL,
         },
         nCacheQuestions,
         translateTos,

@@ -15,20 +15,26 @@ import { translateHashKey } from '../../src/autoi18n/utils/translate'
 const sfc = (text: string) =>
     `<template>\n  <p>{{ $translate(\`${text}\`) }}</p>\n</template>\n<script setup lang="ts">\n</script>\n`
 
-/** 字典式 mock 翻译（离线，绝不调用 AI） */
+/** 字典式 mock 翻译（离线，绝不调用 AI）——已缓存的 key 返回 null 以模拟真实翻译源 */
 const dictionaryTranslate = async (
     questions: string[],
     _tos: TranslateTarget[],
-    from: TranslateTarget
+    from: TranslateTarget,
+    cache?: Autoi18nMessages
 ) => {
     const msgs: Autoi18nMessages = {}
     for (const q of questions) {
-        msgs[translateHashKey(q)] = {
+        const key = translateHashKey(q)
+        // 模拟 translate 源的真实行为：已缓存的 key 不重翻译
+        if (cache && cache[key] && cache[key]?.[TranslateTarget.EN]) {
+            continue
+        }
+        msgs[key] = {
             [from]: q,
             [TranslateTarget.EN]: `EN(${q})`,
         } as Autoi18nMessageItem
     }
-    return msgs
+    return Object.keys(msgs).length ? msgs : null
 }
 
 beforeEach(() => {
@@ -72,6 +78,11 @@ describe('Use Case: 翻译采集工作流', () => {
         expect(out).toContain('_localeTranslate')
         expect(out).toContain('EN(新文案)')
         expect(out).not.toContain('$translate(')
+        // 注入代码只依赖接入方可解析的模块（'vue' 与包名），不得使用仓库内 @autoi18n 别名
+        expect(out).toContain(`import { translateHashKey } from 'auto-i18n-vue'`)
+        expect(out).not.toContain(`'@autoi18n`)
+        // 注入副本的插值同样使用函数式替换串（$& 等特殊模式不展开）
+        expect(out).toContain(`() => String(_val)`)
 
         // 3. 构建结束：保存"缓存 ∪ 新译文"
         await plugin.buildEnd()
@@ -211,7 +222,8 @@ describe('Use Case: OpenAI 兼容 LLM 翻译工作流（stub fetch）', () => {
         vi.spyOn(console, 'info').mockImplementation(() => {})
         const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
             ok: true,
-            json: () => Promise.resolve({ choices: [{ message: { content: '<Hello, LLM world>' } }] }),
+            json: () =>
+                Promise.resolve({ choices: [{ message: { content: '<1>Hello, LLM world</1>' } }] }),
         }))
         vi.stubGlobal('fetch', fetchMock)
         const autoi18nPlugin = await loadPlugin()
@@ -301,6 +313,88 @@ describe('Use Case: 自定义翻译函数优先级（最高且独占）', () => 
         expect(warnSpy).toHaveBeenCalled()
         await plugin.buildEnd()
         expect(saveFn).not.toHaveBeenCalled()
+        vi.restoreAllMocks()
+    })
+})
+
+describe('Use Case: 子集注入（仅内联本模块文案）', () => {
+    it('transform 输出不得携带"未在本模块出现"的缓存键', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const autoi18nPlugin = await loadPlugin()
+        const cachedKey1 = translateHashKey('本模块文案')
+        const cachedKey2 = translateHashKey('其它模块文案')
+
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            translate: dictionaryTranslate,
+            readTranslateContent: async () => ({
+                [cachedKey1]: {
+                    zh: '本模块文案',
+                    en: 'ModuleText',
+                } as Autoi18nMessageItem,
+                [cachedKey2]: {
+                    zh: '其它模块文案',
+                    en: 'OtherModuleText',
+                } as Autoi18nMessageItem,
+            }),
+            saveTranslateContent: async () => true,
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        const out = await plugin.transform(sfc('本模块文案'), '/project/src/App.vue')
+
+        // 本模块文案应出现在注入字面量中
+        expect(out).toContain('ModuleText')
+        // 子集注入关键回归：未出现的其它模块文案不应被内联到本模块代码里
+        expect(out).not.toContain('OtherModuleText')
+        expect(out).not.toContain(translateHashKey('其它模块文案'))
+        // 调用点被替换为 _localeTranslate
+        expect(out).toContain('_localeTranslate')
+
+        await plugin.buildEnd()
+        vi.restoreAllMocks()
+    })
+
+    it('混合模块：本模块新文案触发翻译，注入同时携带本模块新增+命中缓存的旧文案', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const autoi18nPlugin = await loadPlugin()
+        const cachedKey = translateHashKey('旧缓存文案')
+        const newKey = translateHashKey('本模块新文案')
+
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            translate: dictionaryTranslate,
+            readTranslateContent: async () => ({
+                [cachedKey]: {
+                    zh: '旧缓存文案',
+                    en: 'CachedOld',
+                } as Autoi18nMessageItem,
+            }),
+            saveTranslateContent: async () => true,
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        // SFC 中同时引用「本模块新文案」（要翻译）+ 「旧缓存文案」（命中缓存）
+        const mixedSfc =
+            `<template>` +
+            `<p>{{ $translate(\`本模块新文案\`) }}</p>` +
+            `<p>{{ $translate(\`旧缓存文案\`) }}</p>` +
+            `</template>` +
+            `<script setup lang="ts"></script>`
+        const out = await plugin.transform(mixedSfc, '/project/src/App.vue')
+
+        // 两种文案都应被注入（缓存 ∪ 新增为源，按本模块涉及文案内联）
+        expect(out).toContain('EN(本模块新文案)')
+        expect(out).toContain('CachedOld')
+        // 注入代码的 hash 键应包含两者
+        expect(out).toContain(newKey)
+        expect(out).toContain(cachedKey)
+
+        await plugin.buildEnd()
         vi.restoreAllMocks()
     })
 })

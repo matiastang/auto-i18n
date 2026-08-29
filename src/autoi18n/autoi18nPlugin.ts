@@ -2,163 +2,209 @@
  * @Author: matiastang
  * @Date: 2023-07-17 10:21:27
  * @LastEditors: matiastang
- * @LastEditTime: 2024-08-23 18:28:48
+ * @LastEditTime: 2026-08-26 23:30:00
  * @FilePath: /auto-i18n/src/autoi18n/autoi18nPlugin.ts
  * @Description: htmlPlugin
  */
-// import path from 'path'
-import { merge } from 'lodash'
 import { InputOptions } from 'rollup'
-// import { InputOptions, ModuleInfo, LogLevel, RollupLog, AcornNode, OutputOptions } from 'rollup'
-import { checkQuestions, devTransformMessages, devInjectMessages, devTransformMethod } from './utils'
+import { checkQuestions, devInjectMessages, devTransformMethod, devTransformMessages, translateHashKey } from './utils'
 import { Autoi18nMessages } from './@types/autoi18n'
 import { Autoi18nPluginConfig, Autoi18nPluginInfo, TranslateFunction } from './@types/autoi18nPlugin'
 import { TranslateTarget } from './@types/enum'
 import { resolveTranslateFunction } from './translates/provider'
-// import * as __package from '../../package.json'
 
 /**
- * 插件设置信息
+ * 插件版本号（发布时须与根 package.json 同步；
+ * 不能静态 import package.json——ts:build 的 rootDir 为 src/autoi18n，越界导入会报 TS6059）
  */
-const autoi18nPluginInfo: Autoi18nPluginInfo = {
-    locale: TranslateTarget.ZH,
-    targets: [TranslateTarget.ZH, TranslateTarget.EN],
-    messages: {}
+const AUTOI18N_PLUGIN_VERSION = '0.0.3'
+// 新译文落盘的防抖间隔：异常退出（kill/崩溃）最多丢失该时间窗内的翻译
+const SAVE_DEBOUNCE_MS = 3000
+
+/**
+ * 深度合并翻译缓存：逐条叠加（保留既有语言的值，补入新语言），等价原 lodash.merge 的使用面
+ */
+const mergeMessages = (base: Autoi18nMessages, patch: Autoi18nMessages): Autoi18nMessages => {
+    for (const [key, item] of Object.entries(patch)) {
+        base[key] = { ...base[key], ...item }
+    }
+    return base
 }
 
 /**
- * dev 开发转换
+ * dev 开发转换（运行在插件闭包状态上）
  * @param code
  * @param id
  */
-const devTransformModule = async (code: string, id: string, translate: TranslateFunction) => {
-    const texts = checkQuestions(code)
-    let mQuestions = new Set(texts)
-    const list = Array.from(mQuestions)
-    if (list.length <= 0) {
-        return code
-    }
-    const local = autoi18nPluginInfo.locale
-    const targets = autoi18nPluginInfo.targets
-    const cacheMessages = autoi18nPluginInfo.messages
-    const tos = targets.filter(item => item !== local)
-    if (tos.length <= 0) {
-        return code
-    }
-    let messages: Autoi18nMessages | null = null
-    try {
-        messages = await translate(list, tos, local, cacheMessages)
-    } catch (error) {
-        // 任何翻译源抛错都不得中断构建（FR-007）
-        console.warn('autoi18n：翻译执行异常，跳过本模块新增翻译', error)
-        messages = null
-    }
-    if (messages) {
-        autoi18nPluginInfo.isTranslate = true
-        merge(cacheMessages, messages)
-    } else {
-        messages = cacheMessages
-    }
-    if (!autoi18nPluginInfo.isDev) {
-        return code
-    }
-    // console.log('============2')
-    // console.log(messages)
-    const msgText = devTransformMessages(messages)
-    // console.log('============3')
-    // console.log(msgText)
-    const autoi18nInject = `
+const createDevTransformModule =
+    (
+        autoi18nPluginInfo: Autoi18nPluginInfo,
+        scheduleSave: () => void,
+    ) =>
+    async (code: string, id: string, translate: TranslateFunction) => {
+        const texts = checkQuestions(code)
+        const mQuestions = new Set(texts)
+        const list = Array.from(mQuestions)
+        if (list.length <= 0) {
+            return code
+        }
+        const local = autoi18nPluginInfo.locale
+        const targets = autoi18nPluginInfo.targets
+        const cacheMessages = autoi18nPluginInfo.messages
+        const tos = targets.filter(item => item !== local)
+        if (tos.length <= 0) {
+            return code
+        }
+        let messages: Autoi18nMessages | null = null
+        try {
+            messages = await translate(list, tos, local, cacheMessages)
+        } catch (error) {
+            // 任何翻译源抛错都不得中断构建（FR-007）
+            console.warn('autoi18n：翻译执行异常，跳过本模块新增翻译', error)
+            messages = null
+        }
+        if (messages) {
+            autoi18nPluginInfo.isTranslate = true
+            mergeMessages(cacheMessages, messages)
+            scheduleSave()
+            // 注入用消息表改取"缓存 ∪ 新增"，修复混合模块下已缓存文案被漏注入的问题
+            messages = cacheMessages
+        } else {
+            messages = cacheMessages
+        }
+        if (!autoi18nPluginInfo.isDev) {
+            return code
+        }
+        // 子集注入：只内联本模块涉及文案的译文，避免每个模块都携带全量翻译表；
+        // 以"缓存 ∪ 新增"为源，混合模块下已缓存的旧文案也能被正常命中
+        const moduleMessages: Autoi18nMessages = {}
+        for (const text of list) {
+            const key = translateHashKey(text)
+            const item = messages[key]
+            if (item) {
+                moduleMessages[key] = item
+            }
+        }
+        const msgText = devTransformMessages(moduleMessages)
+        // 注入代码运行在接入方项目中：只能导入接入方必然可解析的模块（'vue' 与本包 'auto-i18n-vue'），
+        // 不能使用仓库内 @autoi18n 别名（仅本仓库 demo 配置了该别名，第三方项目无此别名必然解析失败）
+        const autoi18nInject = `
     import { inject } from 'vue'
-    import { translateHashKey } from '@autoi18n/utils'
-    import { Autoi18nType, Autoi18nMessages, Autoi18nMessageItem, Autoi18nMessageValue } from '@autoi18n/@types/autoi18n'
+    import { translateHashKey } from 'auto-i18n-vue'
 
-    const _autoi18n = inject<Autoi18nType>('$autoi18n')
+    const _autoi18n = inject('$autoi18n')
 
-    const _localeMessages: Autoi18nMessages = ${msgText}
+    const _localeMessages = ${msgText}
 
-    const _localeTranslate = (key: string, options?: {[key: string]: string | number}) => {
+    const _localeTranslate = (key, options) => {
+        if (!_autoi18n) {
+            // 运行时插件未安装：回退原文而不是抛 TypeError
+            return key
+        }
         const locale = _autoi18n.locale
         const localeKey = translateHashKey(key)
-        const item = _localeMessages[localeKey] as Autoi18nMessageItem
+        const item = _localeMessages[localeKey]
         if (!item) {
             return key
         }
-        const value = item[locale] as Autoi18nMessageValue
+        const value = item[locale]
         if (!value) {
             return key
         }
         if (options) {
             return Object.entries(options).reduce((left, item) => {
                 const [_key, _val] = item
-                return String(left).replaceAll('{' + _key + '}', _val)
+                return String(left).replaceAll('{' + _key + '}', () => String(_val))
             }, value)
         }
         return value
     }
     `
-    const injectMsgCode = devInjectMessages(code, autoi18nInject)
-    const replaceMethodCode = devTransformMethod(injectMsgCode)
-    return replaceMethodCode
-}
+        const injectMsgCode = devInjectMessages(code, autoi18nInject)
+        const replaceMethodCode = devTransformMethod(injectMsgCode)
+        return replaceMethodCode
+    }
 
 /**
  * autoi18n vite 插件
- * @param config 
- * @returns 
+ * 状态随每次调用独立创建（可安全多实例）；之前为模块级单例，多构建互相污染
+ * @param config
+ * @returns
  */
 export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
     name: string;
+    enforce: 'pre';
     version: string;
     buildEnd(error?: Error): Promise<void>;
     buildStart(options: InputOptions): Promise<void>;
-    transform(code: string, id: string): Promise<string>;
+    transform(code: string, id: string): Promise<string | null>;
 } = (config: Autoi18nPluginConfig) => {
+    /**
+     * 插件设置信息（每次调用独立实例）
+     */
+    const autoi18nPluginInfo: Autoi18nPluginInfo = {
+        locale: TranslateTarget.ZH,
+        targets: [TranslateTarget.ZH, TranslateTarget.EN],
+        messages: {}
+    }
+
+    let saveTimer: ReturnType<typeof setTimeout> | undefined
+
+    /**
+     * 落盘当前全部译文（try/catch 兜底，不中断构建）
+     */
+    const persistMessages = async () => {
+        const writeTranslateJson = config.saveTranslateContent
+        if (!writeTranslateJson) {
+            return
+        }
+        try {
+            const status = await writeTranslateJson(autoi18nPluginInfo.messages)
+            console.info(`保存翻译内容${status ? '成功' : '失败'}`)
+        } catch (error) {
+            console.error('saveTranslateContent error', error)
+        }
+    }
+
+    /**
+     * 防抖落盘：dev/watch 模式下新增译文后短窗口合并写入，
+     * 构建进程崩溃时丢失窗口不超过 SAVE_DEBOUNCE_MS；buildEnd 会取消挂起定时器并同步写一次
+     */
+    const scheduleSave = () => {
+        if (!config.saveTranslateContent) {
+            return
+        }
+        if (saveTimer !== undefined) {
+            clearTimeout(saveTimer)
+        }
+        saveTimer = setTimeout(() => {
+            saveTimer = undefined
+            void persistMessages()
+        }, SAVE_DEBOUNCE_MS)
+    }
+
+    const devTransformModule = createDevTransformModule(autoi18nPluginInfo, scheduleSave)
+
     return {
         name: 'autoi18n-plugin',
-        version: '0.0.3',
-        // /**
-        //  * vite hook
-        //  * @param html 
-        //  * @returns 
-        //  */
-        // async transformIndexHtml(html: string) {
-        //     console.info('transformIndexHtml')
-        //     return html.replace(
-        //     /<title>(.*?)<\/title>/,
-        //     `<title>autoi18n</title>`,
-        //     )
-        // },
-        /**
-         * --------- 构建 ---------
-         */
+        // 必须先于用户/官方插件处理：@vitejs/plugin-vue 会把 SFC 拆分为编译产物，
+        // 后置只能拿到无法按源码提取的派生代码（静默失效）
+        enforce: 'pre',
+        version: AUTOI18N_PLUGIN_VERSION,
         /**
          * 构建完成，构建阶段的最后一个钩子
          */
         async buildEnd(error?: Error) {
-            console.info('buildEnd', autoi18nPluginInfo.messages)
-            // const translate = options?.translate
-            // if (translate) {
-            //     translate(Array.from(questions))
-            // }
+            // 取消挂起的防抖写并立即持久化一次，保证退出前不丢数据也不重复写
+            if (saveTimer !== undefined) {
+                clearTimeout(saveTimer)
+                saveTimer = undefined
+            }
             const isTranslate = autoi18nPluginInfo.isTranslate
             if (!isTranslate) {
                 return
             }
-            const writeTranslateJson = config.saveTranslateContent
-            console.log(typeof writeTranslateJson)
-            if (!writeTranslateJson) {
-                return
-            }
-            // const filePath = autoi18nPluginInfo.filePath || path.resolve(__dirname, './translate.json')
-            // // const url = path.resolve(__dirname, './translate.json')
-            // const success = await writeTranslateJson(filePath, autoi18nPluginInfo.messages)
-            // console.info(`写入${success}`)
-            try {
-                const status = await writeTranslateJson(autoi18nPluginInfo.messages)
-                console.info(`保存翻译内容${status ? '成功' : '失败'}`)
-            } catch (error) {
-                console.error('saveTranslateContent error', error)
-            }
+            await persistMessages()
         },
         /**
          * 构建开始
@@ -174,16 +220,11 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
                       ? String(config.aiModelConfig.model)
                       : 'free',
             })
-            // console.info(options)
-            // const filePath = config.filePath || path.resolve(__dirname, './translate.json')
-            // const url = path.resolve(__dirname, './translate.json')
-            // console.info(`filePath=${filePath}`)
             const readTranslateJson = config.readTranslateContent
-            console.log(typeof readTranslateJson)
             if (readTranslateJson) {
                 try {
                     const fileContent = await readTranslateJson()
-                    autoi18nPluginInfo.messages = fileContent
+                    autoi18nPluginInfo.messages = fileContent ?? {}
                 } catch (error) {
                     console.error('readTranslateJson error', error)
                 }
@@ -201,104 +242,15 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
             autoi18nPluginInfo.isDev = config.isDev
         },
         /**
-         * 观察器进程即将关闭时通知插件
-         */
-        // async closeWatcher() {
-
-        // },
-        /**
-         * 加载
-         * @param id 
-         * @returns 
-         */
-        // async load(id: string) {
-        //     console.info('load')
-        //     if (id === 'virtual-module') {
-        //       // "virtual-module"的源代码
-        //       return 'export default "This is virtual!"';
-        //     }
-        //     return null; // 其他ID应按通常方式处理
-        // },
-        /**
-         * 每次 Rollup 完全解析一个模块时，都会调用此钩子
-         * @param moduleInfo 
-         */
-        // async moduleParsed(moduleInfo: ModuleInfo) {
-        //     console.info('moduleParsed', moduleInfo)
-        // },
-        // onLog(level: LogLevel, log: RollupLog) {
-        //     console.info('onLog')
-        //     return null
-        // },
-        /**
-         * 这是构建阶段的第一个钩子
-         * @param options 
-         * @returns 
-         */
-        // async options(options: InputOptions) {
-        //     console.info('options')
-        //     return options
-        // },
-        /**
-         * 动态导入定义自定义解析器
-         * @param specifier 
-         * @param importer 
-         * @param options 
-         */
-        // async resolveDynamicImport(
-        //     specifier: string | AcornNode,
-        //     importer: string,
-        //     options: {
-        //         assertions: Record<string, string>
-        //     }
-        // ) {
-        //     console.info('resolveDynamicImport')
-        //     return null
-        // },
-        /**
-         * 定义一个自定义解析器
-         * @param source 
-         * @param importer 
-         * @param options 
-         * @returns 
-         */
-        // async resolveId(
-        //     source: string,
-        //     importer: string | undefined,
-        //     options: {
-        //         assertions: Record<string, string>;
-        //         custom?: { [plugin: string]: any };
-        //         isEntry: boolean;
-        //     }
-        // ) {
-        //     console.info('resolveId')
-        //     if (source === 'virtual-module') {
-        //         // 这表示 rollup 不应询问其他插件或
-        //         // 从文件系统检查以找到此 ID
-        //         return source;
-        //     }
-        //     return null // 其他ID应按通常方式处理
-        // },
-        // async shouldTransformCachedModule(options: {
-        //     ast: AcornNode;
-        //     code: string;
-        //     id: string;
-        //     meta: { [plugin: string]: any };
-        //     moduleSideEffects: boolean | 'no-treeshake';
-        //     syntheticNamedExports: boolean | string;
-        // }) {
-        //     console.info('shouldTransformCachedModule', options.id)
-        //     return true
-        // },
-        /**
          * 用于转换单个模块
-         * @param code 
-         * @param id 
-         * @returns 
+         * @param code
+         * @param id
+         * @returns
          */
         async transform(code: string, id: string) {
-            console.info('transform：', id)
-            if (!id.endsWith('.vue')) {
+            // 容忍 vite 附加的资源 query（如 xxx.vue?vue&type=template）
+            const filePath = id.split('?')[0]
+            if (!filePath.endsWith('.vue')) {
                 return null
             }
             // 三级优先级调度：自定义 translate > LLM（aiModelConfig）> 免费三方翻译（默认）
@@ -306,46 +258,5 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
             const res = await devTransformModule(code, id, translate)
             return res
         },
-        /**
-         * 在 --watch 模式下，每当 Rollup 检测到监视文件的更改时，就会通知插件
-         * @param id 
-         * @param change 
-         */
-        // async watchChange(id: string, change: {event: 'create' | 'update' | 'delete'}) {
-
-        // },
-        /**
-         * --------- 输出 ---------
-         */
-        /**
-         * 为每个 Rollup 输出块调用。返回 falsy 值不会修改哈希值
-         * @param chunkInfo
-         * @returns 
-         */
-        // augmentChunkHash(chunkInfo: any) {
-        //     console.info('augmentChunkHash')
-        //     return 'falsy'
-        // },
-        // banner: string | ((chunk: ChunkInfo) => string)
-        // async banner() {}
-        // closeBundle: () => Promise<void> | void
-        // async closeBundle() {}
-        // AssetInfo | ChunkInfo
-        // async generateBundle(options: OutputOptions, bundle: { [fileName: string]: any }, isWrite: boolean) {
-        //     console.info('generateBundle')
-        //     // // 省略一些边界情况的处理
-        //     // // 1. 获取打包后的文件
-        //     // const files = getFiles(bundle);
-        //     // // 2. 组装 HTML，插入相应 meta、link 和 script 标签
-        //     // const source = await template({ attributes, bundle, files, meta, publicPath, title});
-        //     // // 3. 通过上下文对象的 emitFile 方法，输出 html 文件
-        //     // const htmlFile: EmittedAsset = {
-        //     //     type: 'asset',
-        //     //     source,
-        //     //     name: 'Rollup HTML Asset',
-        //     //     fileName
-        //     // }
-        //     // this.emitFile(htmlFile)
-        // }
     }
 }

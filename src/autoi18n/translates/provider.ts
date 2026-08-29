@@ -40,7 +40,7 @@ export const resolveTranslateFunction = (config: Autoi18nPluginConfig): Translat
                 from: TranslateTarget,
                 cache?: Autoi18nMessages,
             ) => {
-                return await zhipuaiTranslate(aiConfig.apiKey, questions, tos, from, cache)
+                return await zhipuaiTranslate(aiConfig.apiKey, questions, tos, from, cache, aiConfig.model)
             }
         }
         // OpenAI 兼容接口：apiKey 与 model 均需有效，否则回退免费翻译
