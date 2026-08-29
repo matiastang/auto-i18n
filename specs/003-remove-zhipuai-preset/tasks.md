@@ -87,13 +87,13 @@ description: "Task list for feature implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] `package.json`：`version` 0.0.3 → 0.0.4
-- [ ] T013 [P] [US3] `src/autoi18n/autoi18nPlugin.ts`：`AUTOI18N_PLUGIN_VERSION`（第 20 行附近）'0.0.3' → '0.0.4'
-- [ ] T014 [P] [US3] `vite.config.ts`：删除 `ZHIPUAI_API_KEY` 环境变量分支与相关注释，翻译源条件配置仅剩 `OPENAI_API_KEY`/`OPENAI_BASE_URL`/`OPENAI_MODEL`
-- [ ] T015 [P] [US3] `README.md`：翻译源清单删除 ZHIPUAI 条目；配置示例删 `ZHIPUAI_API_KEY` 分支；新增智谱迁移配置示例（`baseUrl: 'https://open.bigmodel.cn/api/paas/v4'` + `model: 'glm-4'`）
-- [ ] T016 [P] [US3] `README.zh-CN.md`：与 T015 同步（中文版）
-- [ ] T017 [P] [US3] `CHANGELOG.md`：新增 v0.0.4 条目——标注 BREAKING（`TranslateAIModel.ZHIPUAI` 与 `zhipuaiTranslate`/`DEFAULT_ZHIPUAI_MODEL` 导出移除）+ 迁移路径 + 文档清理说明
-- [ ] T018 [P] [US3] `CLAUDE.md`：`translates/zhipuai.ts` 相关架构表述改写为现存模块（shared/openai/free/provider）；核对"Translation source resolution"段无智谱残留
+- [x] T012 [US3] `package.json`：`version` 0.0.3 → 0.0.4
+- [x] T013 [P] [US3] `src/autoi18n/autoi18nPlugin.ts`：`AUTOI18N_PLUGIN_VERSION`（第 20 行附近）'0.0.3' → '0.0.4'
+- [x] T014 [P] [US3] `vite.config.ts`：删除 `ZHIPUAI_API_KEY` 环境变量分支与相关注释，翻译源条件配置仅剩 `OPENAI_API_KEY`/`OPENAI_BASE_URL`/`OPENAI_MODEL`
+- [x] T015 [P] [US3] `README.md`：翻译源清单删除 ZHIPUAI 条目；配置示例删 `ZHIPUAI_API_KEY` 分支；新增智谱迁移配置示例（`baseUrl: 'https://open.bigmodel.cn/api/paas/v4'` + `model: 'glm-4'`）
+- [x] T016 [P] [US3] `README.zh-CN.md`：与 T015 同步（中文版）
+- [x] T017 [P] [US3] `CHANGELOG.md`：新增 v0.0.4 条目——标注 BREAKING（`TranslateAIModel.ZHIPUAI` 与 `zhipuaiTranslate`/`DEFAULT_ZHIPUAI_MODEL` 导出移除）+ 迁移路径 + 文档清理说明
+- [x] T018 [P] [US3] `CLAUDE.md`：`translates/zhipuai.ts` 相关架构表述改写为现存模块（shared/openai/free/provider）；核对"Translation source resolution"段无智谱残留
 
 **Checkpoint**: 文档核对通过；演示应用 `pnpm dev` 可启动（无 Key 时免费兜底，行为回退非报错）
 

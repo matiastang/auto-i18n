@@ -78,21 +78,16 @@ export default defineConfig(({ mode }) => {
                 targets: [TranslateTarget.ZH, TranslateTarget.EN, TranslateTarget.JP, TranslateTarget.ARA],
                 // Translation source is resolved by priority:
                 //   translate (custom) > aiModelConfig (LLM) > free translation (default)
-                aiModelConfig: env.ZHIPUAI_API_KEY
+                aiModelConfig: env.OPENAI_API_KEY
                     ? {
-                          model: TranslateAIModel.ZHIPUAI,
-                          config: { apiKey: env.ZHIPUAI_API_KEY },
+                          model: TranslateAIModel.OPENAI,
+                          config: {
+                              apiKey: env.OPENAI_API_KEY,
+                              baseUrl: env.OPENAI_BASE_URL, // e.g. https://api.deepseek.com
+                              model: env.OPENAI_MODEL, // e.g. deepseek-chat
+                          },
                       }
-                    : env.OPENAI_API_KEY
-                      ? {
-                            model: TranslateAIModel.OPENAI,
-                            config: {
-                                apiKey: env.OPENAI_API_KEY,
-                                baseUrl: env.OPENAI_BASE_URL, // e.g. https://api.deepseek.com
-                                model: env.OPENAI_MODEL, // e.g. deepseek-chat
-                            },
-                        }
-                      : undefined, // no key configured -> free translation (default)
+                    : undefined, // no key configured -> free translation (default)
                 readTranslateContent,
                 // translate: myCustomTranslate, // optional custom translate function (highest priority)
                 saveTranslateContent,
@@ -110,8 +105,20 @@ Three translation sources are resolved by priority — `translate` (custom) > `a
 
 1. **Custom translate function** — implement the exported `TranslateFunction` contract and pass it as `translate`. It is used exclusively, perfect for in-house MT services or glossary-aware pipelines.
 2. **LLM with API key** — `aiModelConfig` supports:
-    * `TranslateAIModel.OPENAI`: any **OpenAI Chat Completions compatible** service (OpenAI, DeepSeek, Moonshot/Kimi, Qwen compatible mode, local Ollama, …) — configure `apiKey` + `baseUrl` + `model`.
-    * `TranslateAIModel.ZHIPUAI`: Zhipu GLM (model defaults to `glm-4`) — configure `apiKey`.
+    * `TranslateAIModel.OPENAI`: any **OpenAI Chat Completions compatible** service (OpenAI, DeepSeek, Moonshot/Kimi, Qwen compatible mode, Zhipu GLM, local Ollama, …) — configure `apiKey` + `baseUrl` + `model`.
+
+   > **Migrating from Zhipu GLM** (`TranslateAIModel.ZHIPUAI` was removed in v0.0.4) — the equivalent configuration, producing byte-identical requests:
+   >
+   > ```ts
+   > aiModelConfig: {
+   >     model: TranslateAIModel.OPENAI,
+   >     config: {
+   >         apiKey: '<zhipu-api-key>',
+   >         baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+   >         model: 'glm-4',
+   >     },
+   > }
+   > ```
 3. **Free third-party translation (default)** — when neither of the above is configured, texts are translated via free services (MyMemory, falling back to Google's free endpoint) with **zero configuration and no API key**. Failures are warned and skipped; they never break the build. Best for quickly trying the library; rate limits apply.
 
 Already-cached texts are never re-translated, `{name}` placeholders are preserved, and any translation error only logs a warning without interrupting the build.

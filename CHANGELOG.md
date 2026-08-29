@@ -4,6 +4,27 @@
 
 All notable changes to this project will be documented in this file. The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [0.0.4] - 2026-08-30
+
+清理智谱特殊化配置：LLM 翻译配置收敛为唯一形态 OpenAI Chat Completions 兼容，智谱自此只是该配置的一组参数取值（规格产物见 `specs/003-remove-zhipuai-preset/`）。经需求确认，0.0.x 验证阶段直接移除、不做 deprecation 过渡；翻译缓存与翻译源解耦，存量缓存不受影响。
+
+### Removed
+
+- **BREAKING**：`TranslateAIModel.ZHIPUAI` 枚举成员移除，`TranslateAIModel` 仅保留 `OPENAI`；旧值 `'zhipuai'` 运行时按无效配置处理（一次性警告并回退免费三方翻译，不中断构建）
+- **BREAKING**：公开导出 `zhipuaiTranslate` / `DEFAULT_ZHIPUAI_MODEL` 移除（`translates/zhipuai.ts` 模块与调度分支一并删除）
+- 演示应用 `ZHIPUAI_API_KEY` 环境变量分支移除，统一 `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL`
+
+### Changed
+
+- 智谱 GLM 迁移方式（请求体与原直连模式逐字段一致，翻译行为无差异）：`aiModelConfig: { model: TranslateAIModel.OPENAI, config: { apiKey, baseUrl: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4' } }`
+- `aiModelConfig` 无效配置警告文案通用化（统一展示 `config.model` 状态）
+- 双语 README 与 CLAUDE.md 同步更新（翻译源清单、配置示例、智谱迁移示例）
+- 版本号同步提升 `0.0.3` → `0.0.4`（`package.json` 与 `AUTOI18N_PLUGIN_VERSION`）
+
+### Tests
+
+- 智谱专项单测移除；新增旧值降级（警告一次 + 回退免费源）与「OPENAI 模式 + 智谱参数请求构造等价」用例；入口导出契约更新为两种翻译源
+
 ## [0.0.3] - 2026-08-24
 
 实现核心翻译能力：三级翻译源体系，其他 Vue + Vite 项目接入后可快速获得 i18n 支持（验证阶段，规格产物见 `specs/002-translation-providers/`）。全部自动化测试离线运行（stub 网络），未调用任何收费 API；免费三方接口做过一次性真实验证（17 条文案经 MyMemory 翻译落盘）。
