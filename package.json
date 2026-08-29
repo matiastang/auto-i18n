@@ -33,7 +33,7 @@
     "scripts": {
         "dev": "vite",
         "preview": "vite preview",
-        "ts:build": "tsc --build src/autoi18n/tsconfig.json",
+        "ts:build": "rm -rf src/autoi18n/buildJs src/autoi18n/buildTypes && tsc --build src/autoi18n/tsconfig.json",
         "build": "vite --config vite.build.config.ts build --mode production",
         "type-check": "tsc --noEmit -p tsconfig.json",
         "test": "vitest run",
