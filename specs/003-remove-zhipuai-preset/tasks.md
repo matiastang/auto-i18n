@@ -28,7 +28,7 @@ description: "Task list for feature implementation"
 
 **Purpose**: 确认基线与工作区状态
 
-- [ ] T001 基线验证：`pnpm type-check && pnpm test` 全绿、`git status` 干净后开始（当前分支 `dev/tdy`）
+- [x] T001 基线验证：`pnpm type-check && pnpm test` 全绿、`git status` 干净后开始（当前分支 `dev/tdy`）
 
 ---
 
@@ -38,9 +38,9 @@ description: "Task list for feature implementation"
 
 **⚠️ CRITICAL**: 本阶段完成前不得开始任何实现任务
 
-- [ ] T002 [P] 更新 `tests/unit/index-exports.spec.ts`：移除 `zhipuaiTranslate` 导入与断言；"三种翻译源"用例改为两种（`freeTranslate`/`openaiTranslate` + 调度器）；`TranslateAIModel` 全成员用例改为仅断言 `OPENAI === 'openai'` 且 `(TranslateAIModel as never as Record<string, unknown>).ZHIPUAI === undefined`
-- [ ] T003 [P] 更新 `tests/unit/translates-provider.spec.ts`：删除"model=ZHIPUAI 且 apiKey 齐备"用例；新增两个用例——①"旧值 `'zhipuai'`：警告一次（含旧值与回退去向提示）并回退免费翻译源"（沿用 `loadModules`/`vi.resetModules()` 模式，`'zhipuai' as never`）；②"OPENAI 模式 + 智谱参数（`baseUrl: 'https://open.bigmodel.cn/api/paas/v4'`、`model: 'glm-4'`、智谱 key）：请求 URL/Authorization/请求体 model 与原 ZHIPUAI 模式期望逐字段一致"（承接被删智谱专项用例的断言语义，固化 FR-003/SC-001 迁移等价性）
-- [ ] T004 删除 `tests/unit/translates-zhipuai.spec.ts`
+- [x] T002 [P] 更新 `tests/unit/index-exports.spec.ts`：移除 `zhipuaiTranslate` 导入与断言；"三种翻译源"用例改为两种（`freeTranslate`/`openaiTranslate` + 调度器）；`TranslateAIModel` 全成员用例改为仅断言 `OPENAI === 'openai'` 且 `(TranslateAIModel as never as Record<string, unknown>).ZHIPUAI === undefined`
+- [x] T003 [P] 更新 `tests/unit/translates-provider.spec.ts`：删除"model=ZHIPUAI 且 apiKey 齐备"用例；新增两个用例——①"旧值 `'zhipuai'`：警告一次（含旧值与回退去向提示）并回退免费翻译源"（沿用 `loadModules`/`vi.resetModules()` 模式，`'zhipuai' as never`）；②"OPENAI 模式 + 智谱参数（`baseUrl: 'https://open.bigmodel.cn/api/paas/v4'`、`model: 'glm-4'`、智谱 key）：请求 URL/Authorization/请求体 model 与原 ZHIPUAI 模式期望逐字段一致"（承接被删智谱专项用例的断言语义，固化 FR-003/SC-001 迁移等价性）
+- [x] T004 删除 `tests/unit/translates-zhipuai.spec.ts`
 
 **Checkpoint**: `pnpm vitest run tests/unit` —— T002/T003 新断言失败（红灯）；确认失败原因正确（枚举成员仍存在/降级未发生）
 

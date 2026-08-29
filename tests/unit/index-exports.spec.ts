@@ -11,7 +11,6 @@ import {
     autoi18nPlugin,
     freeTranslate,
     openaiTranslate,
-    zhipuaiTranslate,
     resolveTranslateFunction,
     toIsoLocale,
     TranslateTarget,
@@ -26,11 +25,11 @@ describe('入口导出契约（auto-i18n-vue）', () => {
         expect(typeof autoi18nPlugin).toBe('function')
     })
 
-    it('三种翻译源与调度器导出', () => {
+    it('两种翻译源与调度器导出（v0.0.4 起无智谱专属导出）', () => {
         expect(typeof freeTranslate).toBe('function')
         expect(typeof openaiTranslate).toBe('function')
-        expect(typeof zhipuaiTranslate).toBe('function')
         expect(typeof resolveTranslateFunction).toBe('function')
+        expect((autoi18nVue as Record<string, unknown>).zhipuaiTranslate).toBeUndefined()
     })
 
     it('枚举导出：TranslateTarget 全成员', () => {
@@ -41,9 +40,9 @@ describe('入口导出契约（auto-i18n-vue）', () => {
         expect(TranslateTarget.FRA).toBe('fra')
     })
 
-    it('枚举导出：TranslateAIModel 全成员（ZHIPUAI/OPENAI）', () => {
-        expect(TranslateAIModel.ZHIPUAI).toBe('zhipuai')
+    it('枚举导出：TranslateAIModel 仅 OPENAI（ZHIPUAI 已移除）', () => {
         expect(TranslateAIModel.OPENAI).toBe('openai')
+        expect((TranslateAIModel as unknown as Record<string, unknown>).ZHIPUAI).toBeUndefined()
     })
 
     it('工具导出：toIsoLocale', () => {

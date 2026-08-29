@@ -145,7 +145,30 @@ describe('resolveTranslateFunction（LLM 分支行为验证，stub fetch）', ()
         expect(warnSpy).toHaveBeenCalled()
     })
 
-    it('model=ZHIPUAI 且 apiKey 齐备：返回智谱源（默认 glm-4 发往智谱端点）', async () => {
+    it('旧值 zhipuai（v0.0.3 枚举成员）：警告一次并回退免费翻译源', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const { resolveTranslateFunction, freeTranslate } = await loadModules()
+        const config = {
+            aiModelConfig: {
+                model: 'zhipuai' as never,
+                config: { apiKey: 'zhipu-key' },
+            },
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async () => true,
+        }
+        const fn = resolveTranslateFunction(config)
+        expect(fn).toBe(freeTranslate)
+        // 警告包含旧值与回退去向，且同配置多次解析只警告一次
+        expect(warnSpy).toHaveBeenCalledTimes(1)
+        const message = String(warnSpy.mock.calls[0]?.[0])
+        expect(message).toContain('zhipuai')
+        expect(message).toContain('免费')
+        resolveTranslateFunction(config)
+        expect(warnSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('OPENAI 模式 + 智谱参数：请求构造与原 ZHIPUAI 模式逐字段一致（迁移等价）', async () => {
         vi.spyOn(console, 'info').mockImplementation(() => {})
         vi.spyOn(console, 'warn').mockImplementation(() => {})
         const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
@@ -156,8 +179,12 @@ describe('resolveTranslateFunction（LLM 分支行为验证，stub fetch）', ()
         const { resolveTranslateFunction } = await loadModules()
         const fn = resolveTranslateFunction({
             aiModelConfig: {
-                model: TranslateAIModel.ZHIPUAI,
-                config: { apiKey: 'zhipu-key' },
+                model: TranslateAIModel.OPENAI,
+                config: {
+                    apiKey: 'zhipu-key',
+                    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+                    model: 'glm-4',
+                },
             },
             readTranslateContent: async () => ({}),
             saveTranslateContent: async () => true,
@@ -166,6 +193,7 @@ describe('resolveTranslateFunction（LLM 分支行为验证，stub fetch）', ()
         const [url, init] = fetchMock.mock.calls[0]
         expect(url).toBe('https://open.bigmodel.cn/api/paas/v4/chat/completions')
         expect(JSON.parse(String(init.body)).model).toBe('glm-4')
+        expect((init.headers as Record<string, string>).Authorization).toBe('Bearer zhipu-key')
         expect(res && Object.values(res)[0]?.[TranslateTarget.EN]).toBe('Hello')
         vi.unstubAllGlobals()
     })
