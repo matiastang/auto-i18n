@@ -44,16 +44,24 @@ export const resolveTranslateFunction = (config: Autoi18nPluginConfig): Translat
             }
         }
         if (!invalidConfigNotified) {
-            console.warn(
-                `autoi18n：aiModelConfig 无效（model=${String(modelConfig.model)}，apiKey=${
+            const modelValue = String(modelConfig.model)
+            const parts = [
+                `autoi18n：aiModelConfig 无效（model=${modelValue}，apiKey=${
                     aiConfig?.apiKey ? '已配置' : '缺失'
-                }，config.model=${aiConfig?.model || '缺失'}），回退免费三方翻译`,
-            )
+                }，config.model=${aiConfig?.model || '缺失'}）`,
+                '可用值 openai',
+            ]
+            // v0.0.4 移除了枚举成员 'zhipuai'：给出等价 OPENAI 配置，避免存量用户滞留免费源
+            if (modelValue === 'zhipuai') {
+                parts.push('智谱迁移：OPENAI 模式 + baseUrl https://open.bigmodel.cn/api/paas/v4 + model glm-4')
+            }
+            parts.push('回退免费三方翻译')
+            console.warn(parts.join('，'))
             invalidConfigNotified = true
         }
     }
-    // ③ 免费三方翻译（默认行为，零配置）
-    if (!freeDefaultNotified) {
+    // ③ 免费三方翻译（默认行为，零配置）——仅在完全未配置翻译源时提示，避免与无效配置警告相互矛盾
+    if (!modelConfig && !freeDefaultNotified) {
         console.info('[autoi18n] 未配置翻译源，已默认使用免费三方翻译（MyMemory/Google 免费接口）')
         freeDefaultNotified = true
     }

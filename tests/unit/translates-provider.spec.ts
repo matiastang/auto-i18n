@@ -146,7 +146,7 @@ describe('resolveTranslateFunction（LLM 分支行为验证，stub fetch）', ()
     })
 
     it('旧值 zhipuai（v0.0.3 枚举成员）：警告一次并回退免费翻译源', async () => {
-        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const { resolveTranslateFunction, freeTranslate } = await loadModules()
         const config = {
@@ -159,13 +159,17 @@ describe('resolveTranslateFunction（LLM 分支行为验证，stub fetch）', ()
         }
         const fn = resolveTranslateFunction(config)
         expect(fn).toBe(freeTranslate)
-        // 警告包含旧值与回退去向，且同配置多次解析只警告一次
+        // 警告包含旧值、回退去向与迁移指引，且同配置多次解析只警告一次
         expect(warnSpy).toHaveBeenCalledTimes(1)
         const message = String(warnSpy.mock.calls[0]?.[0])
         expect(message).toContain('zhipuai')
         expect(message).toContain('免费')
+        expect(message).toContain('bigmodel.cn')
+        expect(message).toContain('glm-4')
         resolveTranslateFunction(config)
         expect(warnSpy).toHaveBeenCalledTimes(1)
+        // 无效配置路径不得再误报"未配置翻译源"（与无效警告矛盾）
+        expect(infoSpy).not.toHaveBeenCalled()
     })
 
     it('OPENAI 模式 + 智谱参数：请求构造与原 ZHIPUAI 模式逐字段一致（迁移等价）', async () => {
