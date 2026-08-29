@@ -103,9 +103,9 @@ description: "Task list for feature implementation"
 
 **Purpose**: 全量验证、评审与收尾
 
-- [ ] T019 全量验证：`pnpm type-check && pnpm test && pnpm test:e2e && pnpm plugin:build`（对应 quickstart.md §1/§4；e2e 依赖 demo 存量缓存离线命中，即验证 FR-005 缓存解耦；`pnpm exec playwright install chromium` 已装则跳过）
-- [ ] T020 循环 code review（`/code-review`）：修复中等严重及以上问题直至清零，仅余低severity才可停（开发基本要求）
-- [ ] T021 提交划分核查：一功能点一 commit（Conventional Commits，破坏性变更用 `!` + `BREAKING CHANGE` footer）；勾选本文件全部任务、`specs/003/spec.md` Status 置 Complete
+- [x] T019 全量验证：`pnpm type-check && pnpm test && pnpm test:e2e && pnpm plugin:build`（对应 quickstart.md §1/§4；e2e 依赖 demo 存量缓存离线命中，即验证 FR-005 缓存解耦；`pnpm exec playwright install chromium` 已装则跳过）——附带修复：演示改版遗留 54 条未缓存文案已补齐（commit 5bce42d），并清理了 tsc 孤儿产物导致的 dist 陈旧 zhipuai.d.ts
+- [x] T020 循环 code review（`/code-review`）：修复中等严重及以上问题直至清零，仅余低severity才可停（开发基本要求）——首轮 3 中 + 1 低：3 个中等已修复（commit 5cc315c 警告迁移指引/矛盾提示、423c1b0 ts:build 清理孤儿产物）并经复核全部 RESOLVED；低严重 2 项（测试脚手架重复、rm -rf 可移植性）按门槛记录不修
+- [x] T021 提交划分核查：一功能点一 commit（Conventional Commits，破坏性变更用 `!` + `BREAKING CHANGE` footer）；勾选本文件全部任务、`specs/003/spec.md` Status 置 Complete
 
 ---
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-29
 
-**Status**: Draft
+**Status**: Complete
 
 **Input**: User description: "v0.0.4：不需要为了向后兼容特殊化智谱，请清理相关特殊配置，完成之后也需要更新文档"（完整需求分析与决策见 `docs/requirements.md` v0.0.4 小节）
 

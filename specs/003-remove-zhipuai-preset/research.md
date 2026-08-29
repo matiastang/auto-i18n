@@ -22,6 +22,7 @@
 
 **Alternatives considered**:
 - 为旧值单独输出"请迁移"专用警告文案：需要在 provider 里再维护一个智谱专属字符串，违背"去特殊化"目标；通用无效配置警告已含 model 取值与回退去向，README/CHANGELOG 承载迁移指引 → 否决
+- **修订（2026-08-30，code review 循环）**：spec US2 承诺"包含迁移指引的警告"，纯通用文案不足以兑现——最终实现为通用警告 + 旧值 `'zhipuai'` 的一条迁移提示（OPENAI 模式等价参数，commit 5cc315c）。该提示是删除变更的 deprecation 通告而非翻译源特殊化分支，与"去特殊化"目标不冲突。
 
 ## R3: 智谱迁移等价性依据
 
