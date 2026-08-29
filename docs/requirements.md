@@ -47,3 +47,16 @@ Vite 自动实现UI上的i18n的适配，自动完成国际化的是配置
 - **翻译源优先级**：自定义 `translate` 函数 > LLM（`aiModelConfig`）> 免费三方翻译（默认）。LLM 配置无效（缺 apiKey/model 或未知模型）时警告并回退免费源，不中断构建。
 - **测试纪律**：全部自动化测试离线运行（stub 网络请求，假数据形状来自真实免费接口探测），未调用任何收费 API；对免费接口的真实验证仅做了一次（演示应用 17 条文案经 MyMemory 翻译并落盘），未纳入 CI。
 - **语言代码映射**：内部枚举历史命名（`jp`/`ara`/`fra`）不可变更（存量缓存兼容），新增 `toIsoLocale` 显式映射到三方 ISO 代码（`ja`/`ar`/`fr`，中文 `zh-CN`）。
+
+## v0.0.4
+
+* 不需要为了向后兼容特殊化**智谱**，请清理相关特殊配置，完成之后也需要更新文档
+
+**实现补充说明（v0.0.4，2026-08-29）**
+
+- **删除方式**：硬删除，不做 deprecation 过渡——`TranslateAIModel.ZHIPUAI` 枚举成员、`translates/zhipuai.ts` 模块、`provider.ts` 的 ZHIPUAI 分支、公开导出 `zhipuaiTranslate` 全部移除；智谱用户迁移到 `TranslateAIModel.OPENAI` 模式（`baseUrl: https://open.bigmodel.cn/api/paas/v4` + `model: glm-4`，底层与原 ZHIPUAI 模式共用同一 `chatCompletionsTranslate` 客户端，请求体一致，翻译行为无差异）。
+- **兼容行为固化**：TS 用户旧配置编译期报错（迁移点显式）；JS 用户旧字符串 `'zhipuai'` 落入无效配置路径——警告一次并回退免费翻译，需新增 provider 测试固化该降级行为。翻译缓存 JSON 不受影响（键为内容 MD5 哈希，与翻译源无关）。
+- **演示应用**：`vite.config.ts` 删除 `ZHIPUAI_API_KEY` 环境变量分支，统一走 `OPENAI_API_KEY`/`OPENAI_BASE_URL`/`OPENAI_MODEL`；本地 `.env.local` 需同步迁移（智谱：`OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4`、`OPENAI_MODEL=glm-4`），未迁移时回落免费翻译（行为回退，非报错）。
+- **测试纪律**：延续 v0.0.3 约定——全部离线 stub `fetch`，仅断言 URL/model 组装，不调用任何收费接口或 API。
+- **版本同步**：`package.json` 与 `AUTOI18N_PLUGIN_VERSION` 同步升至 0.0.4（版本漂移陷阱，见 CLAUDE.md）。
+- **开发流程（2026-08-29 问答决策）**：走 SpecKit 完整流程，新建 specs/003（spec → plan → tasks）；specs/002 保留为历史快照不回改，本次变更由 specs/003 与 CHANGELOG 承载。
