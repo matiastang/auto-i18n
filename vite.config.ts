@@ -47,16 +47,9 @@ const saveTranslateContent = async (data: Autoi18nMessages) => {
 export default defineConfig(({ mode }) => {
     // 读取本地环境变量，apiKey保存在不入库的.env.local中
     const env = loadEnv(mode, process.cwd(), '')
-    // 翻译源：环境变量存在则使用对应 LLM（智谱/OpenAI 兼容），否则零配置走免费三方翻译（默认）
+    // 翻译源：配置了 OpenAI 兼容 LLM 环境变量则使用之（智谱等兼容服务经 baseUrl/model 接入），否则零配置走免费三方翻译（默认）
     let aiModelConfig: TranslateAIModelConfig | undefined
-    if (env.ZHIPUAI_API_KEY) {
-        aiModelConfig = {
-            model: TranslateAIModel.ZHIPUAI,
-            config: {
-                apiKey: env.ZHIPUAI_API_KEY,
-            },
-        }
-    } else if (env.OPENAI_API_KEY) {
+    if (env.OPENAI_API_KEY) {
         aiModelConfig = {
             model: TranslateAIModel.OPENAI,
             config: {
