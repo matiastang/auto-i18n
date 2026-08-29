@@ -47,7 +47,7 @@ export const resolveTranslateFunction = (config: Autoi18nPluginConfig): Translat
             console.warn(
                 `autoi18n：aiModelConfig 无效（model=${String(modelConfig.model)}，apiKey=${
                     aiConfig?.apiKey ? '已配置' : '缺失'
-                }${modelConfig.model === TranslateAIModel.OPENAI ? '，model=' + (aiConfig?.model || '缺失') : ''}），回退免费三方翻译`,
+                }，config.model=${aiConfig?.model || '缺失'}），回退免费三方翻译`,
             )
             invalidConfigNotified = true
         }

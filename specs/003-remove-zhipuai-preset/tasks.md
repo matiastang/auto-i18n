@@ -73,7 +73,7 @@ description: "Task list for feature implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] `src/autoi18n/translates/provider.ts`：无效配置警告文案通用化——删除 OPENAI 特判的 `model` 状态三元拼接，统一输出"model 取值 + apiKey 状态 + 回退免费翻译"（覆盖旧值 `'zhipuai'` 场景，与 T003 断言对齐）
+- [x] T011 [US2] `src/autoi18n/translates/provider.ts`：无效配置警告文案通用化——删除 OPENAI 特判的 `model` 状态三元拼接，统一输出"model 取值 + apiKey 状态 + 回退免费翻译"（覆盖旧值 `'zhipuai'` 场景，与 T003 断言对齐）
 
 **Checkpoint**: `pnpm vitest run tests/unit/translates-provider.spec.ts` 全绿（US2 独立成立：降级行为已固化）
 
