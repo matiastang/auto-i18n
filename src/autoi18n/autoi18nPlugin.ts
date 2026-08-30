@@ -17,7 +17,7 @@ import { resolveTranslateFunction } from './translates/provider'
  * 插件版本号（发布时须与根 package.json 同步；
  * 不能静态 import package.json——ts:build 的 rootDir 为 src/autoi18n，越界导入会报 TS6059）
  */
-const AUTOI18N_PLUGIN_VERSION = '0.0.4'
+const AUTOI18N_PLUGIN_VERSION = '0.1.0'
 // 新译文落盘的防抖间隔：异常退出（kill/崩溃）最多丢失该时间窗内的翻译
 const SAVE_DEBOUNCE_MS = 3000
 

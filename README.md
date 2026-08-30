@@ -128,10 +128,30 @@ Already-cached texts are never re-translated, `{name}` placeholders are preserve
 Use `$translate(...)` in templates (or `autoTranslate(...)` in scripts). During development the Vite plugin extracts these texts, translates them, and rewrites the calls; at runtime the translation for the current locale is looked up (with `{name}`-style interpolation), falling back to the original text.
 
 ```vue
+<script setup lang="ts">
+import { autoTranslate } from 'auto-i18n-vue'
+
+// Static texts in scripts: option lists, enum labels, notifications, etc.
+const featureTitle = autoTranslate(`The source text is the key`)
+// Interpolation in scripts: `{count}` placeholders survive translation as-is
+const badgeText = autoTranslate(`Total entries: {count}`, { count: 128 })
+</script>
+
 <template>
-    <p>{{ $translate(`Hello, {name}`, { name: userName }) }}</p>
+    <!-- Static template text: the source text is the key, no naming needed -->
+    <h1>{{ $translate(`Auto i18n demo`) }}</h1>
+    <!-- Template interpolation: string / number values, reactive on locale switch -->
+    <p>{{ $translate(`User name: {name}`, { name: userName }) }}</p>
+    <p>{{ $translate(`You have {count} unread messages`, { count: unread }) }}</p>
+    <!-- Bound attributes: placeholders, titles, etc. are translated too -->
+    <input type="text" :placeholder="$translate(`Enter your user name`)"/>
 </template>
 ```
+
+A few extra notes:
+
+- The source text is the key — texts are stored under their MD5 hash, so there are no key names to maintain and identical texts are translated only once.
+- All three string delimiters (`'`, `"`, `` ` ``) work; texts containing quotes are still extracted correctly.
 
 ## Development
 
@@ -145,6 +165,8 @@ pnpm type-check     # TypeScript type checking (source + tests)
 ```
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) and are enforced locally by commitlint + husky. CI runs on every push/PR to `main` (type check + all tests).
+
+npm publishing is tag-driven: bump the version in `package.json`, commit, then `git tag v0.0.5 && git push origin v0.0.5` — the [release workflow](./.github/workflows/release.yml) verifies the tag matches the version, builds, publishes, and creates a GitHub Release (requires the `NPM_TOKEN` repo secret).
 
 ## License
 

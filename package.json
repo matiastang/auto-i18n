@@ -1,6 +1,6 @@
 {
     "name": "auto-i18n-vue",
-    "version": "0.0.4",
+    "version": "0.1.0",
     "description": "自动国际化",
     "packageManager": "pnpm@10.17.1",
     "main": "./dist/index.umd.js",
@@ -16,10 +16,18 @@
         }
     },
     "keywords": [
+        "vue",
+        "vue3",
+        "vite",
+        "vite-plugin",
+        "i18n",
+        "internationalization",
+        "localization",
+        "translation",
+        "auto-translate",
+        "llm",
         "matias",
-        "matiastang",
-        "auto-i18n",
-        "auto-i18n-vue"
+        "matiastang"
     ],
     "author": {
         "name": "matiastang",

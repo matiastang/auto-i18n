@@ -131,10 +131,30 @@ export default defineConfig(({ mode }) => {
 模板中使用`$translate(...)`（脚本中使用`autoTranslate(...)`）。开发阶段 Vite 插件自动提取这些文案并翻译、改写调用；运行时按当前语言查找译文（支持`{name}`形式插值），未命中时回退原文。
 
 ```vue
+<script setup lang="ts">
+import { autoTranslate } from 'auto-i18n-vue'
+
+// 脚本侧静态文案：下拉选项、枚举描述、通知语等
+const featureTitle = autoTranslate(`中文即 Key`)
+// 脚本侧插值：{count} 占位符翻译时保持原样
+const badgeText = autoTranslate(`词条总数：{count}`, { count: 128 })
+</script>
+
 <template>
-    <p>{{ $translate(`你好，{name}`, { name: userName }) }}</p>
+    <!-- 模板静态文案：原文即 Key，无需起名 -->
+    <h1>{{ $translate(`自动国际化演示`) }}</h1>
+    <!-- 模板插值：string / number 均可，切换语言响应式更新 -->
+    <p>{{ $translate(`用户名：{name}`, { name: userName }) }}</p>
+    <p>{{ $translate(`您有 {count} 条未读消息`, { count: unread }) }}</p>
+    <!-- 属性绑定：placeholder、title 等同样参与翻译 -->
+    <input type="text" :placeholder="$translate(`请输入用户名`)"/>
 </template>
 ```
+
+补充说明：
+
+- 原文即 Key——文案经 MD5 哈希作为词条键，无需维护键名，相同文案只翻译一次。
+- 三种字符串定界符（`'`、`"`、`` ` ``）均可使用，文案内含引号也能被正确提取。
 
 ## 开发
 
@@ -148,6 +168,8 @@ pnpm type-check     # TypeScript 类型检查（源码 + 测试）
 ```
 
 提交信息遵循[约定式提交](https://www.conventionalcommits.org/zh-hans/)，由本地 commitlint + husky 强制校验；`main`分支的 push/PR 会触发 CI（类型检查 + 全部测试）。
+
+发布 npm 包走标签触发：升`package.json`版本并提交 → `git tag v0.0.5 && git push origin v0.0.5`，[发布工作流](./.github/workflows/release.yml)会校验 tag 与版本一致、构建并发布，同时创建 GitHub Release（需在仓库 Secret 中配置`NPM_TOKEN`）。
 
 ## 许可
 
