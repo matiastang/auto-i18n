@@ -51,7 +51,8 @@ export const autoTranslate = (key: string, options?: {[key: string]: string | nu
     if (options) {
         return Object.entries(options).reduce((left, item) => {
             const [_key, _val] = item
-            return String(left).replaceAll('{' + _key + '}', `${_val}`)
+            // 函数式替换串：$&、$`、$' 等特殊模式不展开，插值原样输出
+            return String(left).replaceAll('{' + _key + '}', () => `${_val}`)
         }, value)
     }
     return value
@@ -83,19 +84,12 @@ export const autoi18n = {
         }
         const filePath = options.filePath
         if (filePath && filePath.endsWith('.json')) {
-            // try {
-            //     const messages = await readJsonFile(filePath)
-            //     autoi18nInfo.messages = messages
-            // } catch (error) {
-            //     console.warn(error)
-            // }
             readJsonFile(filePath).then((res) => {
                 autoi18nInfo.messages = res
             }).catch((err) => {
                 console.warn(err)
             })
         }
-        console.log('init')
         app.provide('$autoi18n', autoi18nInfo)
         app.config.globalProperties.$autoi18n = autoi18nInfo
         app.provide('$translate', autoTranslate)

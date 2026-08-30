@@ -37,7 +37,8 @@ export enum TranslateTarget {
  */
 export enum TranslateAIModel {
     /**
-     * 智谱AI
+     * OpenAI Chat Completions 兼容接口
+     * （OpenAI、DeepSeek、Moonshot/Kimi、通义千问兼容模式、本地 Ollama 等）
      */
-    ZHIPUAI = 'zhipuai'
+    OPENAI = 'openai'
 }

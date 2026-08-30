@@ -10,10 +10,16 @@ export * from './@types/enum'
 export * from './utils/index'
 import { autoi18n, autoi18nInfo, autoTranslate } from './autoi18n'
 import { autoi18nPlugin } from './autoi18nPlugin'
+import { freeTranslate } from './translates/free'
+import { openaiTranslate } from './translates/openai'
+import { resolveTranslateFunction } from './translates/provider'
 
 export {
     autoi18n,
     autoi18nInfo,
     autoTranslate,
     autoi18nPlugin,
+    freeTranslate,
+    openaiTranslate,
+    resolveTranslateFunction,
 }

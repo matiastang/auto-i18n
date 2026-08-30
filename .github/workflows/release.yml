@@ -1,0 +1,65 @@
+# 发布工作流：推送 v* 标签时自动校验、构建并发布 npm 包，同时创建 GitHub Release
+# 触发：推送形如 v0.0.5 的标签（git tag v0.0.5 && git push origin v0.0.5）
+# 版本约定：tag 即版本事实来源——先升 package.json 版本并提交，再打同号 tag；CI 只校验一致，不改动版本
+# 认证：npmjs.com 创建 Granular Access Token（仅授权 auto-i18n-vue 包、Read and write），
+#       添加为仓库 Secret「NPM_TOKEN」。（免令牌方案可改为 npm Trusted Publishing / OIDC）
+name: Release
+
+on:
+    push:
+        tags: ['v*']
+
+jobs:
+    publish:
+        name: 构建并发布 npm
+        runs-on: ubuntu-latest
+        permissions:
+            # 创建 GitHub Release 需要；npm 发布鉴权走 NODE_AUTH_TOKEN，与此无关
+            contents: write
+        steps:
+            - name: 检出代码
+              uses: actions/checkout@v4
+
+            - name: 安装 pnpm
+              uses: pnpm/action-setup@v4
+              # 版本取自 package.json 的 packageManager 字段
+
+            - name: 安装 Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+                  # 写入 .npmrc 供 npm publish 使用 registry + NODE_AUTH_TOKEN 鉴权
+                  registry-url: https://registry.npmjs.org
+
+            - name: 校验 tag 与 package.json 版本一致
+              run: |
+                  TAG="${GITHUB_REF_NAME#v}"
+                  PKG=$(node -p "require('./package.json').version")
+                  if [ "$TAG" != "$PKG" ]; then
+                      echo "::error::tag(${GITHUB_REF_NAME}) 与 package.json 版本(${PKG})不一致，请先对齐再打 tag"
+                      exit 1
+                  fi
+
+            - name: 安装依赖
+              run: pnpm install --frozen-lockfile
+
+            - name: 类型检查
+              run: pnpm type-check
+
+            - name: 单元/集成/Use Case 测试
+              run: pnpm test
+              # e2e 不在此重复运行：tag 通常打在已通过 main CI 的提交上（ci.yml 已覆盖全量测试）
+
+            - name: 构建库产物
+              run: pnpm plugin:build
+
+            - name: 发布到 npm
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: 创建 GitHub Release
+              run: gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes
+              env:
+                  GH_TOKEN: ${{ github.token }}

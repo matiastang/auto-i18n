@@ -13,11 +13,11 @@ export type Autoi18nMessageValue = string | number
 
 /**
  * 翻译项
+ * 运行时为稀疏对象（仅含已翻译的语言），用字符串索引签名如实建模；
+ * 旧写法 [key in TranslateTarget] 会强制要求全部语言键存在，逼出大量 as 断言
  */
 export type Autoi18nMessageItem = {
-    // TS1337: An index signature parameter type cannot be a literal type or generic type. Consider using a mapped object type instead.
-    // [key: TranslateTarget]: Autoi18nMessageValue
-    [key in TranslateTarget]: Autoi18nMessageValue
+    [key: string]: Autoi18nMessageValue
 }
 
 /**

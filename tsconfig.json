@@ -79,6 +79,10 @@
         "src/**/*.tsx",
         "src/**/*.vue",
         "env.d.ts",
+        // 测试代码纳入类型检查（type-check 脚本覆盖 tests/ 与 e2e/）
+        "tests/**/*.ts",
+        "e2e/**/*.ts",
+        "vitest.config.ts",
     ],
     // "exclude": ["node_modules"]
 }

@@ -9,40 +9,24 @@
 // import * as fs from 'fs'
 import { Autoi18nMessages } from '../@types/autoi18n'
 
+// 运行时读取翻译文件的超时（毫秒）：翻译文件缺失/网络挂起不应无限等待应用启动
+const READ_JSON_TIMEOUT_MS = 10_000
+
 /**
- * 读取文件
- * @param url 
- * @returns 
+ * 读取文件（浏览器 fetch；带超时与 HTTP 状态检查）
+ * @param url
+ * @returns
  */
-export const readJsonFile = (url: string) => {
-    return new Promise<Autoi18nMessages>((resolve, reject) => {
-        let rawFile = new XMLHttpRequest()
-        rawFile.overrideMimeType("application/json")
-        rawFile.open("GET", url, true)
-        rawFile.onreadystatechange = function() {
-            if (rawFile.readyState !== 4) {
-                // MARK: - 未完成继续执行
-                return
-            }
-            if (rawFile.status !== 200) {
-                reject('redyJsonFile error')
-                return
-            }
-            const content = rawFile.responseText
-            if (typeof content !== 'string' || !content) {
-                reject('json is empty')
-                return
-            }
-            try {
-                const jsonData: Autoi18nMessages = JSON.parse(content)
-                resolve(jsonData)
-            } catch (err) {
-                console.warn(err)
-                reject(err)
-            }
-        }
-        rawFile.send()
-    })
+export const readJsonFile = async (url: string): Promise<Autoi18nMessages> => {
+    const res = await fetch(url, { signal: AbortSignal.timeout(READ_JSON_TIMEOUT_MS) })
+    if (!res.ok) {
+        throw new Error(`readJsonFile error：HTTP ${res.status}（${url}）`)
+    }
+    const content = await res.text()
+    if (!content) {
+        throw new Error('readJsonFile error：json is empty')
+    }
+    return JSON.parse(content) as Autoi18nMessages
 }
 
 /**
@@ -98,9 +82,9 @@ export const readTranslateJson = async (url: string) => {
  * @param data 
  * @returns 
  */
-export const writeTranslateFile = async (url: string, data: string) => {
-    return new Promise<Boolean>((resolve, reject) => {
-        if (typeof window === 'undefined') {  
+export const writeTranslateFile = async (url: string, data: string): Promise<boolean> => {
+    return new Promise<boolean>((resolve, reject) => {
+        if (typeof window === 'undefined') {
             // Node.js 环境，只能这么导入，否则fs不会被打包
             try {
                 const fs = require('fs')

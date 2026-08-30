@@ -18,9 +18,13 @@ export interface AIModelConfig {
      */
     apiKey: string
     /**
-     * 地址
+     * 地址（OPENAI 模式下为任一 OpenAI 兼容服务地址）
      */
     baseUrl?: string
+    /**
+     * 模型名（必填有效值，缺失时回退免费翻译）
+     */
+    model?: string
 }
 
 /**
@@ -54,7 +58,7 @@ export interface Autoi18nPluginConfig {
     /**
      * 是否dev环境
      */
-    isDev?: Boolean,
+    isDev?: boolean,
     /**
      * 本地语言
      */
@@ -70,15 +74,15 @@ export interface Autoi18nPluginConfig {
     aiModelConfig?: TranslateAIModelConfig,
     /**
      * 获取已翻译的内容
-     * @returns 
+     * @returns
      */
     readTranslateContent: () => Promise<Autoi18nMessages>,
     /**
      * 保存已翻译的内容
-     * @param data 
-     * @returns 
+     * @param data
+     * @returns
      */
-    saveTranslateContent: (data: Autoi18nMessages) => Promise<Boolean>,
+    saveTranslateContent: (data: Autoi18nMessages) => Promise<boolean>,
     /**
      * 转换函数
      * 如果存在，则使用该函数进行转换
@@ -93,9 +97,9 @@ export interface Autoi18nPluginInfo extends Autoi18nInfo {
     /**
      * 是否翻译
      */
-    isTranslate?: Boolean
+    isTranslate?: boolean
     /**
      * 是否dev环境
      */
-    isDev?: Boolean
+    isDev?: boolean
 }
