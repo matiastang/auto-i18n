@@ -106,13 +106,13 @@
 
 ### Tests for User Story 3 (TDD 先败)
 
-- [ ] T021 [P] [US3] 先写 `tests/unit/scan-mixed.spec.ts` 并确认失败：混合 fixture 中显式调用点改写为 `_localeTranslate(` 恰一次（无双重改写/嵌套包裹）；零标记文案独立改写；两来源文本合并为同一 `Set` 后仅触发一次翻译调用集合（data-model.md 去重规则）
-- [ ] T022 [P] [US3] 先写 `tests/integration/plugin-scan.spec.ts` 混合构建用例并确认失败：混合文件词条落盘无重复键（同文案显式/零标记同 `autoi18n_<md5>` 键）；插值场景 `autoTranslate(\`…{name}…\`, { name })` 行为与 v0.1.0 一致
+- [x] T021 [P] [US3] 先写 `tests/unit/scan-mixed.spec.ts` 并确认失败：混合 fixture 中显式调用点改写为 `_localeTranslate(` 恰一次（无双重改写/嵌套包裹）；零标记文案独立改写；两来源文本合并为同一 `Set` 后仅触发一次翻译调用集合（data-model.md 去重规则）
+- [x] T022 [P] [US3] 先写 `tests/integration/plugin-scan.spec.ts` 混合构建用例并确认失败：混合文件词条落盘无重复键（同文案显式/零标记同 `autoi18n_<md5>` 键）；插值场景 `autoTranslate(\`…{name}…\`, { name })` 行为与 v0.1.0 一致
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] 修复混合场景实现至 T021/T022 通过（预期改动集中在 `src/autoi18nPlugin.ts` 编排顺序：零标记改写先于显式字符扫描替换，区间互斥已由 ExplicitCallRange 保证；若发现显式正则提取与 AST 提取边界冲突，以显式管线优先、零标记让位原则处理）
-- [ ] T024 [US3] 显式 API 回归验证：全量既有测试（`tests/unit/`、`tests/usecase/`、既有 `tests/integration/`、e2e）零回退；`pnpm type-check` 通过；结果记录进本任务勾选说明
+- [x] T023 [US3] 修复混合场景实现至 T021/T022 通过（预期改动集中在 `src/autoi18nPlugin.ts` 编排顺序：零标记改写先于显式字符扫描替换，区间互斥已由 ExplicitCallRange 保证；若发现显式正则提取与 AST 提取边界冲突，以显式管线优先、零标记让位原则处理）
+- [x] T024 [US3] 显式 API 回归验证：全量既有测试（`tests/unit/`、`tests/usecase/`、既有 `tests/integration/`、e2e）零回退；`pnpm type-check` 通过；结果记录进本任务勾选说明
 
 **Checkpoint**: 混合写法与存量兼容可独立验证
 
