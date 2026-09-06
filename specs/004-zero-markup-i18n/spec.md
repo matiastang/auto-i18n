@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-06
 
-**Status**: Draft
+**Status**: Complete
 
 **Input**: User description: "不使用 $translate 和 autoTranslate 来包裹需要翻译的内容，实现自动翻译——自动查到需要翻译的文本。选定路线：构建期 AST 扫描 + 自动改写"（完整需求与决策见 `docs/requirements.md` v0.2.0 小节）
 
