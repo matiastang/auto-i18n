@@ -16,7 +16,8 @@ import { resolveTranslateFunction } from './translates/provider'
 import { scanScript } from './scan/scriptScan'
 import { scanTemplate } from './scan/templateScan'
 import { rewriteSfc, RewriteInjectAt } from './scan/rewrite'
-import { ZeroMarkHit } from './scan/types'
+import { findScriptIgnoreMarks } from './scan/ignore'
+import { IgnoreRange, ZeroMarkHit } from './scan/types'
 
 /**
  * 插件版本号（发布时须与根 package.json 同步；
@@ -59,8 +60,9 @@ const scanSfcModule = (code: string): { hits: ZeroMarkHit[] } | null => {
         if (!block) {
             continue
         }
-        // 块内容 loc.start.offset 即模块级偏移（开标签之后）
-        hits.push(...scanScript(block.content, block.loc.start.offset).hits)
+        // 块内容 loc.start.offset 即模块级偏移（开标签之后）；
+        // script 忽略标记以块内局部偏移传入，覆盖语句区间由扫描器解析（contracts C-3）
+        hits.push(...scanScript(block.content, block.loc.start.offset, findScriptIgnoreMarks(block.content)).hits)
     }
     if (descriptor.template?.ast) {
         hits.push(...scanTemplate(code, descriptor.template.ast).hits)
@@ -94,10 +96,15 @@ const createDevTransformModule =
     async (code: string, id: string, translate: TranslateFunction) => {
         const texts = checkQuestions(code)
         // 零标记扫描：仅处理完整 SFC 主请求（plugin-vue 拆分子请求带 query，其 code
-        // 非完整 SFC，parse 会失败——显式管线对这些请求保持既有行为）
+        // 非完整 SFC，parse 会失败——显式管线对这些请求保持既有行为）；
+        // exclude 命中的文件跳过零标记扫描（显式管线不受影响，FR-007）
         const isSfcSubRequest = id.includes('?')
         const scanEnabled = autoi18nPluginInfo.autoScan !== false
-        const scan = !isSfcSubRequest && scanEnabled ? scanSfcModule(code) : null
+        const filePath = id.split('?')[0]
+        const excluded = (autoi18nPluginInfo.exclude ?? []).some((rule) =>
+            typeof rule === 'string' ? filePath.includes(rule) : rule.test(filePath)
+        )
+        const scan = !isSfcSubRequest && scanEnabled && !excluded ? scanSfcModule(code) : null
         const zeroHits = scan?.hits ?? []
         const merged = new Set([...texts, ...zeroHits.map((hit) => hit.text)])
         const list = Array.from(merged)
@@ -313,6 +320,7 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
             autoi18nPluginInfo.isDev = config.isDev
         // 零标记扫描默认开启（FR-010），显式配置 false 时插件等价 v0.1.0 行为
         autoi18nPluginInfo.autoScan = config.autoScan !== false
+        autoi18nPluginInfo.exclude = config.exclude ?? []
         },
         /**
          * 用于转换单个模块

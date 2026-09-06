@@ -25,7 +25,7 @@ const stubTranslate = () => async (questions: string[], _tos: unknown, from: Tra
     return msgs
 }
 
-const buildScanApp = async (isDev: boolean) => {
+const buildScanApp = async (isDev: boolean, extraConfig: Record<string, unknown> = {}) => {
     const saved: Autoi18nMessages[] = []
     const result = (await build({
         configFile: false,
@@ -44,6 +44,7 @@ const buildScanApp = async (isDev: boolean) => {
                     saved.push(data)
                     return true
                 },
+                ...extraConfig,
             }) as unknown as Plugin,
             vue(),
         ],
@@ -85,5 +86,34 @@ describe('集成：零标记扫描 × vite build（FR-001/FR-002/FR-003）', () 
         expect(code).toContain('_autoScanTranslate')
         expect(code).toContain('EN(零标记标题)')
         expect(saved.some((s) => s[translateHashKey('零标记标题')]?.en === 'EN(零标记标题)')).toBe(true)
+    })
+
+    it('误判防护：属性访问器/对象键/忽略标记覆盖的字符串原样保留且无词条（FR-005/FR-006）', async () => {
+        const { code, saved } = await buildScanApp(true)
+
+        // 属性访问器字符串：原样保留（esbuild 规范化为双引号）、无词条
+        expect(code).toContain(`"中文属性名"`)
+        expect(saved.some((s) => s[translateHashKey('中文属性名')])).toBe(false)
+        // 忽略标记覆盖的语句：原样保留、无词条
+        expect(code).toContain(`"忽略标记覆盖的文案"`)
+        expect(saved.some((s) => s[translateHashKey('忽略标记覆盖的文案')])).toBe(false)
+        // 对象值照常翻译
+        expect(code).toContain('EN(正常翻译的对象值文案)')
+    })
+
+    it('autoScan: false 时零标记行为完全关闭（FR-010）', async () => {
+        const { code, saved } = await buildScanApp(true, { autoScan: false })
+
+        expect(code).not.toContain('_autoScanTranslate')
+        expect(saved.some((s) => s[translateHashKey('零标记标题')])).toBe(false)
+    })
+
+    it('exclude 命中的文件跳过零标记扫描（FR-007）', async () => {
+        const { code, saved } = await buildScanApp(true, { exclude: ['ZeroMark.vue'] })
+
+        expect(code).not.toContain('EN(零标记标题)')
+        expect(saved.some((s) => s[translateHashKey('零标记标题')])).toBe(false)
+        // 排除规则不影响其它文件的零标记扫描
+        expect(code).toContain('EN(正常翻译的对象值文案)')
     })
 })

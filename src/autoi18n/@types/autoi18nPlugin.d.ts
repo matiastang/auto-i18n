@@ -117,4 +117,8 @@ export interface Autoi18nPluginInfo extends Autoi18nInfo {
      * 零标记扫描是否开启
      */
     autoScan?: boolean
+    /**
+     * 零标记扫描排除规则（FR-007）
+     */
+    exclude?: (string | RegExp)[]
 }

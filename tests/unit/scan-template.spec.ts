@@ -72,6 +72,17 @@ describe('scanTemplate：排除（FR-005 / R7）', () => {
         expect(scan(source).hits).toHaveLength(0)
     })
 
+    it('忽略标记覆盖的元素不产出命中（FR-006）', () => {
+        const source = `<template>\n<!-- autoi18n-ignore -->\n<p>被忽略的文案</p>\n<p>保留的文案</p>\n</template>`
+        const result = scan(source)
+        expect(result.hits.map((h) => h.text)).toEqual(['保留的文案'])
+    })
+
+    it('忽略标记覆盖元素的绑定属性一并跳过', () => {
+        const source = `<template>\n<!-- autoi18n-ignore -->\n<input :placeholder="'忽略的占位'" />\n</template>`
+        expect(scan(source).hits).toHaveLength(0)
+    })
+
     it('纯英文文本跳过', () => {
         const source = `<template><p>Hello World</p></template>`
         expect(scan(source).hits).toHaveLength(0)
