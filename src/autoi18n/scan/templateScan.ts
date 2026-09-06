@@ -154,6 +154,13 @@ export const scanTemplate = (
             if (children) {
                 for (const child of children) walkTemplate(child)
             }
+            return
+        }
+        // 其它容器类型（如未来版本可能出现的 ROOT 根节点）防御性递归 children，
+        // 避免静默漏扫整棵子树
+        const children = current.children as unknown[] | undefined
+        if (children) {
+            for (const child of children) walkTemplate(child)
         }
     }
 }

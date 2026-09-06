@@ -129,3 +129,26 @@ describe('rewriteSfc：边界', () => {
         expect(map).toBeNull()
     })
 })
+
+describe('rewriteSfc：注入内容安全（code review M2）', () => {
+    it('译文含闭合 script 标签时转义，不破坏 SFC 块边界', () => {
+        const source = `<script setup>\nconst a = '个人介绍'\n</script>`
+        const hit = literalHit(source, '个人介绍')
+        const closingTag = '</' + 'script>'
+        const risky: Autoi18nMessages = {
+            autoi18n_risky: { zh: '提示：', en: `Close the tag ${closingTag} now` },
+        }
+        const { code } = rewriteSfc({
+            source,
+            hits: [hit],
+            messages: risky,
+            injectAt: { index: source.indexOf('>') + 1, appendScript: false },
+        })
+        // 注入内容中的 "<" 已转义为 \u003c（JSON 语义等价）
+        expect(code).toContain('\\u003c/script')
+        // 译文中的真实闭合标签不再出现在产物中
+        expect(code).not.toContain(`${closingTag} now`)
+        // SFC 结构未被破坏：产物中仅剩原 SFC 自己的 </script> 结束标签一处
+        expect(code.indexOf('</script>')).toBe(code.lastIndexOf('</script>'))
+    })
+})

@@ -90,20 +90,29 @@ export const checkQuestions = (code: string) => {
 /**
  * 转换映射内容
  * 值经 JSON.stringify 转义——译文可能含单引号/双引号/换行（如 MyMemory 译出的 It's），
- * 裸拼接会生成非法 JS 导致开发期注入代码语法错误、构建中断
+ * 裸拼接会生成非法 JS 导致开发期注入代码语法错误、构建中断；
+ * `<` 转义为 \u003c——译文含 "</script>" 时会提前终止 SFC 脚本块的解析
+ * （JSON 中 \u003c 与 < 语义等价，仅字节形式不同）
  * @param msg
  */
 export const devTransformMessages = (msg: Autoi18nMessages) => {
     const localTransform = (info: Autoi18nMessageItem) => {
         return Object.entries(info).reduce((left, item) => {
             const [key, value] = item
-            return left + `    ${JSON.stringify(key)}: ${JSON.stringify(value)},\n`
+            return left + `    ${escapeJsonForSfc(key)}: ${escapeJsonForSfc(value)},\n`
         }, '{\n') + '  },\n'
     }
     return Object.entries(msg).reduce((left, item) => {
         const [key, value] = item
-        return left + `  ${JSON.stringify(key)}: ${localTransform(value)}`
+        return left + `  ${escapeJsonForSfc(key)}: ${localTransform(value)}`
     }, '{\n') + '}\n'
+}
+
+/**
+ * JSON 序列化并防护 SFC 脚本块边界：`</script` 序列中的 `<` 转为 \u003c
+ */
+export const escapeJsonForSfc = (value: unknown): string => {
+    return JSON.stringify(value).replace(/<\//g, '\\u003c/')
 }
 
 /**

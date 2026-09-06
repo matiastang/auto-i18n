@@ -65,7 +65,14 @@ const scanSfcModule = (code: string): { hits: ZeroMarkHit[] } | null => {
         hits.push(...scanScript(block.content, block.loc.start.offset, findScriptIgnoreMarks(block.content)).hits)
     }
     if (descriptor.template?.ast) {
-        hits.push(...scanTemplate(code, descriptor.template.ast).hits)
+        // 仅当注入的 _autoScanTranslate 对模板表达式可见时才改写模板文案：
+        // - 有 <script setup>（或纯模板 SFC——注入经追加的 setup 块承载）→ setup 绑定暴露给模板 ✓
+        // - 仅有普通 <script>（Options API）→ 模板表达式编译为 _ctx.*，模块级注入
+        //   不在其上，改写会导致渲染期 "not a function" 崩溃——保守跳过（文案回退
+        //   原文），Options API 模板文案请用显式 $translate（全局属性）
+        if (descriptor.scriptSetup || !descriptor.script) {
+            hits.push(...scanTemplate(code, descriptor.template.ast).hits)
+        }
     }
     return { hits }
 }
@@ -100,7 +107,8 @@ const createDevTransformModule =
         // exclude 命中的文件跳过零标记扫描（显式管线不受影响，FR-007）
         const isSfcSubRequest = id.includes('?')
         const scanEnabled = autoi18nPluginInfo.autoScan !== false
-        const filePath = id.split('?')[0]
+        // 统一正斜杠，保证 exclude 的 'src/generated' 类规则在 Windows 反斜杠 id 下同样命中
+        const filePath = id.split('?')[0].replace(/\\/g, '/')
         const excluded = (autoi18nPluginInfo.exclude ?? []).some((rule) =>
             typeof rule === 'string' ? filePath.includes(rule) : rule.test(filePath)
         )

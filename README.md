@@ -154,6 +154,7 @@ How it works:
 - Interpolated template literals (`` `共${n}条` ``) and static (non-bound) attributes (`placeholder="中文"`) are skipped in this version — use the explicit API for interpolated texts (`autoTranslate(\`共{n}条\`, { n })`).
 - Template texts and expressions update reactively on locale switch; **top-level script literals are evaluated once at setup** — wrap them in `computed` when they must follow locale switching.
 - Explicit `$translate` / `autoTranslate` calls keep working unchanged; their texts are never double-processed and both styles can be mixed freely in the same file.
+- Components written with a plain `<script>` (Options API) have their **template texts conservatively skipped** (script literals are still translated) — the module-level lookup helper is not visible to `_ctx.*` template expressions; use the explicit `$translate` (global property) for Options-API templates.
 - If the host project uses a Vue version newer than the bundled compiler and a new template syntax cannot be parsed, that file is safely skipped (texts stay as-is) — the build never breaks.
 
 Ignore markers (opt out locally):

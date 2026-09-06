@@ -117,6 +117,17 @@ describe('集成：零标记扫描 × vite build（FR-001/FR-002/FR-003）', () 
         expect(code).toContain('EN(正常翻译的对象值文案)')
     })
 
+    it('Options API（普通 script）：模板文案保守跳过、script 字面量照常改写（code review M1）', async () => {
+        const { code, saved } = await buildScanApp(true)
+
+        // script 字面量改写（模块级注入在该作用域可见）——词条收录即证明改写链路生效
+        expect(saved.some((s) => s[translateHashKey('Options 脚本文案')]?.en === 'EN(Options 脚本文案)')).toBe(true)
+        expect(code).toContain('EN(Options 脚本文案)')
+        // 模板文案不改写（普通 script 的模板表达式为 _ctx.*，模块级注入不可见，改写会崩溃）
+        expect(saved.some((s) => s[translateHashKey('Options 模板文案')])).toBe(false)
+        expect(code).not.toContain('EN(Options 模板文案)')
+    })
+
     it('混合写法共存：两套查表调用并存、同款文案词条唯一（FR-008）', async () => {
         const { code, saved } = await buildScanApp(true)
 

@@ -4,6 +4,7 @@
  */
 import MagicString from 'magic-string'
 import { Autoi18nMessages } from '../@types/autoi18n'
+import { escapeJsonForSfc } from '../utils/translate'
 import { ZeroMarkHit } from './types'
 
 /**
@@ -43,11 +44,11 @@ const SCAN_INJECT_IMPORT =
     "import { autoi18nInfo as _autoi18nInfo, translateHashKey as _scanHashKey } from 'auto-i18n-vue'"
 
 const buildInjectCode = (messages: Autoi18nMessages): string => {
-    // 译文可能含引号/换行，必须 JSON.stringify（既有 devTransformMessages 同纪律）
+    // 译文可能含引号/换行/`</script>`，经 escapeJsonForSfc 序列化（JSON 转义 + SFC 块边界防护）
     return `
     ${SCAN_INJECT_IMPORT}
 
-    const _autoScanMessages = ${JSON.stringify(messages)}
+    const _autoScanMessages = ${escapeJsonForSfc(messages)}
 
     const _autoScanTranslate = (key, options) => {
         const item = _autoScanMessages[_scanHashKey(key)]
