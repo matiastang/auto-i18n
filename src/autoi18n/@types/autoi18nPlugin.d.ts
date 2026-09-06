@@ -73,6 +73,17 @@ export interface Autoi18nPluginConfig {
      */
     aiModelConfig?: TranslateAIModelConfig,
     /**
+     * 零标记扫描总开关（默认 true）
+     * 开启时自动发现 .vue 中含 CJK 的字符串文案并改写翻译；
+     * 设为 false 时插件行为等价 v0.1.0（仅显式 $translate/autoTranslate 管线）
+     */
+    autoScan?: boolean,
+    /**
+     * 零标记扫描排除规则（字符串为模块 id/路径的包含匹配；RegExp 为 test 匹配）
+     * 命中任一规则的文件跳过零标记扫描（显式管线不受影响）
+     */
+    exclude?: (string | RegExp)[],
+    /**
      * 获取已翻译的内容
      * @returns
      */
@@ -102,4 +113,8 @@ export interface Autoi18nPluginInfo extends Autoi18nInfo {
      * 是否dev环境
      */
     isDev?: boolean
+    /**
+     * 零标记扫描是否开启
+     */
+    autoScan?: boolean
 }
