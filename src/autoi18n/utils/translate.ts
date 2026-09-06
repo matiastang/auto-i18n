@@ -84,8 +84,6 @@ export const checkQuestions = (code: string) => {
         }
         return text
     }).filter((item) => item)
-    console.log('--------')
-    console.log(questions)
     return questions
 }
 

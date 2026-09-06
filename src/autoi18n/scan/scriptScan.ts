@@ -6,7 +6,7 @@ import { parse as babelParse } from '@babel/parser'
 import { containsCjk } from './cjk'
 import { collectFromBabelAst } from './babelCollect'
 import { overlapsAny } from './walk'
-import { IgnoreRange, ScanResult, ZeroMarkHit } from './types'
+import { ExplicitCallRange, IgnoreRange, ScanResult, ZeroMarkHit } from './types'
 
 /**
  * 扫描 script 段源码中的零标记文案
@@ -22,7 +22,7 @@ export const scanScript = (
     ignoreMarks: IgnoreRange[] = []
 ): ScanResult => {
     const hits: ZeroMarkHit[] = []
-    const explicitRanges = []
+    const explicitRanges: ExplicitCallRange[] = []
     let program: { body?: unknown[] } | null = null
     try {
         program = babelParse(code, {
