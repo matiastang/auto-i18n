@@ -126,12 +126,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T025 [US4] 演示应用新增零标记区块（`src/views/autoi18nHome.vue`）：未包裹中文文案（文本节点/插值/绑定属性/script 字面量四类）+ 一个 `/* autoi18n-ignore */` 忽略示例 + 与显式写法的同义对照；补充演示文案到 `public/translate.json` 缓存（沿用既有 54 条缓存的离线纪律，翻译 stub 或一次性免费源预生成，不入 CI）
-- [ ] T026 [US4] e2e 用例（`tests/e2e/`）：零标记区块切换语言（zh/en）显示对应译文、响应式生效；忽略示例串切换语言保持原文；显式区块回归通过
-- [ ] T027 [P] [US4] 更新双语 README（`README.md`/`README.zh-CN.md`）：零标记用法示例、忽略注释契约（C-3）、`autoScan`/`exclude` 配置、适用边界（纯英文源文本不适用、拼接表达式建议显式 API、vue>3.3 新语法安全回退）、与显式 API 共存说明
-- [ ] T028 [P] [US4] 更新 `CHANGELOG.md`（v0.2.0 条目：新能力、新增依赖、默认开启说明、边界）与 `CLAUDE.md`（架构段新增 `scan/` 扫描器与零标记管线描述、注入形态 C-2 说明）
-- [ ] T029 [US4] 版本同步：`package.json` version 0.1.0 → 0.2.0；`src/autoi18n/autoi18nPlugin.ts` 的 `AUTOI18N_PLUGIN_VERSION` '0.1.0' → '0.2.0'（版本漂移陷阱，两处一致）
-- [ ] T030 [US4] 补充 `docs/requirements.md` v0.2.0 小节"实现补充说明"：三项 clarify 默认固化回执（仅 .vue / 拼接跳过 / 默认开启）、新增依赖清单、注入形态升级说明（沿用 v0.0.3 起的文档惯例）
+- [x] T025 [US4] 演示应用新增零标记区块（`src/views/autoi18nHome.vue`）：未包裹中文文案（文本节点/插值/绑定属性/script 字面量四类）+ 一个 `/* autoi18n-ignore */` 忽略示例 + 与显式写法的同义对照；补充演示文案到 `public/translate.json` 缓存（沿用既有 54 条缓存的离线纪律，翻译 stub 或一次性免费源预生成，不入 CI）
+- [x] T026 [US4] e2e 用例（`tests/e2e/`）：零标记区块切换语言（zh/en）显示对应译文、响应式生效；忽略示例串切换语言保持原文；显式区块回归通过
+- [x] T027 [P] [US4] 更新双语 README（`README.md`/`README.zh-CN.md`）：零标记用法示例、忽略注释契约（C-3）、`autoScan`/`exclude` 配置、适用边界（纯英文源文本不适用、拼接表达式建议显式 API、vue>3.3 新语法安全回退）、与显式 API 共存说明
+- [x] T028 [P] [US4] 更新 `CHANGELOG.md`（v0.2.0 条目：新能力、新增依赖、默认开启说明、边界）与 `CLAUDE.md`（架构段新增 `scan/` 扫描器与零标记管线描述、注入形态 C-2 说明）
+- [x] T029 [US4] 版本同步：`package.json` version 0.1.0 → 0.2.0；`src/autoi18n/autoi18nPlugin.ts` 的 `AUTOI18N_PLUGIN_VERSION` '0.1.0' → '0.2.0'（版本漂移陷阱，两处一致）
+- [x] T030 [US4] 补充 `docs/requirements.md` v0.2.0 小节"实现补充说明"：三项 clarify 默认固化回执（仅 .vue / 拼接跳过 / 默认开启）、新增依赖清单、注入形态升级说明（沿用 v0.0.3 起的文档惯例）
 
 **Checkpoint**: 演示可看、文档可查、版本一致
 
