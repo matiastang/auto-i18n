@@ -9,19 +9,30 @@
 export type ZeroMarkSource = 'template' | 'script'
 
 /**
+ * 命中形态：
+ * - text：模板纯文本节点（改写为插值查表调用）
+ * - literal：script 或模板表达式内的字符串字面量（改写为查表调用表达式）
+ */
+export type ZeroMarkHitKind = 'text' | 'literal'
+
+/**
  * 零标记命中：单文件内发现的一个可翻译字符串字面量
  */
 export interface ZeroMarkHit {
     /**
-     * 字符串字面量内容值（不含引号）
+     * 字符串字面量内容值（不含引号；text 形态为去除首尾空白后的节点文本）
      */
     text: string
     /**
-     * 字面量（含引号）在模块源码中的起始偏移
+     * 命中形态
+     */
+    kind: ZeroMarkHitKind
+    /**
+     * 待替换区间在模块源码中的起始偏移（text 为去空白后的文本起点）
      */
     start: number
     /**
-     * 字面量（含引号）在模块源码中的结束偏移（不含）
+     * 待替换区间在模块源码中的结束偏移（不含）
      */
     end: number
     /**

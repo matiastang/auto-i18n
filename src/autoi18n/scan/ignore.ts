@@ -22,7 +22,7 @@ export interface IgnoreRange {
 }
 
 /**
- * script 段块注释标记：/* autoi18n-ignore *​/（注释内允许空白）
+ * script 段块注释标记：块注释包裹标记词 autoi18n-ignore（注释内允许空白）
  */
 const SCRIPT_MARK_RE = /\/\*\s*autoi18n-ignore\s*\*\//g
 
