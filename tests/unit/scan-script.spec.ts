@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { scanScript } from '../../src/autoi18n/scan/scriptScan'
+import { findScriptIgnoreMarks } from '../../src/autoi18n/scan/ignore'
 
 const hitsOf = (code: string, offset = 0) => scanScript(code, offset).hits
 const rangesOf = (code: string) => scanScript(code, 0).explicitRanges
@@ -83,6 +84,22 @@ describe('scanScript：排除（FR-005 误判防护）', () => {
         const code = `const v = autoTranslate('欢迎你，{name}', { name: '访客' })`
         const result = scanScript(code, 0)
         expect(result.hits).toHaveLength(0)
+    })
+})
+
+describe('scanScript：忽略标记（FR-006，contracts C-3）', () => {
+    it('标记覆盖语句内的字符串不产出命中', () => {
+        const code = `/* autoi18n-ignore */\nconst a = '不翻译的中文'\nconst b = '要翻译的中文'`
+        const marks = findScriptIgnoreMarks(code)
+        const result = scanScript(code, 0, marks)
+        expect(result.hits.map((h) => h.text)).toEqual(['要翻译的中文'])
+    })
+
+    it('同一行内标记之后的语句也被覆盖', () => {
+        const code = `/* autoi18n-ignore */ const a = '跳过文案'; const b = '保留文案'`
+        const marks = findScriptIgnoreMarks(code)
+        const result = scanScript(code, 0, marks)
+        expect(result.hits.map((h) => h.text)).toEqual(['保留文案'])
     })
 })
 
