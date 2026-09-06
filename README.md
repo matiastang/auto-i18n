@@ -123,6 +123,58 @@ Three translation sources are resolved by priority — `translate` (custom) > `a
 
 Already-cached texts are never re-translated, `{name}` placeholders are preserved, and any translation error only logs a warning without interrupting the build.
 
+### Zero-markup auto scan (v0.2.0, on by default)
+
+Since v0.2.0 you don't have to wrap texts at all — write Chinese (or Japanese/Korean) directly and the plugin finds and translates them during build:
+
+```vue
+<script setup lang="ts">
+import { computed } from 'vue'
+
+// Script texts that must follow locale switching go inside computed
+// (top-level literals are evaluated once at setup and won't update on switch)
+const label = computed(() => `保存修改`)
+// This one is excluded by the ignore marker right above it:
+/* autoi18n-ignore */
+const keep = '这一句不翻译'
+</script>
+
+<template>
+    <p>直接书写的中文文案</p>
+    <p>{{ '插值表达式中的中文' }}</p>
+    <input :placeholder="'绑定属性中的中文'"/>
+    <span>{{ label }}</span>
+</template>
+```
+
+How it works:
+
+- A string participates in the scan when it contains at least one CJK character (Han / Kana / Hangul). Pure-ASCII strings (routes, event names, class names) are never touched — pure-English source projects are out of scope for this mode.
+- Non-copy positions are protected and never rewritten: object keys, computed member access (`obj['中文key']`), import paths, comments.
+- Interpolated template literals (`` `共${n}条` ``) and static (non-bound) attributes (`placeholder="中文"`) are skipped in this version — use the explicit API for interpolated texts (`autoTranslate(\`共{n}条\`, { n })`).
+- Template texts and expressions update reactively on locale switch; **top-level script literals are evaluated once at setup** — wrap them in `computed` when they must follow locale switching.
+- Explicit `$translate` / `autoTranslate` calls keep working unchanged; their texts are never double-processed and both styles can be mixed freely in the same file.
+- If the host project uses a Vue version newer than the bundled compiler and a new template syntax cannot be parsed, that file is safely skipped (texts stay as-is) — the build never breaks.
+
+Ignore markers (opt out locally):
+
+```vue
+<template>
+    <!-- autoi18n-ignore -->
+    <p>这个元素的文案与绑定表达式不参与翻译</p>
+</template>
+```
+
+Plugin options:
+
+```ts
+autoi18nPlugin({
+    // ... zero-markup scanning is enabled by default
+    autoScan: false,          // turn it off entirely (behaves like pre-0.2.0)
+    exclude: ['src/generated', /\.gen\.vue$/], // skip the scan for matched files
+})
+```
+
 ### Writing translatable texts
 
 Use `$translate(...)` in templates (or `autoTranslate(...)` in scripts). During development the Vite plugin extracts these texts, translates them, and rewrites the calls; at runtime the translation for the current locale is looked up (with `{name}`-style interpolation), falling back to the original text.
