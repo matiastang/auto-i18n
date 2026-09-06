@@ -116,4 +116,22 @@ describe('集成：零标记扫描 × vite build（FR-001/FR-002/FR-003）', () 
         // 排除规则不影响其它文件的零标记扫描
         expect(code).toContain('EN(正常翻译的对象值文案)')
     })
+
+    it('混合写法共存：两套查表调用并存、同款文案词条唯一（FR-008）', async () => {
+        const { code, saved } = await buildScanApp(true)
+
+        // 显式管线与零标记管线并存
+        expect(code).toContain('_localeTranslate')
+        expect(code).toContain('_autoScanTranslate')
+        expect(code).not.toContain('$translate(')
+        expect(code).not.toContain('autoTranslate(')
+        // '两种写法同款文案' 既有显式又有零标记——词条唯一
+        const dupKey = translateHashKey('两种写法同款文案')
+        const zeroExplicit = saved.filter((s) => s[dupKey])
+        expect(zeroExplicit).toHaveLength(1)
+        // 混合文件各文案均落盘
+        for (const text of ['显式文案标题', '零标记文案段落']) {
+            expect(saved.some((s) => s[translateHashKey(text)]?.en === `EN(${text})`)).toBe(true)
+        }
+    })
 })

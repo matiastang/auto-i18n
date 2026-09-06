@@ -5,6 +5,8 @@
 import { createApp } from 'vue'
 import ZeroMark from './ZeroMark.vue'
 import Protected from './Protected.vue'
+import Mixed from './Mixed.vue'
 
 createApp(ZeroMark).mount('#app')
 createApp(Protected).mount('#app-protected')
+createApp(Mixed).mount('#app-mixed')
