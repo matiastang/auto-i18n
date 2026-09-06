@@ -141,9 +141,9 @@
 
 **Purpose**: 跨故事收尾与质量门
 
-- [ ] T031 [P] `pnpm plugin:build` 全量库构建：产物含 scan/ 模块、external 覆盖三个新依赖、types 产物完整（dist/ 无越界引用，ts:build rootDir 纪律）
-- [ ] T032 全量质量门：`pnpm test:all`（vitest + playwright）与 `pnpm type-check` 全绿；测试 100% 离线复核（无真实收费 API 调用路径）
-- [ ] T033 循环 code review 并修复中等严重及以上问题，直到没有中等严重问题（需求硬性要求；重点：AST 改写边界、误判防护、显式行为不变、注入代码在接入方项目的可解析性）
+- [x] T031 [P] `pnpm plugin:build` 全量库构建：产物含 scan/ 模块、external 覆盖三个新依赖、types 产物完整（dist/ 无越界引用，ts:build rootDir 纪律）
+- [x] T032 全量质量门：`pnpm test:all`（vitest + playwright）与 `pnpm type-check` 全绿；测试 100% 离线复核（无真实收费 API 调用路径）
+- [x] T033 循环 code review 并修复中等严重及以上问题，直到没有中等严重问题（需求硬性要求；重点：AST 改写边界、误判防护、显式行为不变、注入代码在接入方项目的可解析性）
 - [ ] T034 运行 `specs/004-zero-markup-i18n/quickstart.md` 全流程验证并记录结果（含 autoScan:false 存量兼容与生产构建验证）
 - [ ] T035 [P] 更新 `specs/004-zero-markup-i18n/checklists/requirements.md` 与 spec.md 状态为 Complete（沿用 specs/003 收尾惯例）
 
