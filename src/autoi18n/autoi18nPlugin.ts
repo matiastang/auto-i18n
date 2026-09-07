@@ -235,6 +235,8 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
     }
 
     let saveTimer: ReturnType<typeof setTimeout> | undefined
+    // 自上次落盘后是否又采集到新译文：防抖已写过时 buildEnd 不再重复写
+    let hasUnsavedChanges = false
 
     /**
      * 落盘当前全部译文（try/catch 兜底，不中断构建）
@@ -247,6 +249,7 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
         try {
             const status = await writeTranslateJson(autoi18nPluginInfo.messages)
             console.info(`保存翻译内容${status ? '成功' : '失败'}`)
+            hasUnsavedChanges = false
         } catch (error) {
             console.error('saveTranslateContent error', error)
         }
@@ -260,6 +263,7 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
         if (!config.saveTranslateContent) {
             return
         }
+        hasUnsavedChanges = true
         if (saveTimer !== undefined) {
             clearTimeout(saveTimer)
         }
@@ -281,13 +285,16 @@ export const autoi18nPlugin: (config: Autoi18nPluginConfig) => {
          * 构建完成，构建阶段的最后一个钩子
          */
         async buildEnd(error?: Error) {
-            // 取消挂起的防抖写并立即持久化一次，保证退出前不丢数据也不重复写
+            // 取消挂起的防抖写；防抖窗口内已落盘过则跳过，保证退出前不丢数据也不重复写
             if (saveTimer !== undefined) {
                 clearTimeout(saveTimer)
                 saveTimer = undefined
             }
             const isTranslate = autoi18nPluginInfo.isTranslate
             if (!isTranslate) {
+                return
+            }
+            if (!hasUnsavedChanges) {
                 return
             }
             await persistMessages()
