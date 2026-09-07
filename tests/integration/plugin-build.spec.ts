@@ -26,6 +26,9 @@ describe('集成：autoi18nPlugin × vite build', () => {
                 // 的 rollup 3 类型存在结构冲突，运行时兼容，这里用断言桥接
                 autoi18nPlugin({
                     isDev: true,
+                    // 本 spec 固化为"显式管线基线"（等价 v0.1.0 行为）：
+                    // fixture 中的 script 普通中文字符串在零标记开启时会被自动翻译
+                    autoScan: false,
                     locale: TranslateTarget.ZH,
                     targets: [TranslateTarget.ZH, TranslateTarget.EN],
                     translate: async (questions, _tos, from) => {

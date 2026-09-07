@@ -126,6 +126,59 @@ export default defineConfig(({ mode }) => {
 
 已缓存的文案不会重复翻译，`{name}` 占位符保持原样，任何翻译错误只打印警告、不影响构建。
 
+### 零标记自动扫描（v0.2.0，默认开启）
+
+v0.2.0 起无需包裹任何函数——直接书写中文（或日文/韩文）文案，插件在构建期自动发现并翻译：
+
+```vue
+<script setup lang="ts">
+import { computed } from 'vue'
+
+// 需要随语言切换更新的脚本文案请置于 computed 内
+// （script 顶层字面量在 setup 求值时固化，切换语言不会更新）
+const label = computed(() => `保存修改`)
+// 上一行的忽略标记使其被排除：
+/* autoi18n-ignore */
+const keep = '这一句不翻译'
+</script>
+
+<template>
+    <p>直接书写的中文文案</p>
+    <p>{{ '插值表达式中的中文' }}</p>
+    <input :placeholder="'绑定属性中的中文'"/>
+    <span>{{ label }}</span>
+</template>
+```
+
+工作方式：
+
+- 字符串包含至少一个 CJK 字符（汉字/假名/谚文）才参与扫描；纯 ASCII 字符串（路由、事件名、className 等）一律不动——纯英文源文本项目不适用本模式。
+- 非文案语法位置绝不改写：对象属性键、计算属性访问器（`obj['中文key']`）、import 路径、注释内容。
+- 含插值的模板字面量（`` `共${n}条` ``）与静态属性（`placeholder="中文"`）在本版本跳过——插值文案请用显式 API（`autoTranslate(\`共{n}条\`, { n })`）。
+- 模板文本与表达式随语言切换响应式更新；**script 顶层字面量在 setup 求值时固化**——需要随语言切换的脚本文案请置于 `computed`。
+- 显式 `$translate` / `autoTranslate` 调用保持原有行为完全不变，其文案不会被二次处理；同一文件中两种写法可自由混用。
+- 使用普通 `<script>`（Options API）编写的组件，其**模板文案保守跳过**（script 字面量照常翻译）——模块级查表函数对 `_ctx.*` 模板表达式不可见；Options API 模板文案请用显式 `$translate`（全局属性）。
+- 接入方 Vue 版本高于内置编译器且出现无法解析的新模板语法时，该文件安全跳过（文案保持原样）——构建不中断。
+
+忽略标记（局部排除）：
+
+```vue
+<template>
+    <!-- autoi18n-ignore -->
+    <p>这个元素的文案与绑定表达式不参与翻译</p>
+</template>
+```
+
+插件配置：
+
+```ts
+autoi18nPlugin({
+    // ... 零标记扫描默认开启
+    autoScan: false,          // 完全关闭（行为等价 0.2.0 之前）
+    exclude: ['src/generated', /\.gen\.vue$/], // 命中的文件跳过零标记扫描
+})
+```
+
 ### 编写可翻译文案
 
 模板中使用`$translate(...)`（脚本中使用`autoTranslate(...)`）。开发阶段 Vite 插件自动提取这些文案并翻译、改写调用；运行时按当前语言查找译文（支持`{name}`形式插值），未命中时回退原文。
@@ -173,4 +226,4 @@ pnpm type-check     # TypeScript 类型检查（源码 + 测试）
 
 ## 许可
 
-[Apache-2.0](./LICENSE)
+[MIT](./LICENSE)

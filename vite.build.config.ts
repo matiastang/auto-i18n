@@ -45,13 +45,17 @@ export default defineConfig({
         // },
         // 自定义底层的 Rollup 打包配置。这与从 Rollup 配置文件导出的选项相同，并将与 Vite 的内部 Rollup 选项合并。查看 Rollup 选项文档 获取更多细节。
         rollupOptions: {
-            // 确保外部化处理那些你不想打包进库的依赖（运行时依赖仅 crypto-js；vue 为 peer）
-            external: ['vue', 'crypto-js'],
+            // 确保外部化处理那些你不想打包进库的依赖
+            // （运行时依赖 crypto-js；构建期依赖 @vue/compiler-sfc、@babel/parser、magic-string；vue 为 peer）
+            external: ['vue', 'crypto-js', '@vue/compiler-sfc', '@babel/parser', 'magic-string'],
             output: {
                 // 在 UMD 构建模式下为这些外部化的依赖提供一个全局变量
                 globals: {
                     vue: 'vue',
                     'crypto-js': 'crypto-js',
+                    '@vue/compiler-sfc': 'autoi18n.compilerSfc',
+                    '@babel/parser': 'autoi18n.babelParser',
+                    'magic-string': 'autoi18n.MagicString',
                 },
             },
         },

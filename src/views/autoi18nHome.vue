@@ -124,6 +124,37 @@
             </div>
         </section>
 
+        <!-- 零标记演示（v0.2.0） -->
+        <section class="card block">
+            <h2 class="block-title">零标记演示</h2>
+            <p class="block-hint">以下每条文案均未经任何翻译函数包裹，由构建期自动发现并翻译；本区块 5 条文案较显式写法省去 5 次函数包裹</p>
+            <div class="row">
+                <span class="row-label">文本节点</span>
+                <span class="row-value">零标记文本节点文案</span>
+            </div>
+            <div class="row">
+                <span class="row-label">插值表达式</span>
+                <span class="row-value">{{ '零标记插值文案' }}</span>
+            </div>
+            <div class="row">
+                <span class="row-label">绑定属性</span>
+                <input class="input grow" type="text" :placeholder="'零标记占位符文案'"/>
+            </div>
+            <div class="row">
+                <span class="row-label">脚本字面量</span>
+                <span class="row-value">{{ zeroMarkLabel }}</span>
+            </div>
+            <div class="row">
+                <span class="row-label">忽略标记</span>
+                <span class="row-value">{{ ignoredLabel }}</span>
+                <span class="tag warn">不参与翻译</span>
+            </div>
+            <div class="row">
+                <span class="row-label">显式写法对照</span>
+                <span class="row-value">{{ $translate(`显式写法对照文案`) }}</span>
+            </div>
+        </section>
+
         <footer class="footer">
             <span>{{ $translate(`以上页面文案均由 auto-i18n-vue 在开发阶段自动翻译`) }}</span>
             <a class="link" href="/__inspect/" target="_blank" rel="noreferrer">{{ $translate(`查看插件转换结果`) }}</a>
@@ -291,6 +322,17 @@ const filteredMessages = computed(() => {
 const messageRows = computed(() => {
     return filteredMessages.value.slice(0, 50)
 })
+
+/**
+ * ====== 零标记演示（v0.2.0） ======
+ * 下方两个字面量均不加任何翻译函数包裹：
+ * - zeroMarkLabel 置于 computed 内：零标记改写后求值时读取响应式 locale，切换语言即时更新
+ *   （script 顶层字面量改写后在 setup 求值时固化，需要响应式切换的脚本文案请置于 computed）
+ * - ignoredLabel 上方有 autoi18n-ignore 块注释标记，被排除出翻译、保持原文
+ */
+const zeroMarkLabel = computed(() => '零标记脚本文案')
+/* autoi18n-ignore */
+const ignoredLabel = '这串文案被忽略标记排除'
 
 /**
  * ====== 真实场景：登录表单 ======

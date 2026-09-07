@@ -1,6 +1,6 @@
 {
     "name": "auto-i18n-vue",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "自动国际化",
     "packageManager": "pnpm@10.17.1",
     "main": "./dist/index.umd.js",
@@ -33,7 +33,7 @@
         "name": "matiastang",
         "email": "matiastang@163.com"
     },
-    "license": "Apache 2.0",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/matiastang/auto-i18n.git"
@@ -100,6 +100,9 @@
         "vue": ">=3.2.0"
     },
     "dependencies": {
-        "crypto-js": "^4.2.0"
+        "@babel/parser": "^7.25.0",
+        "@vue/compiler-sfc": "^3.3.4",
+        "crypto-js": "^4.2.0",
+        "magic-string": "^0.30.0"
     }
 }

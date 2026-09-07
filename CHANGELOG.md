@@ -4,6 +4,29 @@
 
 All notable changes to this project will be documented in this file. The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [0.2.0] - 2026-09-06
+
+零标记自动国际化：业务代码直接书写中文，不再需要 `$translate` / `autoTranslate` 包裹——构建期 AST 扫描自动发现含 CJK 字符的文案、翻译并改写为运行时查表调用（规格产物见 `specs/004-zero-markup-i18n/`）。显式 API 行为完全不变，两种写法可自由混用。
+
+### Added
+
+- 构建期零标记扫描：覆盖模板文本节点、插值表达式、绑定属性、script 字符串字面量四类位置；文案判定以"包含 CJK 字符（汉字/假名/谚文）"为启发式，纯 ASCII 字符串（路由、事件名、className 等）一律不动
+- 误判防护：对象属性键、计算属性访问器（`obj['中文key']`）、import 路径、注释内容绝不改写；模板静态属性保守跳过
+- 注释级忽略标记：`/* autoi18n-ignore */`（覆盖紧随其后的一个语句）与 `<!-- autoi18n-ignore -->`（覆盖紧随其后的一个元素）
+- 插件配置 `autoScan`（默认开启，设 `false` 时行为等价 0.2.0 之前）与 `exclude`（文件粒度排除零标记扫描）
+- 零标记路径在 dev 与 production 构建均注入子集查表代码（`autoi18nInfo` 模块级状态 + sourcemap），生产产物零标记文案正确显示译文
+- 演示应用新增"零标记演示"区块（四类位置 + 忽略标记 + 显式写法对照）与对应 e2e
+
+### Changed
+
+- 新增依赖：`@vue/compiler-sfc@^3.3.4`、`@babel/parser@^7.25`、`magic-string@^0.30`（构建期使用，已 external 化）
+- 双语 README 与 CLAUDE.md 同步更新（零标记用法、忽略机制、适用边界）
+- 版本号同步提升 `0.1.0` → `0.2.0`（`package.json` 与 `AUTOI18N_PLUGIN_VERSION`）
+
+## [0.1.0] - 2026-08-30
+
+工程化发布准备：新增 tag 触发的 npm 发布工作流（GitHub Actions），扩展 README 文案示例与 keywords；无运行时行为变更。
+
 ## [0.0.4] - 2026-08-30
 
 清理智谱特殊化配置：LLM 翻译配置收敛为唯一形态 OpenAI Chat Completions 兼容，智谱自此只是该配置的一组参数取值（规格产物见 `specs/003-remove-zhipuai-preset/`）。经需求确认，0.0.x 验证阶段直接移除、不做 deprecation 过渡；翻译缓存与翻译源解耦，存量缓存不受影响。

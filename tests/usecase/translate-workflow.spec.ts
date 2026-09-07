@@ -5,7 +5,7 @@
  * 说明：autoi18nPlugin 内部状态（autoi18nPluginInfo）是模块级单例，
  * 每个用例前 vi.resetModules() 后动态 import，保证用例间隔离。
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { InputOptions } from 'rollup'
 import { TranslateTarget } from '../../src/autoi18n/@types/enum'
 import { Autoi18nMessageItem, Autoi18nMessages } from '../../src/autoi18n/@types/autoi18n'
@@ -39,6 +39,10 @@ const dictionaryTranslate = async (
 
 beforeEach(() => {
     vi.resetModules()
+})
+
+afterEach(() => {
+    vi.useRealTimers()
 })
 
 const loadPlugin = async () => {
@@ -91,6 +95,34 @@ describe('Use Case: 翻译采集工作流', () => {
         expect(merged[cachedKey]?.en).toBe('Existing')
         expect(merged[translateHashKey('新文案')]?.en).toBe('EN(新文案)')
         expect(merged[translateHashKey('新文案')]?.zh).toBe('新文案')
+    })
+
+    it('防抖中途已落盘时 buildEnd 不再重复保存（慢构建不双写）', async () => {
+        vi.useFakeTimers()
+        const autoi18nPlugin = await loadPlugin()
+        const saved: Autoi18nMessages[] = []
+        const plugin = autoi18nPlugin({
+            isDev: true,
+            locale: TranslateTarget.ZH,
+            targets: [TranslateTarget.ZH, TranslateTarget.EN],
+            translate: dictionaryTranslate,
+            readTranslateContent: async () => ({}),
+            saveTranslateContent: async (data) => {
+                saved.push(data)
+                return true
+            },
+        })
+
+        await plugin.buildStart({} as InputOptions)
+        await plugin.transform(sfc('慢构建文案'), '/project/src/App.vue')
+
+        // 慢构建场景（CI 复现）：SAVE_DEBOUNCE_MS 防抖在 buildEnd 之前先行触发落盘
+        await vi.advanceTimersByTimeAsync(3_000)
+        expect(saved).toHaveLength(1)
+
+        await plugin.buildEnd()
+        expect(saved).toHaveLength(1)
+        expect(saved[0][translateHashKey('慢构建文案')]?.en).toBe('EN(慢构建文案)')
     })
 
     it('全部命中缓存（translate 返回 null）时回退缓存注入且不触发保存', async () => {
