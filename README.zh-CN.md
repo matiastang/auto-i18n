@@ -226,4 +226,4 @@ pnpm type-check     # TypeScript 类型检查（源码 + 测试）
 
 ## 许可
 
-[Apache-2.0](./LICENSE)
+[MIT](./LICENSE)

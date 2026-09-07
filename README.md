@@ -223,4 +223,4 @@ npm publishing is tag-driven: bump the version in `package.json`, commit, then `
 
 ## License
 
-[Apache-2.0](./LICENSE)
+[MIT](./LICENSE)

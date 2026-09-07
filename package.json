@@ -33,7 +33,7 @@
         "name": "matiastang",
         "email": "matiastang@163.com"
     },
-    "license": "Apache 2.0",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/matiastang/auto-i18n.git"
